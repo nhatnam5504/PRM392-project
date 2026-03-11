@@ -25,6 +25,8 @@ import '../../features/checkout/views/order_success_screen.dart';
 import '../../features/order/views/order_history_screen.dart';
 import '../../features/order/views/order_detail_screen.dart';
 import '../../features/review/views/write_review_screen.dart';
+import '../../features/admin/views/admin_product_form_screen.dart';
+import '../../features/admin/views/admin_dashboard_screen.dart';
 
 class AppRoutes {
   static const splash = '/splash';
@@ -35,8 +37,7 @@ class AppRoutes {
   static const cart = '/cart';
   static const profile = '/profile';
   static const editProfile = '/profile/edit';
-  static const changePassword =
-      '/profile/change-password';
+  static const changePassword = '/profile/change-password';
   static const addresses = '/profile/addresses';
   static const membership = '/profile/membership';
   static const wishlist = '/profile/wishlist';
@@ -50,21 +51,20 @@ class AppRoutes {
   static const orders = '/orders';
   static const reviews = '/reviews/write';
 
-  static String productDetail(int id) =>
-      '/products/$id';
+  static String productDetail(int id) => '/products/$id';
   static String orderDetail(int id) => '/orders/$id';
-  static String orderSuccessPage(int id) =>
-      '/order-success/$id';
-  static String writeReview(int productId) =>
-      '/reviews/write/$productId';
-  static String editAddress(int id) =>
-      '/addresses/$id/edit';
+  static String orderSuccessPage(int id) => '/order-success/$id';
+  static String writeReview(int productId) => '/reviews/write/$productId';
+  static String editAddress(int id) => '/addresses/$id/edit';
+
+  // Admin routes
+  static const adminProducts = '/admin/products';
+  static const adminProductAdd = '/admin/products/add';
+  static String adminProductEdit(int id) => '/admin/products/edit/$id';
 }
 
-final _rootNavigatorKey =
-    GlobalKey<NavigatorState>();
-final _shellNavigatorKey =
-    GlobalKey<NavigatorState>();
+final _rootNavigatorKey = GlobalKey<NavigatorState>();
+final _shellNavigatorKey = GlobalKey<NavigatorState>();
 
 final router = GoRouter(
   navigatorKey: _rootNavigatorKey,
@@ -72,95 +72,74 @@ final router = GoRouter(
   routes: [
     GoRoute(
       path: AppRoutes.splash,
-      builder: (context, state) =>
-          const SplashScreen(),
+      builder: (context, state) => const SplashScreen(),
     ),
     GoRoute(
       path: AppRoutes.login,
-      builder: (context, state) =>
-          const LoginScreen(),
+      builder: (context, state) => const LoginScreen(),
     ),
     GoRoute(
       path: AppRoutes.register,
-      builder: (context, state) =>
-          const RegisterScreen(),
+      builder: (context, state) => const RegisterScreen(),
     ),
     GoRoute(
       path: AppRoutes.forgotPassword,
-      builder: (context, state) =>
-          const ForgotPasswordScreen(),
+      builder: (context, state) => const ForgotPasswordScreen(),
     ),
     GoRoute(
       path: '/otp-verify',
-      builder: (context, state) =>
-          const OtpVerifyScreen(),
+      builder: (context, state) => const OtpVerifyScreen(),
     ),
 
     // Main Shell with bottom navigation
     ShellRoute(
       navigatorKey: _shellNavigatorKey,
-      builder: (context, state, child) =>
-          MainShellScreen(child: child),
+      builder: (context, state, child) => MainShellScreen(child: child),
       routes: [
         GoRoute(
           path: AppRoutes.home,
-          builder: (context, state) =>
-              const HomeScreen(),
+          builder: (context, state) => const HomeScreen(),
         ),
         GoRoute(
           path: AppRoutes.shop,
-          builder: (context, state) =>
-              const ProductListScreen(),
+          builder: (context, state) => const ProductListScreen(),
         ),
         GoRoute(
           path: AppRoutes.deals,
-          builder: (context, state) =>
-              const DealsScreen(),
+          builder: (context, state) => const DealsScreen(),
         ),
         GoRoute(
           path: AppRoutes.cart,
-          builder: (context, state) =>
-              const CartScreen(),
+          builder: (context, state) => const CartScreen(),
         ),
         GoRoute(
           path: AppRoutes.profile,
-          builder: (context, state) =>
-              const ProfileScreen(),
+          builder: (context, state) => const ProfileScreen(),
           routes: [
             GoRoute(
               path: 'edit',
-              parentNavigatorKey:
-                  _rootNavigatorKey,
-              builder: (context, state) =>
-                  const EditProfileScreen(),
+              parentNavigatorKey: _rootNavigatorKey,
+              builder: (context, state) => const EditProfileScreen(),
             ),
             GoRoute(
               path: 'change-password',
-              parentNavigatorKey:
-                  _rootNavigatorKey,
-              builder: (context, state) =>
-                  const ChangePasswordScreen(),
+              parentNavigatorKey: _rootNavigatorKey,
+              builder: (context, state) => const ChangePasswordScreen(),
             ),
             GoRoute(
               path: 'addresses',
-              parentNavigatorKey:
-                  _rootNavigatorKey,
-              builder: (context, state) =>
-                  const AddressListScreen(),
+              parentNavigatorKey: _rootNavigatorKey,
+              builder: (context, state) => const AddressListScreen(),
             ),
             GoRoute(
               path: 'membership',
-              parentNavigatorKey:
-                  _rootNavigatorKey,
-              builder: (context, state) =>
-                  const MembershipScreen(),
+              parentNavigatorKey: _rootNavigatorKey,
+              builder: (context, state) => const MembershipScreen(),
             ),
             GoRoute(
               path: 'wishlist',
-              parentNavigatorKey:
-                  _rootNavigatorKey,
-              builder: (context, state) =>
-                  const WishlistScreen(),
+              parentNavigatorKey: _rootNavigatorKey,
+              builder: (context, state) => const WishlistScreen(),
             ),
           ],
         ),
@@ -170,8 +149,7 @@ final router = GoRouter(
     // Product routes (outside shell)
     GoRoute(
       path: AppRoutes.products,
-      builder: (context, state) =>
-          const ProductListScreen(),
+      builder: (context, state) => const ProductListScreen(),
     ),
     GoRoute(
       path: '/products/:id',
@@ -184,25 +162,21 @@ final router = GoRouter(
     ),
     GoRoute(
       path: AppRoutes.search,
-      builder: (context, state) =>
-          const SearchScreen(),
+      builder: (context, state) => const SearchScreen(),
     ),
     GoRoute(
       path: AppRoutes.checkout,
-      builder: (context, state) =>
-          const CheckoutScreen(),
+      builder: (context, state) => const CheckoutScreen(),
       routes: [
         GoRoute(
           path: 'addresses',
-          builder: (context, state) =>
-              const AddressPickerScreen(),
+          builder: (context, state) => const AddressPickerScreen(),
         ),
       ],
     ),
     GoRoute(
       path: '/addresses/add',
-      builder: (context, state) =>
-          const AddEditAddressScreen(),
+      builder: (context, state) => const AddEditAddressScreen(),
     ),
     GoRoute(
       path: '/addresses/:id/edit',
@@ -224,8 +198,7 @@ final router = GoRouter(
     ),
     GoRoute(
       path: AppRoutes.orders,
-      builder: (context, state) =>
-          const OrderHistoryScreen(),
+      builder: (context, state) => const OrderHistoryScreen(),
     ),
     GoRoute(
       path: '/orders/:id',
@@ -245,6 +218,25 @@ final router = GoRouter(
         return WriteReviewScreen(
           productId: productId,
         );
+      },
+    ),
+
+    // Admin routes
+    GoRoute(
+      path: AppRoutes.adminProducts,
+      builder: (context, state) => const AdminDashboardScreen(),
+    ),
+    GoRoute(
+      path: AppRoutes.adminProductAdd,
+      builder: (context, state) => const AdminProductFormScreen(),
+    ),
+    GoRoute(
+      path: '/admin/products/edit/:id',
+      builder: (context, state) {
+        final id = int.parse(
+          state.pathParameters['id']!,
+        );
+        return AdminProductFormScreen(productId: id);
       },
     ),
   ],

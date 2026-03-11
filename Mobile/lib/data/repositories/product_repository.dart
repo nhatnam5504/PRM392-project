@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:dio/dio.dart';
 import '../../core/constants/api_constants.dart';
 import '../../core/constants/app_constants.dart';
@@ -45,9 +47,7 @@ class ProductRepository {
       if (categoryId != null) {
         final cid = int.tryParse(categoryId);
         if (cid != null) {
-          products = products
-              .where((p) => p.categoryId == cid)
-              .toList();
+          products = products.where((p) => p.categoryId == cid).toList();
         }
       }
       return products;
@@ -69,9 +69,7 @@ class ProductRepository {
         if (categoryId != null) {
           final cid = int.tryParse(categoryId);
           if (cid != null) {
-            products = products
-                .where((p) => p.categoryId == cid)
-                .toList();
+            products = products.where((p) => p.categoryId == cid).toList();
           }
         }
         return products;
@@ -165,8 +163,7 @@ class ProductRepository {
           const Duration(milliseconds: 400),
         );
         return DummyData.products
-            .where(
-                (p) => p.categoryId == categoryId)
+            .where((p) => p.categoryId == categoryId)
             .toList();
       }
       rethrow;
@@ -184,9 +181,7 @@ class ProductRepository {
         await Future.delayed(
           const Duration(milliseconds: 400),
         );
-        return DummyData.products
-            .where((p) => p.isHot || p.isNew)
-            .toList();
+        return DummyData.products.where((p) => p.isHot || p.isNew).toList();
       }
       rethrow;
     }
@@ -196,17 +191,13 @@ class ProductRepository {
     // BE doesn't have flash sale; reuse active products.
     try {
       final products = await getActiveProducts();
-      return products
-          .where((p) => p.isOnSale)
-          .toList();
+      return products.where((p) => p.isOnSale).toList();
     } catch (e) {
       if (_useDummyData) {
         await Future.delayed(
           const Duration(milliseconds: 400),
         );
-        return DummyData.products
-            .where((p) => p.isOnSale)
-            .toList();
+        return DummyData.products.where((p) => p.isOnSale).toList();
       }
       rethrow;
     }
@@ -242,10 +233,7 @@ class ProductRepository {
   ) async {
     try {
       final products = await searchProducts(query);
-      return products
-          .map((p) => p.name)
-          .take(5)
-          .toList();
+      return products.map((p) => p.name).take(5).toList();
     } catch (e) {
       if (_useDummyData) {
         await Future.delayed(
@@ -266,6 +254,8 @@ class ProductRepository {
   }
 
   /// POST /api/products/product (multipart)
+  /// Server uses @RequestPart("product") + @RequestPart("img")
+  /// → JSON part 'product' + file part 'img'.
   Future<ProductModel> createProduct({
     required String name,
     required String description,
@@ -277,24 +267,32 @@ class ProductRepository {
     required int categoryId,
     String? imagePath,
   }) async {
-    final formData = FormData.fromMap({
-      'name': name,
-      'description': description,
-      'price': price,
-      'stockQuantity': stockQuantity,
-      'active': active,
-      'versionId': versionId,
-      'brandId': brandId,
-      'categoryId': categoryId,
-      if (imagePath != null)
-        'img': await MultipartFile.fromFile(imagePath),
-    });
+    final formData = FormData();
+    formData.files.add(MapEntry(
+      'product',
+      MultipartFile.fromString(
+        jsonEncode({
+          'name': name,
+          'description': description,
+          'price': price,
+          'stockQuantity': stockQuantity,
+          'active': active,
+          'versionId': versionId,
+          'brandId': brandId,
+          'categoryId': categoryId,
+        }),
+        contentType: DioMediaType('application', 'json'),
+      ),
+    ));
+    if (imagePath != null) {
+      formData.files.add(MapEntry(
+        'img',
+        await MultipartFile.fromFile(imagePath),
+      ));
+    }
     final response = await _dio.post(
       ApiConstants.products,
       data: formData,
-      options: Options(
-        contentType: 'multipart/form-data',
-      ),
     );
     return ProductModel.fromJson(
       response.data as Map<String, dynamic>,
@@ -302,6 +300,8 @@ class ProductRepository {
   }
 
   /// PUT /api/products/product (multipart)
+  /// Server uses @RequestPart("product") + @RequestPart("img", optional)
+  /// → JSON part 'product' + optional file part 'img'.
   Future<ProductModel> updateProduct({
     required int id,
     String? name,
@@ -314,25 +314,32 @@ class ProductRepository {
     int? categoryId,
     String? imagePath,
   }) async {
-    final map = <String, dynamic>{'id': id};
-    if (name != null) map['name'] = name;
-    if (description != null) map['description'] = description;
-    if (price != null) map['price'] = price;
-    if (stockQuantity != null) map['stockQuantity'] = stockQuantity;
-    if (active != null) map['active'] = active;
-    if (versionId != null) map['versionId'] = versionId;
-    if (brandId != null) map['brandId'] = brandId;
-    if (categoryId != null) map['categoryId'] = categoryId;
+    final productData = <String, dynamic>{'id': id};
+    if (name != null) productData['name'] = name;
+    if (description != null) productData['description'] = description;
+    if (price != null) productData['price'] = price;
+    if (stockQuantity != null) productData['stockQuantity'] = stockQuantity;
+    if (active != null) productData['active'] = active;
+    if (versionId != null) productData['versionId'] = versionId;
+    if (brandId != null) productData['brandId'] = brandId;
+    if (categoryId != null) productData['categoryId'] = categoryId;
+    final formData = FormData();
+    formData.files.add(MapEntry(
+      'product',
+      MultipartFile.fromString(
+        jsonEncode(productData),
+        contentType: DioMediaType('application', 'json'),
+      ),
+    ));
     if (imagePath != null) {
-      map['img'] = await MultipartFile.fromFile(imagePath);
+      formData.files.add(MapEntry(
+        'img',
+        await MultipartFile.fromFile(imagePath),
+      ));
     }
-    final formData = FormData.fromMap(map);
     final response = await _dio.put(
       ApiConstants.products,
       data: formData,
-      options: Options(
-        contentType: 'multipart/form-data',
-      ),
     );
     return ProductModel.fromJson(
       response.data as Map<String, dynamic>,

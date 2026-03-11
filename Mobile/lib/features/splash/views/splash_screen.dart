@@ -9,8 +9,7 @@ class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
 
   @override
-  State<SplashScreen> createState() =>
-      _SplashScreenState();
+  State<SplashScreen> createState() => _SplashScreenState();
 }
 
 class _SplashScreenState extends State<SplashScreen> {
@@ -26,8 +25,7 @@ class _SplashScreenState extends State<SplashScreen> {
     );
     if (!mounted) return;
 
-    final prefs =
-        await SharedPreferences.getInstance();
+    final prefs = await SharedPreferences.getInstance();
     final isLoggedIn = prefs.getBool(
           AppConstants.prefIsLoggedIn,
         ) ??
@@ -36,7 +34,12 @@ class _SplashScreenState extends State<SplashScreen> {
     if (!mounted) return;
 
     if (isLoggedIn) {
-      context.go('/');
+      final role = prefs.getString(AppConstants.prefUserRole) ?? 'USER';
+      if (role == 'SUPER ADMIN' || role == 'ADMIN' || role == 'STAFF') {
+        context.go('/admin/products');
+      } else {
+        context.go('/');
+      }
     } else {
       context.go('/login');
     }
@@ -67,20 +70,17 @@ class _SplashScreenState extends State<SplashScreen> {
             ),
             const SizedBox(height: 24),
             Row(
-              mainAxisAlignment:
-                  MainAxisAlignment.center,
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Text(
                   'TECH',
-                  style:
-                      AppTextStyles.displayLarge.copyWith(
+                  style: AppTextStyles.displayLarge.copyWith(
                     color: Colors.white,
                   ),
                 ),
                 Text(
                   'GEAR',
-                  style:
-                      AppTextStyles.displayLarge.copyWith(
+                  style: AppTextStyles.displayLarge.copyWith(
                     color: AppColors.accent,
                   ),
                 ),

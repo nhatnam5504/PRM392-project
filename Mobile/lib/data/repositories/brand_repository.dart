@@ -37,15 +37,11 @@ class BrandRepository {
     final formData = FormData.fromMap({
       'name': name,
       'description': description,
-      if (logoPath != null)
-        'file': await MultipartFile.fromFile(logoPath),
+      if (logoPath != null) 'file': await MultipartFile.fromFile(logoPath),
     });
     final response = await _dio.post(
       ApiConstants.brands,
       data: formData,
-      options: Options(
-        contentType: 'multipart/form-data',
-      ),
     );
     return BrandModel.fromJson(
       response.data as Map<String, dynamic>,
