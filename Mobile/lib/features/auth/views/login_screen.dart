@@ -9,8 +9,7 @@ class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
 
   @override
-  State<LoginScreen> createState() =>
-      _LoginScreenState();
+  State<LoginScreen> createState() => _LoginScreenState();
 }
 
 class _LoginScreenState extends State<LoginScreen> {
@@ -26,10 +25,8 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   Future<void> _handleLogin() async {
-    final identifier =
-        _identifierController.text.trim();
-    final password =
-        _passwordController.text.trim();
+    final identifier = _identifierController.text.trim();
+    final password = _passwordController.text.trim();
 
     if (identifier.isEmpty || password.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -52,13 +49,17 @@ class _LoginScreenState extends State<LoginScreen> {
     if (!mounted) return;
 
     if (success) {
-      context.go('/');
+      final role = authVM.user?.role ?? '';
+      if (role == 'SUPER ADMIN' || role == 'ADMIN' || role == 'STAFF') {
+        context.go('/admin/products');
+      } else {
+        context.go('/');
+      }
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            authVM.errorMessage ??
-                'Đăng nhập thất bại',
+            authVM.errorMessage ?? 'Đăng nhập thất bại',
           ),
           backgroundColor: AppColors.error,
         ),
@@ -73,13 +74,7 @@ class _LoginScreenState extends State<LoginScreen> {
     return Scaffold(
       backgroundColor: AppColors.surface,
       appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(
-            Icons.arrow_back,
-            color: AppColors.primary,
-          ),
-          onPressed: () => context.pop(),
-        ),
+        automaticallyImplyLeading: false,
         title: const Text('Đăng nhập'),
         centerTitle: true,
       ),
@@ -96,8 +91,7 @@ class _LoginScreenState extends State<LoginScreen> {
               height: 80,
               decoration: BoxDecoration(
                 color: AppColors.primaryLight,
-                borderRadius:
-                    BorderRadius.circular(20),
+                borderRadius: BorderRadius.circular(20),
               ),
               child: const Icon(
                 Icons.devices,
@@ -107,22 +101,17 @@ class _LoginScreenState extends State<LoginScreen> {
             ),
             const SizedBox(height: 16),
             Row(
-              mainAxisAlignment:
-                  MainAxisAlignment.center,
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Text(
                   'Tech',
-                  style: AppTextStyles
-                      .displayMedium
-                      .copyWith(
+                  style: AppTextStyles.displayMedium.copyWith(
                     color: AppColors.primary,
                   ),
                 ),
                 Text(
                   'Gear',
-                  style: AppTextStyles
-                      .displayMedium
-                      .copyWith(
+                  style: AppTextStyles.displayMedium.copyWith(
                     color: AppColors.accent,
                   ),
                 ),
@@ -157,18 +146,15 @@ class _LoginScreenState extends State<LoginScreen> {
             TextField(
               controller: _identifierController,
               decoration: const InputDecoration(
-                hintText:
-                    'Nhập email hoặc số điện thoại',
+                hintText: 'Nhập email hoặc số điện thoại',
               ),
-              keyboardType:
-                  TextInputType.emailAddress,
+              keyboardType: TextInputType.emailAddress,
               enabled: !authVM.isLoading,
             ),
             const SizedBox(height: 24),
             // Password input
             Row(
-              mainAxisAlignment:
-                  MainAxisAlignment.spaceBetween,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
                   'Mật khẩu',
@@ -180,8 +166,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                   child: Text(
                     'Quên mật khẩu?',
-                    style: AppTextStyles.labelMd
-                        .copyWith(
+                    style: AppTextStyles.labelMd.copyWith(
                       color: AppColors.primary,
                     ),
                   ),
@@ -197,15 +182,12 @@ class _LoginScreenState extends State<LoginScreen> {
                 hintText: 'Nhập mật khẩu',
                 suffixIcon: IconButton(
                   icon: Icon(
-                    _obscurePassword
-                        ? Icons.visibility_off
-                        : Icons.visibility,
+                    _obscurePassword ? Icons.visibility_off : Icons.visibility,
                     color: AppColors.textHint,
                   ),
                   onPressed: () {
                     setState(() {
-                      _obscurePassword =
-                          !_obscurePassword;
+                      _obscurePassword = !_obscurePassword;
                     });
                   },
                 ),
@@ -217,38 +199,30 @@ class _LoginScreenState extends State<LoginScreen> {
               width: double.infinity,
               height: 56,
               child: ElevatedButton(
-                onPressed: authVM.isLoading
-                    ? null
-                    : _handleLogin,
+                onPressed: authVM.isLoading ? null : _handleLogin,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.primary,
                   shape: RoundedRectangleBorder(
-                    borderRadius:
-                        BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(12),
                   ),
                   elevation: 4,
-                  shadowColor:
-                      AppColors.primaryShadow,
+                  shadowColor: AppColors.primaryShadow,
                 ),
                 child: authVM.isLoading
                     ? const SizedBox(
                         width: 24,
                         height: 24,
-                        child:
-                            CircularProgressIndicator(
+                        child: CircularProgressIndicator(
                           color: Colors.white,
                           strokeWidth: 2,
                         ),
                       )
                     : Row(
-                        mainAxisAlignment:
-                            MainAxisAlignment
-                                .center,
+                        mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Text(
                             'Đăng nhập',
-                            style: AppTextStyles
-                                .buttonLg,
+                            style: AppTextStyles.buttonLg,
                           ),
                           const SizedBox(width: 8),
                           const Icon(
@@ -270,14 +244,12 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                 ),
                 Padding(
-                  padding:
-                      const EdgeInsets.symmetric(
+                  padding: const EdgeInsets.symmetric(
                     horizontal: 16,
                   ),
                   child: Text(
                     'Hoặc đăng nhập với',
-                    style: AppTextStyles.bodySm
-                        .copyWith(
+                    style: AppTextStyles.bodySm.copyWith(
                       color: AppColors.textHint,
                     ),
                   ),
@@ -292,8 +264,7 @@ class _LoginScreenState extends State<LoginScreen> {
             const SizedBox(height: 24),
             // Social buttons
             Row(
-              mainAxisAlignment:
-                  MainAxisAlignment.center,
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 _SocialButton(
                   icon: Icons.g_mobiledata,
@@ -321,24 +292,20 @@ class _LoginScreenState extends State<LoginScreen> {
             const SizedBox(height: 32),
             // Register link
             Row(
-              mainAxisAlignment:
-                  MainAxisAlignment.center,
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Text(
                   'Chưa có tài khoản?',
-                  style: AppTextStyles.bodyMd
-                      .copyWith(
+                  style: AppTextStyles.bodyMd.copyWith(
                     color: AppColors.textSecondary,
                   ),
                 ),
                 const SizedBox(width: 4),
                 GestureDetector(
-                  onTap: () =>
-                      context.push('/register'),
+                  onTap: () => context.push('/register'),
                   child: Text(
                     'Đăng ký ngay',
-                    style: AppTextStyles.labelBold
-                        .copyWith(
+                    style: AppTextStyles.labelBold.copyWith(
                       color: AppColors.primary,
                     ),
                   ),
@@ -378,9 +345,7 @@ class _SocialButton extends StatelessWidget {
         decoration: BoxDecoration(
           color: color,
           shape: BoxShape.circle,
-          border: borderColor != null
-              ? Border.all(color: borderColor!)
-              : null,
+          border: borderColor != null ? Border.all(color: borderColor!) : null,
         ),
         child: Icon(
           icon,

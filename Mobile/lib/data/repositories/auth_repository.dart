@@ -101,10 +101,8 @@ class AuthRepository {
       return user;
     } catch (e) {
       if (e is DioException) {
-        final statusCode = e.response?.statusCode;
-        if (statusCode == 401 || statusCode == 403) {
-          throw Exception('Email hoặc mật khẩu không đúng');
-        }
+        final msg = e.error?.toString() ?? e.message ?? 'Lỗi không xác định';
+        throw Exception(msg);
       }
       if (_useDummyData) {
         await Future.delayed(

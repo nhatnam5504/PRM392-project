@@ -6,8 +6,7 @@ class AuthViewModel extends ChangeNotifier {
   final AuthRepository _repository;
 
   AuthViewModel({AuthRepository? repository})
-      : _repository =
-            repository ?? AuthRepository();
+      : _repository = repository ?? AuthRepository();
 
   UserModel? _user;
   bool _isLoading = false;
@@ -32,12 +31,8 @@ class AuthViewModel extends ChangeNotifier {
       );
       return true;
     } catch (e) {
-      _errorMessage = e.toString().contains('Mật khẩu')
-          ? 'Mật khẩu không đúng.'
-          : e.toString().contains('Không tìm thấy')
-              ? 'Email không tồn tại.'
-              : 'Đăng nhập thất bại. '
-                  'Vui lòng kiểm tra lại thông tin.';
+      final msg = e.toString().replaceFirst('Exception: ', '');
+      _errorMessage = msg;
       return false;
     } finally {
       _isLoading = false;

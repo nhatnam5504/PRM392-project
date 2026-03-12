@@ -9,8 +9,7 @@ class CategoryRepository {
   bool _useDummyData = false;
 
   /// GET /api/products/categories
-  Future<List<CategoryModel>>
-      getCategories() async {
+  Future<List<CategoryModel>> getCategories() async {
     try {
       final response = await _dio.get(
         ApiConstants.categories,
@@ -47,8 +46,7 @@ class CategoryRepository {
     }
   }
 
-  Future<List<CategoryModel>>
-      getFeaturedCategories() async {
+  Future<List<CategoryModel>> getFeaturedCategories() async {
     // BE doesn't have "featured" categories,
     // return all categories.
     try {
@@ -71,7 +69,7 @@ class CategoryRepository {
   }) async {
     final response = await _dio.post(
       ApiConstants.categories,
-      data: {'name': name, 'description': description},
+      data: {'id': 0, 'name': name, 'description': description},
     );
     return CategoryModel.fromJson(
       response.data as Map<String, dynamic>,
