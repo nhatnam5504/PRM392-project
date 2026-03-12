@@ -72,4 +72,8 @@ class ApiConstants {
   static const redeemPoints = '/membership/redeem';
   static const pointsHistory = '/membership/history';
   static const promotions = '/promotions';
+
+  // ─── Order Service — Promotions ───────────────
+  static const orderPromotions =
+      '/api/orders/promotions';
 }

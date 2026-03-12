@@ -682,43 +682,5 @@ class DummyData {
   );
 
   // ─── Promotions ────────────────────────────────
-  static final promotions = [
-    PromotionModel(
-      id: 1,
-      title: 'Flash Sale Cuối Tuần',
-      imageUrl: 'https://placehold.co/600x200/png',
-      description:
-          'Giảm giá lên đến 50% cho các sản phẩm '
-          'được chọn. Chỉ diễn ra cuối tuần!',
-      startDate: DateTime.now(),
-      endDate: DateTime.now().add(
-        const Duration(days: 2),
-      ),
-      isFlashSale: true,
-      targetRoute: '/deals',
-    ),
-    PromotionModel(
-      id: 2,
-      title: 'Ưu đãi thành viên Vàng',
-      imageUrl: 'https://placehold.co/600x200/png',
-      description: 'Tặng thêm 200 điểm cho '
-          'mỗi đơn hàng trên 1.000.000đ.',
-      startDate: DateTime.now(),
-      endDate: DateTime.now().add(
-        const Duration(days: 30),
-      ),
-    ),
-    PromotionModel(
-      id: 3,
-      title: 'Mua 2 giảm 15%',
-      imageUrl: 'https://placehold.co/600x200/png',
-      description:
-          'Áp dụng cho Tai nghe & Loa Bluetooth.',
-      startDate: DateTime.now(),
-      endDate: DateTime.now().add(
-        const Duration(days: 14),
-      ),
-      targetRoute: '/products?categoryId=3',
-    ),
-  ];
+  static final promotions = <PromotionModel>[];
 }
