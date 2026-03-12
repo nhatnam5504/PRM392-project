@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../view_models/home_view_model.dart';
+import '../../shared/view_models/product_rating_view_model.dart';
 import '../widgets/home_app_bar.dart';
 import '../widgets/banner_carousel.dart';
 import '../widgets/category_grid.dart';
@@ -23,7 +24,20 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<HomeViewModel>().loadHomeData();
+      final homeVm = context.read<HomeViewModel>();
+      final ratingVm =
+          context.read<ProductRatingViewModel>();
+      homeVm.loadHomeData().then((_) {
+        final allProductIds = [
+          ...homeVm.featuredProducts.map((p) => p.id),
+          ...homeVm.flashSaleProducts.map((p) => p.id),
+        ];
+        if (allProductIds.isNotEmpty) {
+          ratingVm.loadRatingsForProducts(
+            allProductIds,
+          );
+        }
+      });
     });
   }
 

@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../core/utils/format_price.dart';
 import '../../../data/models/product_model.dart';
+import '../../shared/view_models/product_rating_view_model.dart';
 
 class FeaturedProductsRow extends StatelessWidget {
   final List<ProductModel> products;
@@ -163,21 +165,56 @@ class _ProductCard extends StatelessWidget {
                         TextOverflow.ellipsis,
                   ),
                   const SizedBox(height: 8),
-                  Row(
-                    children: [
-                      const Icon(
-                        Icons.star,
-                        color: AppColors.accent,
-                        size: 14,
-                      ),
-                      const SizedBox(width: 4),
-                      Text(
-                        product.rating
-                            .toStringAsFixed(1),
-                        style:
-                            AppTextStyles.labelMd,
-                      ),
-                    ],
+                  Consumer<ProductRatingViewModel>(
+                    builder: (context, ratingVm, _) {
+                      final data = ratingVm
+                          .getRating(product.id);
+                      final rating =
+                          data?.averageRating ?? 0.0;
+                      final count =
+                          data?.totalCount ?? 0;
+                      return Row(
+                        children: [
+                          ...List.generate(5, (i) {
+                            if (i < rating.floor()) {
+                              return const Icon(
+                                Icons.star,
+                                color: AppColors.star,
+                                size: 14,
+                              );
+                            } else if (i <
+                                    rating.ceil() &&
+                                rating % 1 >= 0.5) {
+                              return const Icon(
+                                Icons.star_half,
+                                color: AppColors.star,
+                                size: 14,
+                              );
+                            } else {
+                              return const Icon(
+                                Icons.star_border,
+                                color: AppColors.star,
+                                size: 14,
+                              );
+                            }
+                          }),
+                          const SizedBox(width: 4),
+                          Text(
+                            rating.toStringAsFixed(1),
+                            style:
+                                AppTextStyles.labelMd,
+                          ),
+                          if (count > 0) ...[
+                            const SizedBox(width: 2),
+                            Text(
+                              '($count)',
+                              style: AppTextStyles
+                                  .bodySm,
+                            ),
+                          ],
+                        ],
+                      );
+                    },
                   ),
                   const SizedBox(height: 4),
                   Text(

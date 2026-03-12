@@ -4,7 +4,11 @@ import 'package:provider/provider.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../core/utils/format_price.dart';
+import '../../cart/view_models/cart_view_model.dart';
+import '../view_models/feedback_view_model.dart';
+import '../../shared/view_models/product_rating_view_model.dart';
 import '../view_models/product_view_model.dart';
+import 'product_feedback_section.dart';
 
 class ProductDetailScreen extends StatefulWidget {
   final int productId;
@@ -24,6 +28,8 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<ProductViewModel>().loadProductDetail(widget.productId);
+      context.read<FeedbackViewModel>().loadFeedbacks(widget.productId);
+      context.read<ProductRatingViewModel>().loadRating(widget.productId);
     });
   }
 
@@ -145,6 +151,62 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                         ),
                                       ),
                                     const SizedBox(height: 4),
+                                    // Average rating from feedbacks
+                                    Consumer<ProductRatingViewModel>(
+                                      builder: (context, ratingVm, _) {
+                                        final data = ratingVm
+                                            .getRating(product.id);
+                                        if (data == null ||
+                                            data.totalCount == 0) {
+                                          return const SizedBox.shrink();
+                                        }
+                                        final avg = data.averageRating;
+                                        return Padding(
+                                          padding: const EdgeInsets.only(
+                                            bottom: 8,
+                                          ),
+                                          child: Row(
+                                            children: [
+                                              ...List.generate(5, (index) {
+                                                if (index < avg.floor()) {
+                                                  return const Icon(
+                                                    Icons.star,
+                                                    size: 18,
+                                                    color: AppColors.star,
+                                                  );
+                                                } else if (index < avg.ceil() &&
+                                                    avg % 1 >= 0.5) {
+                                                  return const Icon(
+                                                    Icons.star_half,
+                                                    size: 18,
+                                                    color: AppColors.star,
+                                                  );
+                                                } else {
+                                                  return const Icon(
+                                                    Icons.star_border,
+                                                    size: 18,
+                                                    color: AppColors.star,
+                                                  );
+                                                }
+                                              }),
+                                              const SizedBox(width: 6),
+                                              Text(
+                                                avg.toStringAsFixed(1),
+                                                style: AppTextStyles.labelBold
+                                                    .copyWith(
+                                                  color: AppColors.star,
+                                                ),
+                                              ),
+                                              const SizedBox(width: 6),
+                                              Text(
+                                                '(${data.totalCount} đánh giá)',
+                                                style: AppTextStyles.bodySm,
+                                              ),
+                                            ],
+                                          ),
+                                        );
+                                      },
+                                    ),
                                     Row(
                                       children: [
                                         Text(
@@ -277,6 +339,10 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                         ),
                                       ),
                                     ],
+                                    // Feedback section
+                                    ProductFeedbackSection(
+                                      productId: product.id,
+                                    ),
                                     const SizedBox(height: 80),
                                   ],
                                 ),
@@ -317,7 +383,24 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                         child: SizedBox(
                           height: 52,
                           child: ElevatedButton.icon(
-                            onPressed: product.isInStock ? () {} : null,
+                            onPressed: product.isInStock
+                                ? () {
+                                    context
+                                        .read<CartViewModel>()
+                                        .addItem(product);
+                                    ScaffoldMessenger.of(context)
+                                        .showSnackBar(
+                                      const SnackBar(
+                                        content: Text(
+                                          'Đã thêm vào giỏ hàng',
+                                        ),
+                                        duration: Duration(
+                                          seconds: 1,
+                                        ),
+                                      ),
+                                    );
+                                  }
+                                : null,
                             icon: const Icon(
                               Icons.shopping_cart_outlined,
                             ),

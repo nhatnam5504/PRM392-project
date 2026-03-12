@@ -76,4 +76,8 @@ class ApiConstants {
   // ─── Order Service — Promotions ───────────────
   static const orderPromotions =
       '/api/orders/promotions';
+
+  // ─── Order Service — Feedbacks ────────────────
+  static const productFeedbacks =
+      '/api/orders/feedbacks/product';
 }
