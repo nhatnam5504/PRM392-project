@@ -1,14 +1,21 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+
 import '../../../core/theme/app_colors.dart';
-import '../../../core/theme/app_text_styles.dart';
-import '../../../data/models/banner_model.dart';
+import '../../../core/utils/format_price.dart';
+import '../../../data/models/product_model.dart';
 
 class BannerCarousel extends StatefulWidget {
-  final List<BannerModel> banners;
+  final List<ProductModel> products;
+  final Duration autoPlayInterval;
 
   const BannerCarousel({
     super.key,
-    required this.banners,
+    required this.products,
+    this.autoPlayInterval =
+        const Duration(seconds: 4),
   });
 
   @override
@@ -18,160 +25,458 @@ class BannerCarousel extends StatefulWidget {
 
 class _BannerCarouselState
     extends State<BannerCarousel> {
-  final _pageController = PageController();
+  late final PageController _pageController;
   int _currentPage = 0;
+  Timer? _autoPlayTimer;
+
+  @override
+  void initState() {
+    super.initState();
+    _pageController = PageController(
+      viewportFraction: 0.92,
+    );
+    _startAutoPlay();
+  }
 
   @override
   void dispose() {
+    _autoPlayTimer?.cancel();
     _pageController.dispose();
     super.dispose();
   }
 
+  void _startAutoPlay() {
+    if (widget.products.length <= 1) return;
+    _autoPlayTimer?.cancel();
+    _autoPlayTimer = Timer.periodic(
+      widget.autoPlayInterval,
+      (_) => _goToNextPage(),
+    );
+  }
+
+  void _goToNextPage() {
+    if (!_pageController.hasClients) return;
+    final nextPage =
+        (_currentPage + 1) % widget.products.length;
+    _pageController.animateToPage(
+      nextPage,
+      duration: const Duration(milliseconds: 500),
+      curve: Curves.easeInOut,
+    );
+  }
+
+  void _onPageChanged(int index) {
+    setState(() => _currentPage = index);
+    _startAutoPlay();
+  }
+
   @override
   Widget build(BuildContext context) {
+    if (widget.products.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
     return Column(
       children: [
         SizedBox(
-          height: 320,
+          height: 200,
           child: PageView.builder(
             controller: _pageController,
-            itemCount: widget.banners.length,
-            onPageChanged: (index) {
-              setState(() {
-                _currentPage = index;
-              });
-            },
+            itemCount: widget.products.length,
+            onPageChanged: _onPageChanged,
             itemBuilder: (context, index) {
-              final banner = widget.banners[index];
-              return _BannerItem(banner: banner);
+              return _ProductBannerCard(
+                product: widget.products[index],
+                pageController: _pageController,
+                index: index,
+              );
             },
           ),
         ),
-        const SizedBox(height: 12),
-        Row(
-          mainAxisAlignment:
-              MainAxisAlignment.center,
-          children: List.generate(
-            widget.banners.length,
-            (index) => Container(
-              width: index == _currentPage ? 24 : 8,
-              height: 8,
-              margin:
-                  const EdgeInsets.symmetric(
-                horizontal: 4,
-              ),
-              decoration: BoxDecoration(
-                color: index == _currentPage
-                    ? AppColors.primary
-                    : AppColors.border,
-                borderRadius:
-                    BorderRadius.circular(4),
-              ),
-            ),
-          ),
+        const SizedBox(height: 14),
+        _DotIndicator(
+          count: widget.products.length,
+          currentIndex: _currentPage,
+          onTap: (index) {
+            _pageController.animateToPage(
+              index,
+              duration:
+                  const Duration(milliseconds: 400),
+              curve: Curves.easeInOut,
+            );
+          },
         ),
       ],
     );
   }
 }
 
-class _BannerItem extends StatelessWidget {
-  final BannerModel banner;
+class _ProductBannerCard extends StatelessWidget {
+  final ProductModel product;
+  final PageController pageController;
+  final int index;
 
-  const _BannerItem({required this.banner});
+  const _ProductBannerCard({
+    required this.product,
+    required this.pageController,
+    required this.index,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: pageController,
+      builder: (context, child) {
+        double scale = 1.0;
+        if (pageController
+            .position.haveDimensions) {
+          final page =
+              pageController.page ?? 0.0;
+          scale =
+              (1 - ((page - index).abs() * 0.12))
+                  .clamp(0.88, 1.0);
+        }
+        return Center(
+          child: Transform.scale(
+            scale: scale,
+            child: child,
+          ),
+        );
+      },
+      child: _buildCard(context),
+    );
+  }
+
+  Widget _buildCard(BuildContext context) {
+    final imageUrl = product.imageUrls.isNotEmpty
+        ? product.imageUrls.first
+        : '';
+
+    return GestureDetector(
+      onTap: () {
+        context.push('/products/${product.id}');
+      },
+      child: Container(
+        margin: const EdgeInsets.symmetric(
+          horizontal: 6,
+        ),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: [
+            BoxShadow(
+              color: AppColors.primaryShadow
+                  .withValues(alpha: 0.18),
+              blurRadius: 20,
+              offset: const Offset(0, 8),
+            ),
+          ],
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(20),
+          child: Stack(
+            fit: StackFit.expand,
+            children: [
+              // Background gradient
+              Container(
+                decoration: const BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      Color(0xFF0E7490),
+                      Color(0xFF0891B2),
+                      Color(0xFF22D3EE),
+                    ],
+                  ),
+                ),
+              ),
+
+              // Product image (right side)
+              Positioned(
+                right: -10,
+                top: 10,
+                bottom: 10,
+                width:
+                    MediaQuery.of(context)
+                        .size
+                        .width *
+                    0.42,
+                child: Hero(
+                  tag: 'banner_product_${product.id}',
+                  child: imageUrl.isNotEmpty
+                      ? Image.network(
+                          imageUrl,
+                          fit: BoxFit.contain,
+                          errorBuilder:
+                              (_, __, ___) =>
+                                  _buildPlaceholderIcon(),
+                          loadingBuilder: (_,
+                              child,
+                              loadingProgress) {
+                            if (loadingProgress ==
+                                null) {
+                              return child;
+                            }
+                            return Center(
+                              child:
+                                  CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: Colors.white
+                                    .withValues(
+                                  alpha: 0.5,
+                                ),
+                              ),
+                            );
+                          },
+                        )
+                      : _buildPlaceholderIcon(),
+                ),
+              ),
+
+              // Subtle pattern overlay
+              Positioned.fill(
+                child: Container(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.centerLeft,
+                      end: Alignment.centerRight,
+                      stops: const [0.0, 0.55, 1.0],
+                      colors: [
+                        Colors.black
+                            .withValues(alpha: 0.15),
+                        Colors.transparent,
+                        Colors.transparent,
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+
+              // Content (left side)
+              Padding(
+                padding: const EdgeInsets.all(20),
+                child: Column(
+                  crossAxisAlignment:
+                      CrossAxisAlignment.start,
+                  children: [
+                    // Badges row
+                    Row(
+                      children: [
+                        if (product.isHot)
+                          const _Badge(
+                            text: '🔥 HOT',
+                            color: AppColors.accent,
+                          ),
+                        if (product.isNew) ...[
+                          if (product.isHot)
+                            const SizedBox(
+                              width: 6,
+                            ),
+                          const _Badge(
+                            text: 'MỚI',
+                            color:
+                                AppColors.success,
+                          ),
+                        ],
+                        if (product.isOnSale) ...[
+                          if (product.isHot ||
+                              product.isNew)
+                            const SizedBox(
+                              width: 6,
+                            ),
+                          _Badge(
+                            text: formatDiscount(
+                              product
+                                  .discountPercent,
+                            ),
+                            color: AppColors.error,
+                          ),
+                        ],
+                      ],
+                    ),
+
+                    const Spacer(),
+
+                    // Brand
+                    Text(
+                      product.brandName
+                          .toUpperCase(),
+                      style: TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w700,
+                        color: Colors.white
+                            .withValues(alpha: 0.70),
+                        letterSpacing: 1.5,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+
+                    // Product name
+                    SizedBox(
+                      width: MediaQuery.of(context)
+                              .size
+                              .width *
+                          0.45,
+                      child: Text(
+                        product.name,
+                        maxLines: 2,
+                        overflow:
+                            TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          fontSize: 18,
+                          fontWeight:
+                              FontWeight.w800,
+                          color: Colors.white,
+                          height: 1.2,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+
+                    // Price row
+                    Row(
+                      children: [
+                        Text(
+                          formatVND(product.price),
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight:
+                                FontWeight.w800,
+                            color:
+                                Color(0xFFFFD700),
+                          ),
+                        ),
+                        if (product.isOnSale) ...[
+                          const SizedBox(width: 8),
+                          Text(
+                            formatVND(
+                              product
+                                  .originalPrice!,
+                            ),
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Colors.white
+                                  .withValues(
+                                alpha: 0.60,
+                              ),
+                              decoration:
+                                  TextDecoration
+                                      .lineThrough,
+                              decorationColor:
+                                  Colors.white
+                                      .withValues(
+                                alpha: 0.60,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPlaceholderIcon() {
+    return Center(
+      child: Icon(
+        Icons.devices_rounded,
+        size: 56,
+        color: Colors.white.withValues(alpha: 0.3),
+      ),
+    );
+  }
+}
+
+class _Badge extends StatelessWidget {
+  final String text;
+  final Color color;
+
+  const _Badge({
+    required this.text,
+    required this.color,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.symmetric(
-        horizontal: 16,
+      padding: const EdgeInsets.symmetric(
+        horizontal: 8,
+        vertical: 4,
       ),
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [
-            AppColors.primaryLight,
-            Color(0xFFF0FDFA),
-          ],
-        ),
-        borderRadius: BorderRadius.circular(20),
+        color: color,
+        borderRadius: BorderRadius.circular(6),
       ),
-      padding: const EdgeInsets.all(24),
-      child: Column(
-        crossAxisAlignment:
-            CrossAxisAlignment.start,
-        children: [
-          Container(
-            padding: const EdgeInsets.symmetric(
-              horizontal: 12,
-              vertical: 6,
+      child: Text(
+        text,
+        style: const TextStyle(
+          fontSize: 9,
+          fontWeight: FontWeight.w700,
+          color: Colors.white,
+          letterSpacing: 0.5,
+        ),
+      ),
+    );
+  }
+}
+
+class _DotIndicator extends StatelessWidget {
+  final int count;
+  final int currentIndex;
+  final ValueChanged<int>? onTap;
+
+  const _DotIndicator({
+    required this.count,
+    required this.currentIndex,
+    this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisAlignment:
+          MainAxisAlignment.center,
+      children: List.generate(count, (index) {
+        final isActive = index == currentIndex;
+        return GestureDetector(
+          onTap: () => onTap?.call(index),
+          child: AnimatedContainer(
+            duration: const Duration(
+              milliseconds: 300,
+            ),
+            curve: Curves.easeInOut,
+            width: isActive ? 28 : 8,
+            height: 8,
+            margin: const EdgeInsets.symmetric(
+              horizontal: 3,
             ),
             decoration: BoxDecoration(
-              color: AppColors.accent,
+              color: isActive
+                  ? AppColors.primary
+                  : AppColors.border,
               borderRadius:
-                  BorderRadius.circular(6),
-            ),
-            child: Text(
-              'Mới nhất',
-              style: AppTextStyles.labelSm.copyWith(
-                color: Colors.white,
-                letterSpacing: 0.8,
-              ),
+                  BorderRadius.circular(4),
+              boxShadow: isActive
+                  ? [
+                      BoxShadow(
+                        color: AppColors.primary
+                            .withValues(alpha: 0.3),
+                        blurRadius: 6,
+                        offset:
+                            const Offset(0, 2),
+                      ),
+                    ]
+                  : null,
             ),
           ),
-          const Spacer(),
-          Text(
-            banner.title,
-            style: AppTextStyles.displayLarge,
-          ),
-          if (banner.subtitle != null) ...[
-            const SizedBox(height: 8),
-            Text(
-              banner.subtitle!,
-              style: AppTextStyles.bodyMd.copyWith(
-                color: AppColors.textSecondary,
-              ),
-            ),
-          ],
-          const SizedBox(height: 16),
-          if (banner.ctaText != null)
-            Container(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 24,
-                vertical: 12,
-              ),
-              decoration: BoxDecoration(
-                color: AppColors.primary,
-                borderRadius:
-                    BorderRadius.circular(12),
-                boxShadow: const [
-                  BoxShadow(
-                    color:
-                        AppColors.primaryShadow,
-                    blurRadius: 12,
-                    offset: Offset(0, 4),
-                  ),
-                ],
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    banner.ctaText!,
-                    style: AppTextStyles.buttonMd,
-                  ),
-                  const SizedBox(width: 8),
-                  const Icon(
-                    Icons.arrow_forward,
-                    color: Colors.white,
-                    size: 20,
-                  ),
-                ],
-              ),
-            ),
-        ],
-      ),
+        );
+      }),
     );
   }
 }

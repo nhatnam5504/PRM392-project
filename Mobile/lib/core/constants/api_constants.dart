@@ -73,6 +73,11 @@ class ApiConstants {
   static const pointsHistory = '/membership/history';
   static const promotions = '/promotions';
 
+  // ─── Order Service ────────────────────────────
+  /// GET /api/orders/user/{userId}
+  static String userOrders(int userId) =>
+      '/api/orders/user/$userId';
+
   // ─── Order Service — Promotions ───────────────
   static const orderPromotions =
       '/api/orders/promotions';

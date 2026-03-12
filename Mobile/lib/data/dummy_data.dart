@@ -474,7 +474,9 @@ class DummyData {
   static const banners = [
     BannerModel(
       id: 1,
-      imageUrl: 'https://placehold.co/600x320/png',
+      imageUrl:
+          'https://images.unsplash.com/photo-1505740420928-5e560c06d30e'
+          '?w=800&h=400&fit=crop&q=80',
       title: 'Phụ kiện công nghệ chính hãng',
       subtitle:
           'Trải nghiệm đỉnh cao cùng các '
@@ -484,17 +486,23 @@ class DummyData {
     ),
     BannerModel(
       id: 2,
-      imageUrl: 'https://placehold.co/600x320/png',
+      imageUrl:
+          'https://images.unsplash.com/photo-1593642632559-0c6d3fc62b89'
+          '?w=800&h=400&fit=crop&q=80',
       title: 'Flash Sale cuối tuần',
-      subtitle: 'Giảm đến 30% cho hàng ngàn sản phẩm.',
+      subtitle:
+          'Giảm đến 30% cho hàng ngàn sản phẩm.',
       ctaText: 'Mua ngay',
       targetRoute: '/deals',
     ),
     BannerModel(
       id: 3,
-      imageUrl: 'https://placehold.co/600x320/png',
+      imageUrl:
+          'https://images.unsplash.com/photo-1583394838336-acd977736f90'
+          '?w=800&h=400&fit=crop&q=80',
       title: 'Tai nghe Anker — Âm thanh đỉnh cao',
-      subtitle: 'Bộ sưu tập tai nghe chống ồn mới nhất.',
+      subtitle:
+          'Bộ sưu tập tai nghe chống ồn mới nhất.',
       ctaText: 'Xem ngay',
       targetRoute: '/products?categoryId=3',
     ),

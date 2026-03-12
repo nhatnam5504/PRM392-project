@@ -16,7 +16,6 @@ class EditProfileScreen extends StatefulWidget {
 class _EditProfileScreenState
     extends State<EditProfileScreen> {
   final _nameController = TextEditingController();
-  final _phoneController = TextEditingController();
   final _emailController = TextEditingController();
   bool _initialized = false;
 
@@ -29,7 +28,6 @@ class _EditProfileScreenState
       if (user != null) {
         _nameController.text = user.name;
         _emailController.text = user.email;
-        _phoneController.text = user.phone ?? '';
       }
       _initialized = true;
     }
@@ -38,7 +36,6 @@ class _EditProfileScreenState
   @override
   void dispose() {
     _nameController.dispose();
-    _phoneController.dispose();
     _emailController.dispose();
     super.dispose();
   }
@@ -46,7 +43,6 @@ class _EditProfileScreenState
   Future<void> _handleSave() async {
     final name = _nameController.text.trim();
     final email = _emailController.text.trim();
-    final phone = _phoneController.text.trim();
 
     if (name.isEmpty || email.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -65,7 +61,6 @@ class _EditProfileScreenState
     final success = await profileVM.updateProfile(
       name: name,
       email: email,
-      phone: phone.isNotEmpty ? phone : null,
     );
 
     if (!mounted) return;
@@ -152,12 +147,6 @@ class _EditProfileScreenState
             _buildField(
               'Họ và tên',
               _nameController,
-              enabled: !profileVM.isLoading,
-            ),
-            const SizedBox(height: 16),
-            _buildField(
-              'Số điện thoại',
-              _phoneController,
               enabled: !profileVM.isLoading,
             ),
             const SizedBox(height: 16),

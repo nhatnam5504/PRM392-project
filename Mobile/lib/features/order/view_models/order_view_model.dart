@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import '../../../data/models/order_model.dart';
+
+import '../../../data/models/user_order_model.dart';
 import '../../../data/repositories/order_repository.dart';
 
 class OrderViewModel extends ChangeNotifier {
@@ -10,72 +11,55 @@ class OrderViewModel extends ChangeNotifier {
   }) : _repository =
             repository ?? OrderRepository();
 
-  List<OrderModel> _orders = [];
-  OrderModel? _selectedOrder;
+  List<UserOrderModel> _orders = [];
   bool _isLoading = false;
   String? _errorMessage;
 
-  List<OrderModel> get orders => _orders;
-  OrderModel? get selectedOrder => _selectedOrder;
+  List<UserOrderModel> get orders => _orders;
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
 
-  Future<void> loadOrders({
-    OrderStatus? status,
-  }) async {
+  /// Filtered orders by status tab
+  List<UserOrderModel> filteredOrders(
+    String statusFilter,
+  ) {
+    if (statusFilter == 'ALL') {
+      return _orders;
+    }
+    return _orders
+        .where((o) =>
+            o.status.toUpperCase() ==
+            statusFilter.toUpperCase())
+        .toList();
+  }
+
+  Future<void> loadOrders() async {
     _isLoading = true;
     _errorMessage = null;
     notifyListeners();
     try {
-      _orders = await _repository.getOrders(
-        status: status,
-      );
+      _orders = await _repository.getUserOrders();
     } catch (e) {
-      _errorMessage =
-          'Không thể tải danh sách đơn hàng.';
+      final msg = e
+          .toString()
+          .replaceFirst('Exception: ', '');
+      _errorMessage = msg.contains('đăng nhập')
+          ? msg
+          : 'Không thể tải danh sách đơn hàng. '
+              'Vui lòng thử lại.';
     } finally {
       _isLoading = false;
       notifyListeners();
     }
   }
 
-  Future<void> loadOrderDetail(int orderId) async {
-    _isLoading = true;
-    _errorMessage = null;
-    notifyListeners();
+  UserOrderModel? getOrderById(int orderId) {
     try {
-      _selectedOrder =
-          await _repository.getOrderById(orderId);
-    } catch (e) {
-      _errorMessage =
-          'Không thể tải chi tiết đơn hàng.';
-    } finally {
-      _isLoading = false;
-      notifyListeners();
-    }
-  }
-
-  Future<bool> cancelOrder(
-    int orderId,
-    String reason,
-  ) async {
-    _isLoading = true;
-    _errorMessage = null;
-    notifyListeners();
-    try {
-      await _repository.cancelOrder(
-        orderId,
-        reason,
+      return _orders.firstWhere(
+        (o) => o.id == orderId,
       );
-      await loadOrders();
-      return true;
-    } catch (e) {
-      _errorMessage =
-          'Không thể hủy đơn hàng.';
-      return false;
-    } finally {
-      _isLoading = false;
-      notifyListeners();
+    } catch (_) {
+      return null;
     }
   }
 }

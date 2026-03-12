@@ -1,26 +1,17 @@
 import 'package:flutter/material.dart';
-import '../../../data/repositories/order_repository.dart';
-import '../../../data/models/order_model.dart';
 
 class CheckoutViewModel extends ChangeNotifier {
-  final OrderRepository _repository;
-
-  CheckoutViewModel({
-    OrderRepository? repository,
-  }) : _repository =
-            repository ?? OrderRepository();
-
   int? _selectedAddressId;
   String _paymentMethod = 'cod';
   bool _isLoading = false;
   String? _errorMessage;
-  OrderModel? _placedOrder;
+  int? _placedOrderId;
 
   int? get selectedAddressId => _selectedAddressId;
   String get paymentMethod => _paymentMethod;
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
-  OrderModel? get placedOrder => _placedOrder;
+  int? get placedOrderId => _placedOrderId;
 
   void setAddressId(int addressId) {
     _selectedAddressId = addressId;
@@ -44,10 +35,11 @@ class CheckoutViewModel extends ChangeNotifier {
     _errorMessage = null;
     notifyListeners();
     try {
-      _placedOrder = await _repository.placeOrder(
-        addressId: _selectedAddressId!,
-        paymentMethod: _paymentMethod,
+      // TODO: Integrate real order placement API
+      await Future.delayed(
+        const Duration(milliseconds: 1000),
       );
+      _placedOrderId = 1;
       return true;
     } catch (e) {
       _errorMessage =

@@ -74,10 +74,11 @@ class _HomeScreenState extends State<HomeScreen> {
                             const SliverToBoxAdapter(
                               child: SizedBox(height: 16),
                             ),
-                            if (vm.banners.isNotEmpty)
+                            if (vm.featuredProducts.isNotEmpty)
                               SliverToBoxAdapter(
                                 child: BannerCarousel(
-                                  banners: vm.banners,
+                                  products:
+                                      vm.featuredProducts,
                                 ),
                               ),
                             const SliverToBoxAdapter(

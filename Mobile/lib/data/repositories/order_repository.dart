@@ -1,62 +1,40 @@
-import '../dummy_data.dart';
-import '../models/order_model.dart';
+import 'package:dio/dio.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+import '../../core/constants/api_constants.dart';
+import '../../core/constants/app_constants.dart';
+import '../models/user_order_model.dart';
+import '../services/api_service.dart';
 
 class OrderRepository {
-  bool _useDummyData = true;
+  final Dio _dio = ApiService().client;
 
-  Future<List<OrderModel>> getOrders({
-    OrderStatus? status,
-  }) async {
-    if (_useDummyData) {
-      await Future.delayed(
-        const Duration(milliseconds: 600),
-      );
-      var orders = DummyData.orders;
-      if (status != null) {
-        orders = orders
-            .where((o) => o.status == status)
-            .toList();
-      }
-      return orders;
-    }
-    throw UnimplementedError();
+  Future<int?> _getSavedUserId() async {
+    final prefs =
+        await SharedPreferences.getInstance();
+    return prefs.getInt(AppConstants.prefUserId);
   }
 
-  Future<OrderModel> getOrderById(int id) async {
-    if (_useDummyData) {
-      await Future.delayed(
-        const Duration(milliseconds: 400),
-      );
-      return DummyData.orders.firstWhere(
-        (o) => o.id == id,
+  /// GET /api/orders/user/{userId}
+  Future<List<UserOrderModel>> getUserOrders() async {
+    final userId = await _getSavedUserId();
+    if (userId == null) {
+      throw Exception(
+        'Chưa đăng nhập. Vui lòng đăng nhập lại.',
       );
     }
-    throw UnimplementedError();
-  }
 
-  Future<OrderModel> placeOrder({
-    required int addressId,
-    required String paymentMethod,
-    String? orderNote,
-    String? voucherCode,
-  }) async {
-    if (_useDummyData) {
-      await Future.delayed(
-        const Duration(milliseconds: 1000),
-      );
-      return DummyData.orders.first;
-    }
-    throw UnimplementedError();
-  }
+    final response = await _dio.get(
+      ApiConstants.userOrders(userId),
+    );
 
-  Future<void> cancelOrder(
-    int orderId,
-    String reason,
-  ) async {
-    if (_useDummyData) {
-      await Future.delayed(
-        const Duration(milliseconds: 500),
-      );
-    }
+    final list = response.data as List<dynamic>;
+    return list
+        .map(
+          (json) => UserOrderModel.fromJson(
+            json as Map<String, dynamic>,
+          ),
+        )
+        .toList();
   }
 }

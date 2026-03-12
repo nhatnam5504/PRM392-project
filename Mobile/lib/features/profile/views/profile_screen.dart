@@ -167,20 +167,6 @@ class _ProfileScreenState
                   onTap: () =>
                       context.push('/profile/edit'),
                 ),
-                _MenuItem(
-                  icon: Icons.lock_outline,
-                  label: 'Đổi mật khẩu',
-                  onTap: () => context.push(
-                    '/profile/change-password',
-                  ),
-                ),
-                _MenuItem(
-                  icon: Icons.location_on_outlined,
-                  label: 'Địa chỉ của tôi',
-                  onTap: () => context.push(
-                    '/profile/addresses',
-                  ),
-                ),
               ],
             ),
             const SizedBox(height: 16),
@@ -193,42 +179,6 @@ class _ProfileScreenState
                   label: 'Đơn hàng',
                   onTap: () =>
                       context.push('/orders'),
-                ),
-                _MenuItem(
-                  icon: Icons.favorite_outline,
-                  label: 'Yêu thích',
-                  onTap: () => context.push(
-                    '/profile/wishlist',
-                  ),
-                ),
-                _MenuItem(
-                  icon: Icons.star_outline,
-                  label: 'Điểm thành viên',
-                  onTap: () => context.push(
-                    '/profile/membership',
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            // Support menu
-            _MenuSection(
-              title: 'Hỗ trợ',
-              items: [
-                _MenuItem(
-                  icon: Icons.help_outline,
-                  label: 'Hỏi & Đáp',
-                  onTap: () {},
-                ),
-                _MenuItem(
-                  icon: Icons.phone_outlined,
-                  label: 'Liên hệ hỗ trợ',
-                  onTap: () {},
-                ),
-                _MenuItem(
-                  icon: Icons.rate_review_outlined,
-                  label: 'Đánh giá ứng dụng',
-                  onTap: () {},
                 ),
               ],
             ),
