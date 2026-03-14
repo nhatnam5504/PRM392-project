@@ -1,3 +1,5 @@
+import 'package:flutter/foundation.dart';
+
 /// Maps to BE ProductService's ProductResponse.
 ///
 /// BE fields: id, name, description, price, quantity, reserve,
@@ -63,9 +65,31 @@ class ProductModel {
   factory ProductModel.fromJson(
     Map<String, dynamic> json,
   ) {
-    final imgUrl = json['imgUrl'] as String?;
     final quantity =
         json['quantity'] as int? ?? json['stockQuantity'] as int? ?? 0;
+
+    // BE returns imgUrls (array) or legacy imgUrl (single string)
+    List<String> resolvedImageUrls = [];
+    try {
+      final rawImgUrls = json['imgUrls'];
+      final rawImgUrl = json['imgUrl'];
+
+      if (rawImgUrls is List && rawImgUrls.isNotEmpty) {
+        resolvedImageUrls = rawImgUrls
+            .where((e) => e is String && e.isNotEmpty)
+            .map((e) => e as String)
+            .toList();
+      } else if (rawImgUrl is String && rawImgUrl.isNotEmpty) {
+        resolvedImageUrls = [rawImgUrl];
+      } else if (json['imageUrls'] is List) {
+        resolvedImageUrls = (json['imageUrls'] as List)
+            .where((e) => e is String && e.isNotEmpty)
+            .map((e) => e as String)
+            .toList();
+      }
+    } catch (e) {
+      debugPrint('Error parsing image URLs: $e for product ${json['id']}');
+    }
 
     return ProductModel(
       id: json['id'] as int,
@@ -84,12 +108,7 @@ class ProductModel {
       isHot: json['isHot'] as bool? ?? false,
       isNew: json['isNew'] as bool? ?? false,
       isFlashSale: json['isFlashSale'] as bool? ?? false,
-      imageUrls: imgUrl != null && imgUrl.isNotEmpty
-          ? [imgUrl]
-          : (json['imageUrls'] as List<dynamic>?)
-                  ?.map((e) => e as String)
-                  .toList() ??
-              [],
+      imageUrls: resolvedImageUrls,
       description: json['description'] as String? ?? '',
       specifications: (json['specifications'] as Map<String, dynamic>?)?.map(
             (k, v) => MapEntry(k, v as String),

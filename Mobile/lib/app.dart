@@ -13,6 +13,9 @@ import 'features/search/view_models/search_view_model.dart';
 import 'features/deals/view_models/deals_view_model.dart';
 import 'features/product/view_models/feedback_view_model.dart';
 import 'features/shared/view_models/product_rating_view_model.dart';
+import 'features/admin/view_models/admin_product_view_model.dart';
+import 'features/admin/view_models/admin_brand_view_model.dart';
+import 'features/admin/view_models/admin_category_view_model.dart';
 
 class App extends StatelessWidget {
   const App({super.key});
@@ -53,6 +56,15 @@ class App extends StatelessWidget {
         ),
         ChangeNotifierProvider(
           create: (_) => ProductRatingViewModel(),
+        ),
+        ChangeNotifierProvider(
+          create: (_) => AdminProductViewModel(),
+        ),
+        ChangeNotifierProvider(
+          create: (_) => AdminBrandViewModel(),
+        ),
+        ChangeNotifierProvider(
+          create: (_) => AdminCategoryViewModel(),
         ),
       ],
       child: MaterialApp.router(

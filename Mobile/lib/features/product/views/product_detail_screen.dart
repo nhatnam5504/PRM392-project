@@ -79,33 +79,9 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              // Image
-                              Container(
-                                height: 300,
-                                width: double.infinity,
-                                color: AppColors.inputBackground,
-                                child: product.imageUrls.isNotEmpty
-                                    ? Image.network(
-                                        product.imageUrls.first,
-                                        fit: BoxFit.cover,
-                                        width: double.infinity,
-                                        height: 300,
-                                        errorBuilder: (_, __, ___) =>
-                                            const Center(
-                                          child: Icon(
-                                            Icons.image_outlined,
-                                            size: 80,
-                                            color: AppColors.border,
-                                          ),
-                                        ),
-                                      )
-                                    : const Center(
-                                        child: Icon(
-                                          Icons.image_outlined,
-                                          size: 80,
-                                          color: AppColors.border,
-                                        ),
-                                      ),
+                              // Image Gallery - Swipeable
+                              _ImageGallery(
+                                imageUrls: product.imageUrls,
                               ),
                               // Product info
                               Padding(
@@ -420,3 +396,239 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
     );
   }
 }
+
+/// Swipeable image gallery with dot indicators
+class _ImageGallery extends StatefulWidget {
+  final List<String> imageUrls;
+
+  const _ImageGallery({required this.imageUrls});
+
+  @override
+  State<_ImageGallery> createState() => _ImageGalleryState();
+}
+
+class _ImageGalleryState extends State<_ImageGallery> {
+  final PageController _pageController = PageController();
+  int _currentPage = 0;
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (widget.imageUrls.isEmpty) {
+      return Container(
+        height: 300,
+        width: double.infinity,
+        color: AppColors.inputBackground,
+        child: const Center(
+          child: Icon(
+            Icons.image_outlined,
+            size: 80,
+            color: AppColors.border,
+          ),
+        ),
+      );
+    }
+
+    return Column(
+      children: [
+        SizedBox(
+          height: 300,
+          child: Stack(
+            children: [
+              PageView.builder(
+                controller: _pageController,
+                itemCount: widget.imageUrls.length,
+                onPageChanged: (index) {
+                  setState(() => _currentPage = index);
+                },
+                itemBuilder: (context, index) {
+                  return GestureDetector(
+                    onTap: () => _showFullScreenImage(context, index),
+                    child: Container(
+                      color: AppColors.inputBackground,
+                      child: Image.network(
+                        widget.imageUrls[index],
+                        fit: BoxFit.contain,
+                        width: double.infinity,
+                        height: 300,
+                        loadingBuilder: (_, child, loadingProgress) {
+                          if (loadingProgress == null) return child;
+                          return Center(
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              value: loadingProgress.expectedTotalBytes != null
+                                  ? loadingProgress.cumulativeBytesLoaded /
+                                      loadingProgress.expectedTotalBytes!
+                                  : null,
+                            ),
+                          );
+                        },
+                        errorBuilder: (_, __, ___) => const Center(
+                          child: Icon(
+                            Icons.image_not_supported_outlined,
+                            size: 60,
+                            color: AppColors.border,
+                          ),
+                        ),
+                      ),
+                    ),
+                  );
+                },
+              ),
+              // Image counter badge
+              if (widget.imageUrls.length > 1)
+                Positioned(
+                  top: 12,
+                  right: 12,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 5,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.black.withOpacity(0.6),
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: Text(
+                      '${_currentPage + 1}/${widget.imageUrls.length}',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        ),
+        // Dot indicators
+        if (widget.imageUrls.length > 1)
+          Padding(
+            padding: const EdgeInsets.only(top: 12),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: List.generate(
+                widget.imageUrls.length,
+                (index) {
+                  final isActive = index == _currentPage;
+                  return GestureDetector(
+                    onTap: () {
+                      _pageController.animateToPage(
+                        index,
+                        duration: const Duration(milliseconds: 300),
+                        curve: Curves.easeInOut,
+                      );
+                    },
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 250),
+                      width: isActive ? 24 : 8,
+                      height: 8,
+                      margin: const EdgeInsets.symmetric(horizontal: 3),
+                      decoration: BoxDecoration(
+                        color: isActive
+                            ? AppColors.primary
+                            : AppColors.border,
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+          ),
+      ],
+    );
+  }
+
+  void _showFullScreenImage(BuildContext context, int initialIndex) {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => _FullScreenImageViewer(
+          imageUrls: widget.imageUrls,
+          initialIndex: initialIndex,
+        ),
+      ),
+    );
+  }
+}
+
+/// Full-screen image viewer with pinch-to-zoom
+class _FullScreenImageViewer extends StatefulWidget {
+  final List<String> imageUrls;
+  final int initialIndex;
+
+  const _FullScreenImageViewer({
+    required this.imageUrls,
+    required this.initialIndex,
+  });
+
+  @override
+  State<_FullScreenImageViewer> createState() => _FullScreenImageViewerState();
+}
+
+class _FullScreenImageViewerState extends State<_FullScreenImageViewer> {
+  late PageController _pageController;
+  late int _currentPage;
+
+  @override
+  void initState() {
+    super.initState();
+    _currentPage = widget.initialIndex;
+    _pageController = PageController(initialPage: widget.initialIndex);
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.black,
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        foregroundColor: Colors.white,
+        title: widget.imageUrls.length > 1
+            ? Text(
+                '${_currentPage + 1} / ${widget.imageUrls.length}',
+                style: const TextStyle(color: Colors.white),
+              )
+            : null,
+        centerTitle: true,
+      ),
+      body: PageView.builder(
+        controller: _pageController,
+        itemCount: widget.imageUrls.length,
+        onPageChanged: (index) {
+          setState(() => _currentPage = index);
+        },
+        itemBuilder: (context, index) {
+          return InteractiveViewer(
+            minScale: 0.5,
+            maxScale: 4.0,
+            child: Center(
+              child: Image.network(
+                widget.imageUrls[index],
+                fit: BoxFit.contain,
+                errorBuilder: (_, __, ___) => const Icon(
+                  Icons.image_not_supported_outlined,
+                  size: 80,
+                  color: Colors.white54,
+                ),
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+}
+
