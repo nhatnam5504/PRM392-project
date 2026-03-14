@@ -37,6 +37,7 @@ class _OrderHistoryScreenState
     );
     WidgetsBinding.instance
         .addPostFrameCallback((_) {
+      if (!mounted) return;
       context.read<OrderViewModel>().loadOrders();
     });
   }

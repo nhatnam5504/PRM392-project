@@ -37,6 +37,7 @@ class _AdminProductFormScreenState extends State<AdminProductFormScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
       final vm = context.read<AdminProductViewModel>();
       vm.loadFormData();
       if (isEditing) {
@@ -74,6 +75,7 @@ class _AdminProductFormScreenState extends State<AdminProductFormScreen> {
     _descController.dispose();
     _priceController.dispose();
     _quantityController.dispose();
+    _imagePageController.dispose();
     super.dispose();
   }
 
@@ -369,7 +371,138 @@ class _AdminProductFormScreenState extends State<AdminProductFormScreen> {
     return Text(text, style: AppTextStyles.labelBold);
   }
 
+  final PageController _imagePageController = PageController();
+  int _currentImagePage = 0;
+
   Widget _buildImagePicker() {
+    // If user picked a new local image, show it
+    if (_imagePath != null) {
+      return GestureDetector(
+        onTap: _pickImage,
+        child: Container(
+          height: 180,
+          decoration: BoxDecoration(
+            color: AppColors.surfaceDark,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: AppColors.border),
+          ),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(12),
+            child: Image.file(
+              File(_imagePath!),
+              width: double.infinity,
+              height: 180,
+              fit: BoxFit.cover,
+            ),
+          ),
+        ),
+      );
+    }
+
+    // If editing and product has images, show gallery
+    if (_editingProduct != null && _editingProduct!.imageUrls.isNotEmpty) {
+      final imageUrls = _editingProduct!.imageUrls;
+      return Column(
+        children: [
+          GestureDetector(
+            onTap: _pickImage,
+            child: Container(
+              height: 200,
+              decoration: BoxDecoration(
+                color: AppColors.surfaceDark,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: AppColors.border),
+              ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(12),
+                child: Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    PageView.builder(
+                      controller: _imagePageController,
+                      itemCount: imageUrls.length,
+                      onPageChanged: (index) {
+                        setState(() => _currentImagePage = index);
+                      },
+                      itemBuilder: (context, index) {
+                        return Image.network(
+                          imageUrls[index],
+                          fit: BoxFit.cover,
+                          errorBuilder: (_, __, ___) =>
+                              _emptyImagePlaceholder(),
+                        );
+                      },
+                    ),
+                    // Counter badge
+                    if (imageUrls.length > 1)
+                      Positioned(
+                        top: 8,
+                        right: 8,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 8, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: Colors.black54,
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Text(
+                            '${_currentImagePage + 1}/${imageUrls.length}',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 11,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      ),
+                    // Camera overlay hint
+                    Positioned(
+                      bottom: 8,
+                      right: 8,
+                      child: Container(
+                        padding: const EdgeInsets.all(6),
+                        decoration: BoxDecoration(
+                          color: Colors.black45,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: const Icon(Icons.camera_alt,
+                            color: Colors.white, size: 20),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          // Dot indicators
+          if (imageUrls.length > 1)
+            Padding(
+              padding: const EdgeInsets.only(top: 8),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: List.generate(
+                  imageUrls.length,
+                  (index) {
+                    final isActive = index == _currentImagePage;
+                    return AnimatedContainer(
+                      duration: const Duration(milliseconds: 250),
+                      width: isActive ? 20 : 6,
+                      height: 6,
+                      margin: const EdgeInsets.symmetric(horizontal: 2),
+                      decoration: BoxDecoration(
+                        color: isActive ? AppColors.primary : AppColors.border,
+                        borderRadius: BorderRadius.circular(3),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ),
+        ],
+      );
+    }
+
+    // No images at all - show empty placeholder
     return GestureDetector(
       onTap: _pickImage,
       child: Container(
@@ -379,39 +512,7 @@ class _AdminProductFormScreenState extends State<AdminProductFormScreen> {
           borderRadius: BorderRadius.circular(12),
           border: Border.all(color: AppColors.border),
         ),
-        child: _imagePath != null
-            ? ClipRRect(
-                borderRadius: BorderRadius.circular(12),
-                child: Image.file(
-                  File(_imagePath!),
-                  width: double.infinity,
-                  height: 180,
-                  fit: BoxFit.cover,
-                ),
-              )
-            : (_editingProduct != null && _editingProduct!.imageUrls.isNotEmpty)
-                ? ClipRRect(
-                    borderRadius: BorderRadius.circular(12),
-                    child: Stack(
-                      fit: StackFit.expand,
-                      children: [
-                        Image.network(
-                          _editingProduct!.imageUrls.first,
-                          fit: BoxFit.cover,
-                          errorBuilder: (_, __, ___) =>
-                              _emptyImagePlaceholder(),
-                        ),
-                        Container(
-                          color: Colors.black26,
-                          child: const Center(
-                            child: Icon(Icons.camera_alt,
-                                color: Colors.white, size: 36),
-                          ),
-                        ),
-                      ],
-                    ),
-                  )
-                : _emptyImagePlaceholder(),
+        child: _emptyImagePlaceholder(),
       ),
     );
   }

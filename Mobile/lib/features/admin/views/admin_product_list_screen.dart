@@ -18,6 +18,7 @@ class _AdminProductListScreenState extends State<AdminProductListScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
       context.read<AdminProductViewModel>().loadProducts();
     });
   }
@@ -121,7 +122,7 @@ class _AdminProductListScreenState extends State<AdminProductListScreen> {
   }
 }
 
-class _ProductCard extends StatelessWidget {
+class _ProductCard extends StatefulWidget {
   final ProductModel product;
   final VoidCallback onEdit;
   final VoidCallback onDelete;
@@ -131,6 +132,20 @@ class _ProductCard extends StatelessWidget {
     required this.onEdit,
     required this.onDelete,
   });
+
+  @override
+  State<_ProductCard> createState() => _ProductCardState();
+}
+
+class _ProductCardState extends State<_ProductCard> {
+  int _currentImageIndex = 0;
+  final PageController _pageController = PageController();
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
 
   String _formatPrice(double price) {
     final intPrice = price.toInt();
@@ -145,112 +160,178 @@ class _ProductCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final product = widget.product;
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
       elevation: 2,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Image
-            ClipRRect(
-              borderRadius: BorderRadius.circular(8),
-              child: product.imageUrls.isNotEmpty
-                  ? Image.network(
-                      product.imageUrls.first,
-                      width: 80,
-                      height: 80,
-                      fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) => Container(
-                        width: 80,
-                        height: 80,
-                        color: AppColors.surfaceDark,
-                        child: const Icon(Icons.image_not_supported,
-                            color: AppColors.textHint),
-                      ),
-                    )
-                  : Container(
-                      width: 80,
-                      height: 80,
-                      color: AppColors.surfaceDark,
-                      child: const Icon(Icons.inventory_2,
-                          color: AppColors.textHint),
-                    ),
-            ),
-            const SizedBox(width: 12),
-            // Info
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+      clipBehavior: Clip.antiAlias,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Image gallery
+          if (product.imageUrls.isNotEmpty)
+            SizedBox(
+              height: 180,
+              child: Stack(
                 children: [
-                  Text(
-                    product.name,
-                    style: AppTextStyles.headingSm,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
+                  PageView.builder(
+                    controller: _pageController,
+                    itemCount: product.imageUrls.length,
+                    onPageChanged: (index) {
+                      setState(() => _currentImageIndex = index);
+                    },
+                    itemBuilder: (context, index) {
+                      return Image.network(
+                        product.imageUrls[index],
+                        width: double.infinity,
+                        height: 180,
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, __, ___) => Container(
+                          color: AppColors.surfaceDark,
+                          child: const Center(
+                            child: Icon(Icons.image_not_supported,
+                                color: AppColors.textHint, size: 40),
+                          ),
+                        ),
+                      );
+                    },
                   ),
-                  const SizedBox(height: 4),
-                  Text(
-                    '${product.brandName} • ${product.categoryName}',
-                    style: AppTextStyles.bodySm,
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    _formatPrice(product.price),
-                    style: AppTextStyles.priceMd,
-                  ),
-                  const SizedBox(height: 4),
-                  Row(
-                    children: [
-                      Container(
+                  // Counter badge
+                  if (product.imageUrls.length > 1)
+                    Positioned(
+                      top: 8,
+                      right: 8,
+                      child: Container(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 8, vertical: 2),
+                            horizontal: 8, vertical: 4),
                         decoration: BoxDecoration(
-                          color: product.active
-                              ? AppColors.success.withValues(alpha: 0.1)
-                              : AppColors.error.withValues(alpha: 0.1),
-                          borderRadius: BorderRadius.circular(4),
+                          color: Colors.black54,
+                          borderRadius: BorderRadius.circular(12),
                         ),
                         child: Text(
-                          product.active ? 'Đang bán' : 'Ngừng bán',
-                          style: AppTextStyles.labelSm.copyWith(
-                            color: product.active
-                                ? AppColors.success
-                                : AppColors.error,
+                          '${_currentImageIndex + 1}/${product.imageUrls.length}',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 11,
+                            fontWeight: FontWeight.w600,
                           ),
                         ),
                       ),
-                      const SizedBox(width: 8),
+                    ),
+                ],
+              ),
+            )
+          else
+            Container(
+              height: 120,
+              width: double.infinity,
+              color: AppColors.surfaceDark,
+              child: const Icon(Icons.inventory_2,
+                  color: AppColors.textHint, size: 40),
+            ),
+          // Dot indicators
+          if (product.imageUrls.length > 1)
+            Padding(
+              padding: const EdgeInsets.only(top: 8),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: List.generate(
+                  product.imageUrls.length,
+                  (index) {
+                    final isActive = index == _currentImageIndex;
+                    return AnimatedContainer(
+                      duration: const Duration(milliseconds: 250),
+                      width: isActive ? 20 : 6,
+                      height: 6,
+                      margin: const EdgeInsets.symmetric(horizontal: 2),
+                      decoration: BoxDecoration(
+                        color: isActive ? AppColors.primary : AppColors.border,
+                        borderRadius: BorderRadius.circular(3),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ),
+          // Product info
+          Padding(
+            padding: const EdgeInsets.all(12),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
                       Text(
-                        'SL: ${product.stockQuantity}',
+                        product.name,
+                        style: AppTextStyles.headingSm,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        '${product.brandName} • ${product.categoryName}',
                         style: AppTextStyles.bodySm,
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        _formatPrice(product.price),
+                        style: AppTextStyles.priceMd,
+                      ),
+                      const SizedBox(height: 4),
+                      Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 8, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: product.active
+                                  ? AppColors.success.withValues(alpha: 0.1)
+                                  : AppColors.error.withValues(alpha: 0.1),
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                            child: Text(
+                              product.active ? 'Đang bán' : 'Ngừng bán',
+                              style: AppTextStyles.labelSm.copyWith(
+                                color: product.active
+                                    ? AppColors.success
+                                    : AppColors.error,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            'SL: ${product.stockQuantity}',
+                            style: AppTextStyles.bodySm,
+                          ),
+                        ],
                       ),
                     ],
                   ),
-                ],
-              ),
-            ),
-            // Actions
-            Column(
-              children: [
-                IconButton(
-                  icon: const Icon(Icons.edit, color: AppColors.primary),
-                  onPressed: onEdit,
-                  tooltip: 'Sửa',
-                  iconSize: 22,
                 ),
-                IconButton(
-                  icon: const Icon(Icons.delete, color: AppColors.error),
-                  onPressed: onDelete,
-                  tooltip: 'Xoá',
-                  iconSize: 22,
+                // Actions
+                Column(
+                  children: [
+                    IconButton(
+                      icon: const Icon(Icons.edit, color: AppColors.primary),
+                      onPressed: widget.onEdit,
+                      tooltip: 'Sửa',
+                      iconSize: 22,
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.delete, color: AppColors.error),
+                      onPressed: widget.onDelete,
+                      tooltip: 'Xoá',
+                      iconSize: 22,
+                    ),
+                  ],
                 ),
               ],
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

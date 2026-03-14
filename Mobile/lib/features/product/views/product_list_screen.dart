@@ -28,6 +28,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
       final vm = context.read<ProductViewModel>();
       vm.loadProducts(refresh: true);
       vm.loadCategories();

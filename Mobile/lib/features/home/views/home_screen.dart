@@ -24,10 +24,12 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
       final homeVm = context.read<HomeViewModel>();
       final ratingVm =
           context.read<ProductRatingViewModel>();
       homeVm.loadHomeData().then((_) {
+        if (!mounted) return;
         final allProductIds = [
           ...homeVm.featuredProducts.map((p) => p.id),
           ...homeVm.flashSaleProducts.map((p) => p.id),

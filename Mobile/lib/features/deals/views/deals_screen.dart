@@ -24,6 +24,7 @@ class _DealsScreenState extends State<DealsScreen> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback(
       (_) {
+        if (!mounted) return;
         final vm = context.read<DealsViewModel>();
         if (vm.promotions.isEmpty) {
           vm.loadDeals();

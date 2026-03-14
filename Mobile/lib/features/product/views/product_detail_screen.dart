@@ -27,6 +27,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
       context.read<ProductViewModel>().loadProductDetail(widget.productId);
       context.read<FeedbackViewModel>().loadFeedbacks(widget.productId);
       context.read<ProductRatingViewModel>().loadRating(widget.productId);

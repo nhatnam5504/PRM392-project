@@ -17,6 +17,7 @@ class _AdminBrandListScreenState extends State<AdminBrandListScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
       context.read<AdminBrandViewModel>().loadBrands();
     });
   }

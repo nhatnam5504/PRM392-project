@@ -23,6 +23,7 @@ class _CartScreenState extends State<CartScreen> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback(
       (_) {
+        if (!mounted) return;
         context.read<CartViewModel>().loadCart();
         final dealsVm =
             context.read<DealsViewModel>();

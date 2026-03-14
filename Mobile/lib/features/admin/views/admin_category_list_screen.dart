@@ -18,6 +18,7 @@ class _AdminCategoryListScreenState extends State<AdminCategoryListScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
       context.read<AdminCategoryViewModel>().loadCategories();
     });
   }
