@@ -29,6 +29,7 @@ class ApiConstants {
       '/api/products/product/category'; // + /{categoryId}
   static const activeProducts = '/api/products/product/active';
   static const inactiveProducts = '/api/products/product/inactive';
+  static const checkAvailable = '/api/products/product/check-available';
 
   // Category endpoints
   static const categories = '/api/products/categories';
@@ -81,6 +82,12 @@ class ApiConstants {
   // ─── Order Service — Promotions ───────────────
   static const orderPromotions =
       '/api/orders/promotions';
+  static const orderPromotionByCode =
+      '/api/orders/promotions/code';
+
+  // ─── Order Service — Payments ───────────────
+  static const makePayment =
+      '/api/orders/payments/make-payment';
 
   // ─── Order Service — Feedbacks ────────────────
   static const productFeedbacks =

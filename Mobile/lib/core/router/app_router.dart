@@ -22,6 +22,7 @@ import '../../features/checkout/views/checkout_screen.dart';
 import '../../features/checkout/views/address_picker_screen.dart';
 import '../../features/checkout/views/add_edit_address_screen.dart';
 import '../../features/checkout/views/order_success_screen.dart';
+import '../../features/checkout/views/payment_confirmation_screen.dart';
 import '../../features/order/views/order_history_screen.dart';
 import '../../features/order/views/order_detail_screen.dart';
 import '../../features/review/views/write_review_screen.dart';
@@ -47,6 +48,7 @@ class AppRoutes {
   static const register = '/register';
   static const forgotPassword = '/forgot-password';
   static const checkout = '/checkout';
+  static const paymentConfirmation = '/checkout/payment-confirmation';
   static const orderSuccess = '/order-success';
   static const orders = '/orders';
   static const reviews = '/reviews/write';
@@ -171,6 +173,20 @@ final GoRouter router = GoRouter(
         GoRoute(
           path: 'addresses',
           builder: (context, state) => const AddressPickerScreen(),
+        ),
+        GoRoute(
+          path: 'payment-confirmation',
+          builder: (context, state) {
+            final args = state.extra as PaymentConfirmationArgs?;
+            if (args == null) {
+              return const Scaffold(
+                body: Center(
+                  child: Text('Thiếu thông tin thanh toán.'),
+                ),
+              );
+            }
+            return PaymentConfirmationScreen(args: args);
+          },
         ),
       ],
     ),

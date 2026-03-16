@@ -136,9 +136,6 @@ class _CartScreenState extends State<CartScreen> {
           },
         ),
         const SizedBox(height: 12),
-        // Voucher input
-        _buildVoucherSection(vm),
-        const SizedBox(height: 12),
         // Summary
         _buildSummary(vm),
       ],
