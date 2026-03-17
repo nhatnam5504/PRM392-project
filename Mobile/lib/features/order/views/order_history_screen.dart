@@ -310,16 +310,26 @@ class _OrderCard extends StatelessWidget {
                     style: AppTextStyles.priceSm,
                   ),
                   Row(
-                    mainAxisSize:
-                        MainAxisSize.min,
+                    mainAxisSize: MainAxisSize.min,
                     children: [
+                      if (['PAID', 'DELIVERED', 'COMPLETED'].contains(order.status.toUpperCase()))
+                        Padding(
+                          padding: const EdgeInsets.only(right: 12),
+                          child: GestureDetector(
+                            onTap: () => context.push('/orders/${order.id}'),
+                            child: Text(
+                              'Đánh giá',
+                              style: AppTextStyles.labelMd.copyWith(
+                                color: Colors.amber[700],
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ),
                       Text(
                         'Xem chi tiết',
-                        style: AppTextStyles
-                            .labelMd
-                            .copyWith(
-                          color:
-                              AppColors.primary,
+                        style: AppTextStyles.labelMd.copyWith(
+                          color: AppColors.primary,
                         ),
                       ),
                       const SizedBox(width: 4),

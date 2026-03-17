@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+import 'package:intl/intl.dart';
 
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../core/utils/format_price.dart';
 import '../../../data/models/user_order_model.dart';
 import '../view_models/order_view_model.dart';
+import '../view_models/order_feedback_view_model.dart';
 
 class OrderDetailScreen extends StatelessWidget {
   final int orderId;
@@ -38,105 +40,111 @@ class OrderDetailScreen extends StatelessWidget {
       );
     }
 
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => context.pop(),
-        ),
-        title: Text(
-          '#${_shortCode(order.orderCode)}',
-        ),
-      ),
-      body: ListView(
-        padding: const EdgeInsets.all(16),
-        children: [
-          // Status + date card
-          _SectionCard(
-            child: Column(
-              crossAxisAlignment:
-                  CrossAxisAlignment.start,
-              children: [
-                Row(
-                  mainAxisAlignment:
-                      MainAxisAlignment
-                          .spaceBetween,
-                  children: [
-                    const Text(
-                      'Trạng thái',
-                      style:
-                          AppTextStyles.labelBold,
-                    ),
-                    _StatusChip(
-                      status: order.status,
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 12),
-                _InfoRow(
-                  icon: Icons.calendar_today,
-                  label: 'Ngày đặt',
-                  value: order.formattedDate,
-                ),
-                const SizedBox(height: 8),
-                _InfoRow(
-                  icon: Icons.receipt_long,
-                  label: 'Mã đơn hàng',
-                  value: order.orderCode,
-                ),
-                const SizedBox(height: 8),
-                _InfoRow(
-                  icon: Icons.person_outline,
-                  label: 'Người đặt',
-                  value: order.userName,
-                ),
-              ],
+    return ChangeNotifierProvider(
+      create: (_) => OrderFeedbackViewModel()..initialize(order),
+      child: Consumer<OrderFeedbackViewModel>(
+        builder: (context, feedbackVm, _) {
+          return Scaffold(
+            backgroundColor: AppColors.background,
+            appBar: AppBar(
+              leading: IconButton(
+                icon: const Icon(Icons.arrow_back),
+                onPressed: () => context.pop(),
+              ),
+              title: Text(
+                '#${_shortCode(order.orderCode)}',
+              ),
             ),
-          ),
-          const SizedBox(height: 12),
+            body: feedbackVm.isLoading
+                ? const Center(child: CircularProgressIndicator())
+                : ListView(
+                    padding: const EdgeInsets.all(16),
+                    children: [
+                      // Status + date card
+                      _SectionCard(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                const Text(
+                                  'Trạng thái',
+                                  style: AppTextStyles.labelBold,
+                                ),
+                                _StatusChip(
+                                  status: order.status,
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 12),
+                            _InfoRow(
+                              icon: Icons.calendar_today,
+                              label: 'Ngày đặt',
+                              value: order.formattedDate,
+                            ),
+                            const SizedBox(height: 8),
+                            _InfoRow(
+                              icon: Icons.receipt_long,
+                              label: 'Mã đơn hàng',
+                              value: order.orderCode,
+                            ),
+                            const SizedBox(height: 8),
+                            _InfoRow(
+                              icon: Icons.person_outline,
+                              label: 'Người đặt',
+                              value: order.userName,
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 12),
 
-          // Products card
-          _SectionCard(
-            child: Column(
-              crossAxisAlignment:
-                  CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Sản phẩm'
-                  ' (${order.orderDetails.length})',
-                  style: AppTextStyles.labelBold,
-                ),
-                const SizedBox(height: 12),
-                ...order.orderDetails.map(
-                  (item) =>
-                      _DetailItemRow(item: item),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 12),
+                      // Products card
+                      _SectionCard(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Sản phẩm'
+                              ' (${order.orderDetails.length})',
+                              style: AppTextStyles.labelBold,
+                            ),
+                            const SizedBox(height: 12),
+                            ...order.orderDetails.map(
+                              (item) => _DetailItemRow(
+                                item: item,
+                                order: order,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 12),
 
-          // Payment summary card
-          _SectionCard(
-            child: Column(
-              children: [
-                _SummaryRow(
-                  'Tạm tính',
-                  formatVND(order.basePrice),
-                ),
-                const SizedBox(height: 8),
-                const Divider(),
-                const SizedBox(height: 8),
-                _SummaryRow(
-                  'Tổng cộng',
-                  formatVND(order.totalPrice),
-                  isBold: true,
-                ),
-              ],
-            ),
-          ),
-        ],
+                      // Payment summary card
+                      _SectionCard(
+                        child: Column(
+                          children: [
+                            _SummaryRow(
+                              'Tạm tính',
+                              formatVND(order.basePrice),
+                            ),
+                            const SizedBox(height: 8),
+                            const Divider(),
+                            const SizedBox(height: 8),
+                            _SummaryRow(
+                              'Tổng cộng',
+                              formatVND(order.totalPrice),
+                              isBold: true,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+          );
+        },
       ),
     );
   }
@@ -220,108 +228,294 @@ class _InfoRow extends StatelessWidget {
 
 class _DetailItemRow extends StatelessWidget {
   final UserOrderDetailModel item;
+  final UserOrderModel order;
 
-  const _DetailItemRow({required this.item});
+  const _DetailItemRow({
+    required this.item,
+    required this.order,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding:
-          const EdgeInsets.only(bottom: 12),
-      child: Row(
-        children: [
-          ClipRRect(
-            borderRadius:
-                BorderRadius.circular(10),
-            child: Container(
-              width: 64,
-              height: 64,
-              color: AppColors.surfaceDark,
-              child: item.imgUrl.isNotEmpty
-                  ? Image.network(
-                      item.imgUrl,
-                      fit: BoxFit.cover,
-                      errorBuilder:
-                          (_, __, ___) =>
-                              const Icon(
-                        Icons.image_outlined,
-                        color: AppColors.border,
-                      ),
-                    )
-                  : const Icon(
-                      Icons.image_outlined,
-                      color: AppColors.border,
-                    ),
-            ),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment:
-                  CrossAxisAlignment.start,
-              children: [
-                Text(
-                  item.productName,
-                  maxLines: 2,
-                  overflow:
-                      TextOverflow.ellipsis,
-                  style:
-                      AppTextStyles.labelBold,
+    final feedbackVm = context.watch<OrderFeedbackViewModel>();
+    final canReview = feedbackVm.canReviewItem(order, item);
+    final isSubmitted = feedbackVm.hasSubmitted(item.orderDetailId);
+    final feedback = feedbackVm.getFeedback(item.orderDetailId);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(bottom: 12),
+          child: Row(
+            children: [
+              ClipRRect(
+                borderRadius: BorderRadius.circular(10),
+                child: Container(
+                  width: 64,
+                  height: 64,
+                  color: AppColors.surfaceDark,
+                  child: item.imgUrl.isNotEmpty
+                      ? Image.network(
+                          item.imgUrl,
+                          fit: BoxFit.cover,
+                          errorBuilder: (_, __, ___) => const Icon(
+                            Icons.image_outlined,
+                            color: AppColors.border,
+                          ),
+                        )
+                      : const Icon(
+                          Icons.image_outlined,
+                          color: AppColors.border,
+                        ),
                 ),
-                const SizedBox(height: 4),
-                Row(
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'SL: ${item.quantity}',
-                      style:
-                          AppTextStyles.bodySm,
+                      item.productName,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: AppTextStyles.labelBold,
                     ),
-                    if (item.isGift) ...[
-                      const SizedBox(width: 8),
-                      Container(
-                        padding:
-                            const EdgeInsets
-                                .symmetric(
-                          horizontal: 6,
-                          vertical: 2,
+                    const SizedBox(height: 4),
+                    Row(
+                      children: [
+                        Text(
+                          'SL: ${item.quantity}',
+                          style: AppTextStyles.bodySm,
                         ),
-                        decoration: BoxDecoration(
-                          color:
-                              AppColors.success,
-                          borderRadius:
-                              BorderRadius
-                                  .circular(4),
-                        ),
-                        child: const Text(
-                          'Quà tặng',
-                          style: TextStyle(
-                            fontSize: 9,
-                            fontWeight:
-                                FontWeight.w700,
-                            color: Colors.white,
+                        if (item.isGift) ...[
+                          const SizedBox(width: 8),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 6,
+                              vertical: 2,
+                            ),
+                            decoration: BoxDecoration(
+                              color: AppColors.success,
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                            child: const Text(
+                              'Quà tặng',
+                              style: TextStyle(
+                                fontSize: 9,
+                                fontWeight: FontWeight.w700,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 8),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Text(
+                    item.isGift ? 'Miễn phí' : formatVND(item.subtotal),
+                    style: item.isGift
+                        ? AppTextStyles.bodySm.copyWith(
+                            color: AppColors.success,
+                            fontWeight: FontWeight.w600,
+                          )
+                        : AppTextStyles.priceSm,
+                  ),
+                  if (canReview && !isSubmitted)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 8),
+                      child: SizedBox(
+                        height: 28,
+                        child: OutlinedButton(
+                          onPressed: () => _showRatingDialog(context, feedbackVm),
+                          style: OutlinedButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(horizontal: 8),
+                            side: const BorderSide(color: AppColors.primary),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                          ),
+                          child: Text(
+                            'Đánh giá',
+                            style: AppTextStyles.labelSm.copyWith(
+                              color: AppColors.primary,
+                              fontSize: 10,
+                            ),
                           ),
                         ),
                       ),
-                    ],
+                    ),
+                ],
+              ),
+            ],
+          ),
+        ),
+        // Existing Feedback Section
+        if (isSubmitted && feedback != null)
+          Container(
+            width: double.infinity,
+            margin: const EdgeInsets.only(bottom: 16, left: 0),
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: AppColors.surfaceDark.withValues(alpha: 0.3),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    _buildRatingStars(feedback.rating),
+                    Text(
+                      DateFormat('dd/MM/yyyy HH:mm').format(feedback.date),
+                      style: AppTextStyles.caption.copyWith(fontSize: 9),
+                    ),
                   ],
                 ),
+                if (feedback.comment.isNotEmpty) ...[
+                  const SizedBox(height: 6),
+                  Text(
+                    feedback.comment,
+                    style: AppTextStyles.bodySm.copyWith(
+                      color: AppColors.textPrimary,
+                      fontStyle: FontStyle.italic,
+                    ),
+                  ),
+                ],
               ],
             ),
           ),
-          const SizedBox(width: 8),
-          Text(
-            item.isGift
-                ? 'Miễn phí'
-                : formatVND(item.subtotal),
-            style: item.isGift
-                ? AppTextStyles.bodySm.copyWith(
-                    color: AppColors.success,
-                    fontWeight: FontWeight.w600,
-                  )
-                : AppTextStyles.priceSm,
-          ),
-        ],
+      ],
+    );
+  }
+
+  Widget _buildRatingStars(int rating) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: List.generate(
+        5,
+        (index) => Icon(
+          index < rating ? Icons.star_rounded : Icons.star_outline_rounded,
+          size: 14,
+          color: index < rating ? Colors.amber : AppColors.textHint,
+        ),
       ),
+    );
+  }
+
+  void _showRatingDialog(BuildContext context, OrderFeedbackViewModel vm) {
+    showDialog(
+      context: context,
+      builder: (ctx) => _RatingDialog(
+        item: item,
+        onSubmitted: (rating, comment) async {
+          final success = await vm.submitFeedback(
+            item: item,
+            rating: rating,
+            comment: comment,
+          );
+          if (success && context.mounted) {
+            Navigator.pop(ctx);
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Cảm ơn bạn đã đánh giá!')),
+            );
+          } else if (context.mounted && vm.errorMessage != null) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text(vm.errorMessage!)),
+            );
+          }
+        },
+      ),
+    );
+  }
+}
+
+class _RatingDialog extends StatefulWidget {
+  final UserOrderDetailModel item;
+  final Function(int rating, String comment) onSubmitted;
+
+  const _RatingDialog({
+    required this.item,
+    required this.onSubmitted,
+  });
+
+  @override
+  State<_RatingDialog> createState() => _RatingDialogState();
+}
+
+class _RatingDialogState extends State<_RatingDialog> {
+  int _rating = 5;
+  final TextEditingController _commentController = TextEditingController();
+
+  @override
+  void dispose() {
+    _commentController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: const Text('Đánh giá sản phẩm'),
+      content: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              widget.item.productName,
+              style: AppTextStyles.labelBold,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+            ),
+            const SizedBox(height: 20),
+            const Text('Số sao:'),
+            const SizedBox(height: 8),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: List.generate(
+                5,
+                (index) => IconButton(
+                  onPressed: () => setState(() => _rating = index + 1),
+                  icon: Icon(
+                    index < _rating
+                        ? Icons.star_rounded
+                        : Icons.star_outline_rounded,
+                    size: 40,
+                    color: index < _rating ? Colors.amber : Colors.grey[300],
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            TextField(
+              controller: _commentController,
+              maxLines: 3,
+              decoration: const InputDecoration(
+                hintText: 'Nhận xét của bạn...',
+                border: OutlineInputBorder(),
+              ),
+            ),
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text('Hủy'),
+        ),
+        ElevatedButton(
+          onPressed: () => widget.onSubmitted(_rating, _commentController.text),
+          child: const Text('Gửi đánh giá'),
+        ),
+      ],
     );
   }
 }

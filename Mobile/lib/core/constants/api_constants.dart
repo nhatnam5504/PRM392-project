@@ -92,4 +92,8 @@ class ApiConstants {
   // ─── Order Service — Feedbacks ────────────────
   static const productFeedbacks =
       '/api/orders/feedbacks/product';
+  static const submitFeedback =
+      '/api/orders/feedbacks';
+  static const feedbackByOrderDetail =
+      '/api/orders/feedbacks/order-detail'; // + /{orderDetailId}
 }

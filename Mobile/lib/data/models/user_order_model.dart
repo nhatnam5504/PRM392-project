@@ -74,6 +74,7 @@ class UserOrderModel {
 }
 
 class UserOrderDetailModel {
+  final int orderDetailId;
   final int productId;
   final String productName;
   final String imgUrl;
@@ -82,6 +83,7 @@ class UserOrderDetailModel {
   final String type; // 'buy' or 'gift'
 
   const UserOrderDetailModel({
+    required this.orderDetailId,
     required this.productId,
     required this.productName,
     required this.imgUrl,
@@ -94,13 +96,15 @@ class UserOrderDetailModel {
     Map<String, dynamic> json,
   ) {
     return UserOrderDetailModel(
+      orderDetailId: json['id'] as int? ??
+          json['orderDetailId'] as int? ??
+          json['productId'] as int? ??
+          0,
       productId: json['productId'] as int,
-      productName:
-          json['productName'] as String,
+      productName: json['productName'] as String,
       imgUrl: json['imgUrl'] as String? ?? '',
       quantity: json['quantity'] as int,
-      subtotal:
-          (json['subtotal'] as num).toDouble(),
+      subtotal: (json['subtotal'] as num).toDouble(),
       type: json['type'] as String? ?? 'buy',
     );
   }
