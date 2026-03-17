@@ -10,6 +10,7 @@ import '../../../data/dummy_data.dart';
 import '../../../core/router/app_router.dart';
 import '../../cart/view_models/cart_view_model.dart';
 import '../../deals/view_models/deals_view_model.dart';
+import '../../profile/view_models/profile_view_model.dart';
 import '../view_models/checkout_view_model.dart';
 import '../../../data/models/promotion_model.dart';
 import 'payment_confirmation_screen.dart';
@@ -24,27 +25,12 @@ class CheckoutScreen extends StatefulWidget {
 
 class _CheckoutScreenState
     extends State<CheckoutScreen> {
-  bool _initialized = false;
   final TextEditingController _promoController = TextEditingController();
 
   @override
   void dispose() {
     _promoController.dispose();
     super.dispose();
-  }
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    if (_initialized) {
-      return;
-    }
-    _initialized = true;
-    final checkoutVm =
-        context.read<CheckoutViewModel>();
-    final cartVm = context.read<CartViewModel>();
-    final dealsVm =
-        context.read<DealsViewModel>();
-    _checkAvailability(checkoutVm, cartVm, dealsVm);
   }
 
   @override
@@ -54,7 +40,6 @@ class _CheckoutScreenState
     final cartVm = context.watch<CartViewModel>();
     final dealsVm =
         context.watch<DealsViewModel>();
-    final address = DummyData.addresses.first;
 
     final hasItems = cartVm.items.isNotEmpty;
 
@@ -155,49 +140,64 @@ class _CheckoutScreenState
                             ),
                           ),
                         if (hasItems) const SizedBox(height: 12),
-                        // 1. Delivery address
+                        // 1. Delivery address (Summary view)
                         _SectionCard(
-                          title: 'ĐỊA CHỈ GIAO HÀNG',
+                          title: 'THÔNG TIN GIAO HÀNG',
                           child: Column(
-                            crossAxisAlignment:
-                                CrossAxisAlignment.start,
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Row(
                                 children: [
-                                  Text(
-                                    address.recipientName,
-                                    style:
-                                        AppTextStyles.labelBold,
-                                  ),
+                                  const Icon(Icons.person, size: 16, color: AppColors.textSecondary),
                                   const SizedBox(width: 8),
                                   Text(
-                                    address.phone,
-                                    style:
-                                        AppTextStyles.bodySm,
+                                    checkoutVm.recipientName,
+                                    style: AppTextStyles.labelBold,
                                   ),
                                 ],
                               ),
-                              const SizedBox(height: 4),
-                              Text(
-                                address.fullAddress,
-                                style: AppTextStyles.bodyMd
-                                    .copyWith(
-                                  color: AppColors.textSecondary,
-                                ),
+                              const SizedBox(height: 8),
+                              Row(
+                                children: [
+                                  const Icon(Icons.phone, size: 16, color: AppColors.textSecondary),
+                                  const SizedBox(width: 8),
+                                  Text(
+                                    checkoutVm.phoneNumber,
+                                    style: AppTextStyles.bodyMd,
+                                  ),
+                                ],
                               ),
                               const SizedBox(height: 8),
-                              GestureDetector(
-                                onTap: () => context.push(
-                                  '/checkout/addresses',
-                                ),
-                                child: Text(
-                                  'Thay đổi',
-                                  style: AppTextStyles.labelBold
-                                      .copyWith(
-                                    color: AppColors.primary,
+                              Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Icon(Icons.location_on, size: 16, color: AppColors.textSecondary),
+                                  const SizedBox(width: 8),
+                                  Expanded(
+                                    child: Text(
+                                      checkoutVm.address,
+                                      style: AppTextStyles.bodyMd.copyWith(
+                                        color: AppColors.textSecondary,
+                                      ),
+                                    ),
                                   ),
-                                ),
+                                ],
                               ),
+                              if (checkoutVm.note.isNotEmpty) ...[
+                                const SizedBox(height: 8),
+                                Row(
+                                  children: [
+                                    const Icon(Icons.note, size: 16, color: AppColors.textSecondary),
+                                    const SizedBox(width: 8),
+                                    Text(
+                                      'Ghi chú: ${checkoutVm.note}',
+                                      style: AppTextStyles.bodySm.copyWith(
+                                        fontStyle: FontStyle.italic,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
                             ],
                           ),
                         ),
@@ -307,32 +307,17 @@ class _CheckoutScreenState
             onPressed: checkoutVm.isLoading
                 ? null
                 : () async {
-                    final success = await _checkAvailability(
-                      checkoutVm,
-                      cartVm,
-                      dealsVm,
-                    );
-                    if (!mounted || !success) {
-                      return;
-                    }
-                    if (checkoutVm.checkResult == null) {
-                      return;
-                    }
-
-                    // Call makePayment directly from Checkout page
+                    // Call makePayment directly as checkAvailability was already done in CartScreen
                     final url = await checkoutVm.makePayment();
                     if (!mounted) return;
                     if (url != null) {
                       final uri = Uri.parse(url);
-                      // On Android 11+ canLaunchUrl might return false without queries in manifest
-                      // We try to launch anyway if it's a valid https link
                       try {
                         final launched = await launchUrl(
                           uri,
                           mode: LaunchMode.externalApplication,
                         );
                         if (launched && mounted) {
-                          // Sau khi mở URL thanh toán, xóa giỏ hàng và đưa người dùng về trang chủ
                           await cartVm.clearCart();
                           if (mounted) {
                             context.go('/');
@@ -370,34 +355,6 @@ class _CheckoutScreenState
     );
   }
 
-  Future<bool> _checkAvailability(
-    CheckoutViewModel checkoutVm,
-    CartViewModel cartVm,
-    DealsViewModel dealsVm,
-  ) async {
-    if (cartVm.items.isEmpty && !cartVm.isLoading) {
-      await cartVm.loadCart();
-    }
-    final bogoIds = _buildBogoProductIds(dealsVm);
-    final success = await checkoutVm.checkAvailability(
-      items: cartVm.items,
-      bogoProductIds: bogoIds,
-    );
-    return success;
-  }
-
-  Set<int> _buildBogoProductIds(
-    DealsViewModel dealsVm,
-  ) {
-    final ids = <int>{};
-    for (final promo in dealsVm.bogoPromotions) {
-      if (promo.isActive &&
-          promo.applicableProductIds != null) {
-        ids.addAll(promo.applicableProductIds!);
-      }
-    }
-    return ids;
-  }
 }
 
 class _SectionCard extends StatelessWidget {
@@ -424,8 +381,7 @@ class _SectionCard extends StatelessWidget {
         ],
       ),
       child: Column(
-        crossAxisAlignment:
-            CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             title,
@@ -442,7 +398,6 @@ class _SectionCard extends StatelessWidget {
   }
 }
 
-
 class _PriceRow extends StatelessWidget {
   final String label;
   final String value;
@@ -457,8 +412,7 @@ class _PriceRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Row(
-      mainAxisAlignment:
-          MainAxisAlignment.spaceBetween,
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Text(
           label,

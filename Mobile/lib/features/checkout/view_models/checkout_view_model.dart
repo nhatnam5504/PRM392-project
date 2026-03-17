@@ -23,6 +23,12 @@ class CheckoutViewModel extends ChangeNotifier {
   double _discountPreview = 0;
   String? _paymentUrl;
 
+  // New fields for Order Info and Note
+  String _recipientName = '';
+  String _phoneNumber = '';
+  String _address = '';
+  String _note = '';
+
   int? get selectedAddressId => _selectedAddressId;
   String get paymentMethod => _paymentMethod;
   bool get isLoading => _isLoading;
@@ -31,6 +37,24 @@ class CheckoutViewModel extends ChangeNotifier {
   PromotionModel? get appliedPromotion => _appliedPromotion;
   double get discountPreview => _discountPreview;
   String? get paymentUrl => _paymentUrl;
+
+  String get recipientName => _recipientName;
+  String get phoneNumber => _phoneNumber;
+  String get address => _address;
+  String get note => _note;
+
+  void setOrderInfo({
+    String? recipientName,
+    String? phoneNumber,
+    String? address,
+    String? note,
+  }) {
+    if (recipientName != null) _recipientName = recipientName;
+    if (phoneNumber != null) _phoneNumber = phoneNumber;
+    if (address != null) _address = address;
+    if (note != null) _note = note;
+    notifyListeners();
+  }
 
   double get payableTotal {
     final total = _checkResult?.totalPrice ?? 0;
@@ -56,7 +80,16 @@ class CheckoutViewModel extends ChangeNotifier {
   Future<bool> checkAvailability({
     required List<CartItemModel> items,
     required Set<int> bogoProductIds,
+    String? recipientName,
+    String? phoneNumber,
+    String? address,
+    String? note,
   }) async {
+    if (recipientName != null) _recipientName = recipientName;
+    if (phoneNumber != null) _phoneNumber = phoneNumber;
+    if (address != null) _address = address;
+    if (note != null) _note = note;
+
     final userId = await _getUserId();
     if (userId == null) {
       _errorMessage = 'Vui lòng đăng nhập trước khi đặt hàng.';
@@ -196,6 +229,14 @@ class CheckoutViewModel extends ChangeNotifier {
       basePrice: basePrice,
       orderCode: '',
       orderDetails: orderDetails,
+      orderInfo: [
+        OrderInfo(
+          phoneNumber: _phoneNumber,
+          address: _address,
+          recipientName: _recipientName,
+        ),
+      ],
+      note: _note,
     );
   }
 

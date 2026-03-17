@@ -22,12 +22,36 @@ class CartViewModel extends ChangeNotifier {
   bool _isLoading = false;
   String? _errorMessage;
 
+  // Order info fields
+  String _recipientName = '';
+  String _phoneNumber = '';
+  String _address = '';
+  String _note = '';
+
   List<CartItemModel> get items => _items;
   VoucherModel? get appliedVoucher =>
       _appliedVoucher;
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
   bool get isEmpty => _items.isEmpty;
+
+  String get recipientName => _recipientName;
+  String get phoneNumber => _phoneNumber;
+  String get address => _address;
+  String get note => _note;
+
+  void setOrderInfo({
+    String? recipientName,
+    String? phoneNumber,
+    String? address,
+    String? note,
+  }) {
+    if (recipientName != null) _recipientName = recipientName;
+    if (phoneNumber != null) _phoneNumber = phoneNumber;
+    if (address != null) _address = address;
+    if (note != null) _note = note;
+    notifyListeners();
+  }
 
   double get subtotal => _items.fold(
         0,

@@ -7,6 +7,8 @@ import '../../../core/theme/app_text_styles.dart';
 import '../../../core/utils/format_price.dart';
 import '../../../data/models/cart_item_model.dart';
 import '../../deals/view_models/deals_view_model.dart';
+import '../../profile/view_models/profile_view_model.dart';
+import '../../checkout/view_models/checkout_view_model.dart';
 import '../view_models/cart_view_model.dart';
 
 class CartScreen extends StatefulWidget {
@@ -18,19 +20,57 @@ class CartScreen extends StatefulWidget {
 }
 
 class _CartScreenState extends State<CartScreen> {
+  final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _phoneController = TextEditingController();
+  final TextEditingController _addressController = TextEditingController();
+  final TextEditingController _noteController = TextEditingController();
+  bool _initialized = false;
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _phoneController.dispose();
+    _addressController.dispose();
+    _noteController.dispose();
+    super.dispose();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_initialized) return;
+    _initialized = true;
+
+    final cartVm = context.read<CartViewModel>();
+    final profileVm = context.read<ProfileViewModel>();
+    final dealsVm = context.read<DealsViewModel>();
+
+    // Load user data for default name
+    if (profileVm.user == null) {
+      profileVm.loadProfile();
+    }
+    
+    // Pre-fill name from profile
+    _nameController.text = profileVm.user?.name ?? '';
+    
+    cartVm.loadCart();
+    if (dealsVm.promotions.isEmpty) {
+      dealsVm.loadDeals();
+    }
+  }
+
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback(
-      (_) {
-        if (!mounted) return;
-        context.read<CartViewModel>().loadCart();
-        final dealsVm =
-            context.read<DealsViewModel>();
-        if (dealsVm.promotions.isEmpty) {
-          dealsVm.loadDeals();
-        }
-      },
+    // Logic moved to didChangeDependencies for profileVm access
+  }
+
+  void _syncOrderInfo(CartViewModel vm) {
+    vm.setOrderInfo(
+      recipientName: _nameController.text,
+      phoneNumber: _phoneController.text,
+      address: _addressController.text,
+      note: _noteController.text,
     );
   }
 
@@ -136,8 +176,129 @@ class _CartScreenState extends State<CartScreen> {
           },
         ),
         const SizedBox(height: 12),
+        _buildOrderInfoSection(vm),
+        const SizedBox(height: 12),
         // Summary
         _buildSummary(vm),
+      ],
+    );
+  }
+
+  Widget _buildOrderInfoSection(CartViewModel vm) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x0D000000),
+            blurRadius: 2,
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'THÔNG TIN GIAO HÀNG',
+            style: AppTextStyles.labelSm.copyWith(
+              color: AppColors.textSecondary,
+              letterSpacing: 0.8,
+            ),
+          ),
+          const SizedBox(height: 16),
+          _buildField(
+            controller: _nameController,
+            label: 'Tên người nhận',
+            hint: 'Nhập tên người nhận',
+            icon: Icons.person_outlined,
+          ),
+          const SizedBox(height: 12),
+          _buildField(
+            controller: _phoneController,
+            label: 'Số điện thoại',
+            hint: 'Nhập số điện thoại',
+            icon: Icons.phone_outlined,
+            keyboardType: TextInputType.phone,
+          ),
+          const SizedBox(height: 12),
+          _buildField(
+            controller: _addressController,
+            label: 'Địa chỉ giao hàng',
+            hint: 'Nhập địa chỉ cụ thể',
+            icon: Icons.location_on_outlined,
+            maxLines: 2,
+          ),
+          const SizedBox(height: 12),
+          _buildField(
+            controller: _noteController,
+            label: 'Ghi chú (Tùy chọn)',
+            hint: 'Ví dụ: Giao cho Hà',
+            icon: Icons.note_add_outlined,
+            maxLines: 2,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildField({
+    required TextEditingController controller,
+    required String label,
+    required String hint,
+    required IconData icon,
+    TextInputType? keyboardType,
+    int maxLines = 1,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Icon(icon, size: 16, color: AppColors.textSecondary),
+            const SizedBox(width: 6),
+            Text(
+              label,
+              style: AppTextStyles.labelBold.copyWith(
+                fontSize: 12,
+                color: AppColors.textSecondary,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 6),
+        TextField(
+          controller: controller,
+          keyboardType: keyboardType,
+          maxLines: maxLines,
+          style: AppTextStyles.bodyMd,
+          decoration: InputDecoration(
+            hintText: hint,
+            hintStyle: AppTextStyles.bodyMd.copyWith(color: AppColors.textHint),
+            filled: true,
+            fillColor: AppColors.inputBackground,
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 12,
+              vertical: 10,
+            ),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide: const BorderSide(color: AppColors.border),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide: const BorderSide(color: AppColors.border),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide: const BorderSide(
+                color: AppColors.primary,
+                width: 1.2,
+              ),
+            ),
+          ),
+        ),
       ],
     );
   }
@@ -729,8 +890,56 @@ class _CartScreenState extends State<CartScreen> {
       child: SizedBox(
         height: 56,
         child: ElevatedButton(
-          onPressed: () =>
-              context.push('/checkout'),
+          onPressed: () async {
+            // Validation: Required fields check
+            if (_nameController.text.trim().isEmpty ||
+                _phoneController.text.trim().isEmpty ||
+                _addressController.text.trim().isEmpty) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Vui lòng nhập đầy đủ tên, số điện thoại và địa chỉ nhận hàng.'),
+                  backgroundColor: AppColors.error,
+                ),
+              );
+              return;
+            }
+
+            // Đồng bộ thông tin trước khi gọi checkAvailability
+            _syncOrderInfo(vm);
+            
+            final checkoutVm = context.read<CheckoutViewModel>();
+            final dealsVm = context.read<DealsViewModel>();
+            
+            // Xây dựng danh sách BOGOIds
+            final bogoIds = <int>{};
+            for (final promo in dealsVm.bogoPromotions) {
+              if (promo.isActive && promo.applicableProductIds != null) {
+                bogoIds.addAll(promo.applicableProductIds!);
+              }
+            }
+
+            // Gọi check available ngay tại bước giỏ hàng kèm đủ thông tin
+            final success = await checkoutVm.checkAvailability(
+              items: vm.items,
+              bogoProductIds: bogoIds,
+              recipientName: _nameController.text,
+              phoneNumber: _phoneController.text,
+              address: _addressController.text,
+              note: _noteController.text,
+            );
+
+            if (success && mounted) {
+              context.push('/checkout');
+            } else if (!success && mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(
+                    checkoutVm.errorMessage ?? 'Không thể kiểm tra sản phẩm.',
+                  ),
+                ),
+              );
+            }
+          },
           child: Text(
             'Tiến hành thanh toán '
             '(${vm.itemCount})',
