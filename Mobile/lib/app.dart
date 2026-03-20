@@ -18,6 +18,7 @@ import 'features/admin/view_models/admin_brand_view_model.dart';
 import 'features/admin/view_models/admin_category_view_model.dart';
 import 'features/admin/view_models/admin_order_view_model.dart';
 import 'features/admin/view_models/admin_revenue_view_model.dart';
+import 'features/admin/view_models/admin_promotion_view_model.dart';
 
 class App extends StatelessWidget {
   const App({super.key});
@@ -73,6 +74,9 @@ class App extends StatelessWidget {
         ),
         ChangeNotifierProvider(
           create: (_) => AdminRevenueViewModel(),
+        ),
+        ChangeNotifierProvider(
+          create: (_) => AdminPromotionViewModel(),
         ),
       ],
       child: MaterialApp.router(

@@ -9,6 +9,7 @@ import 'admin_brand_list_screen.dart';
 import 'admin_category_list_screen.dart';
 import 'admin_order_list_screen.dart';
 import 'admin_revenue_screen.dart';
+import 'admin_promotion_list_screen.dart';
 
 class AdminDashboardScreen extends StatefulWidget {
   const AdminDashboardScreen({super.key});
@@ -24,7 +25,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 5, vsync: this);
+    _tabController = TabController(length: 6, vsync: this);
   }
 
   @override
@@ -63,6 +64,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
             Tab(icon: Icon(Icons.category), text: 'Danh mục'),
             Tab(icon: Icon(Icons.receipt_long_rounded), text: 'Đơn hàng'),
             Tab(icon: Icon(Icons.bar_chart_rounded), text: 'Doanh thu'),
+            Tab(icon: Icon(Icons.discount_rounded), text: 'Khuyến mãi'),
           ],
         ),
       ),
@@ -74,6 +76,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
           AdminCategoryListScreen(),
           AdminOrderListScreen(),
           AdminRevenueScreen(),
+          AdminPromotionListScreen(),
         ],
       ),
     );
