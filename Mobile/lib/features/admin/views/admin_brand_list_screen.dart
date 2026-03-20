@@ -24,14 +24,14 @@ class _AdminBrandListScreenState extends State<AdminBrandListScreen> {
 
   Future<void> _showBrandDialog({BrandModel? brand}) async {
     final nameController = TextEditingController(text: brand?.name ?? '');
-    final descController =
-        TextEditingController(text: brand?.description ?? '');
+    final descController = TextEditingController(text: brand?.description ?? '');
     final formKey = GlobalKey<FormState>();
 
     final result = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: Text(brand == null ? 'Thêm thương hiệu' : 'Sửa thương hiệu'),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Text(brand == null ? 'Thêm thương hiệu' : 'Sửa thương hiệu', style: AppTextStyles.headingSm),
         content: Form(
           key: formKey,
           child: Column(
@@ -39,21 +39,24 @@ class _AdminBrandListScreenState extends State<AdminBrandListScreen> {
             children: [
               TextFormField(
                 controller: nameController,
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   labelText: 'Tên thương hiệu *',
                   hintText: 'Nhập tên thương hiệu',
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                  prefixIcon: const Icon(Icons.branding_watermark_outlined),
                 ),
-                validator: (v) =>
-                    v == null || v.trim().isEmpty ? 'Vui lòng nhập tên' : null,
+                validator: (v) => v == null || v.trim().isEmpty ? 'Vui lòng nhập tên' : null,
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 16),
               TextFormField(
                 controller: descController,
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   labelText: 'Mô tả',
-                  hintText: 'Nhập mô tả',
+                  hintText: 'Nhập mô tả chi tiết',
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                  prefixIcon: const Icon(Icons.description_outlined),
                 ),
-                maxLines: 2,
+                maxLines: 3,
               ),
             ],
           ),
@@ -61,7 +64,7 @@ class _AdminBrandListScreenState extends State<AdminBrandListScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Huỷ'),
+            child: Text('HỦY', style: TextStyle(color: AppColors.textSecondary, fontWeight: FontWeight.bold, fontSize: 13)),
           ),
           ElevatedButton(
             onPressed: () {
@@ -71,11 +74,12 @@ class _AdminBrandListScreenState extends State<AdminBrandListScreen> {
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.primary,
+              foregroundColor: Colors.white,
+              elevation: 0,
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
             ),
-            child: Text(
-              brand == null ? 'Tạo' : 'Cập nhật',
-              style: const TextStyle(color: Colors.white),
-            ),
+            child: Text(brand == null ? 'TẠO MỚI' : 'CẬP NHẬT', style: AppTextStyles.labelBold),
           ),
         ],
       ),
@@ -100,35 +104,38 @@ class _AdminBrandListScreenState extends State<AdminBrandListScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(success
-                ? (brand == null
-                    ? 'Tạo thương hiệu thành công!'
-                    : 'Cập nhật thành công!')
-                : (vm.errorMessage ?? 'Có lỗi xảy ra')),
+            content: Text(success ? (brand == null ? 'Đã thêm thương hiệu mới!' : 'Đã cập nhật thay đổi!') : (vm.errorMessage ?? 'Có lỗi xảy ra')),
             backgroundColor: success ? AppColors.success : AppColors.error,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            margin: const EdgeInsets.all(16),
           ),
         );
       }
     }
-    nameController.dispose();
-    descController.dispose();
   }
 
   Future<void> _confirmDelete(BrandModel brand) async {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: const Text('Xác nhận xoá'),
-        content: Text('Bạn có chắc muốn xoá "${brand.name}"?'),
+        content: Text('Bạn có chắc muốn xoá thương hiệu "${brand.name}" khỏi hệ thống?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Huỷ'),
+            child: Text('QUAY LẠI', style: TextStyle(color: AppColors.textSecondary, fontWeight: FontWeight.bold, fontSize: 13)),
           ),
-          TextButton(
+          ElevatedButton(
             onPressed: () => Navigator.pop(ctx, true),
-            style: TextButton.styleFrom(foregroundColor: AppColors.error),
-            child: const Text('Xoá'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.error,
+              foregroundColor: Colors.white,
+              elevation: 0,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            ),
+            child: const Text('XÓA NGAY', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
           ),
         ],
       ),
@@ -139,9 +146,11 @@ class _AdminBrandListScreenState extends State<AdminBrandListScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(
-                success ? 'Đã xoá thương hiệu' : (vm.errorMessage ?? 'Lỗi')),
+            content: Text(success ? 'Đã xoá thương hiệu thành công' : (vm.errorMessage ?? 'Lỗi không xác định')),
             backgroundColor: success ? AppColors.success : AppColors.error,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            margin: const EdgeInsets.all(16),
           ),
         );
       }
@@ -153,11 +162,26 @@ class _AdminBrandListScreenState extends State<AdminBrandListScreen> {
     final vm = context.watch<AdminBrandViewModel>();
 
     return Scaffold(
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => _showBrandDialog(),
-        backgroundColor: AppColors.primary,
-        icon: const Icon(Icons.add_rounded, color: Colors.white),
-        label: Text('THÊM MỚI', style: AppTextStyles.labelBold.copyWith(color: Colors.white)),
+      backgroundColor: Colors.transparent,
+      floatingActionButton: Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: [
+            BoxShadow(
+              color: AppColors.primary.withValues(alpha: 0.3),
+              blurRadius: 15,
+              offset: const Offset(0, 8),
+            ),
+          ],
+        ),
+        child: FloatingActionButton.extended(
+          onPressed: () => _showBrandDialog(),
+          backgroundColor: AppColors.primary,
+          elevation: 0,
+          highlightElevation: 0,
+          icon: const Icon(Icons.add_rounded, color: Colors.white),
+          label: Text('THÊM THƯƠNG HIỆU', style: AppTextStyles.labelBold.copyWith(color: Colors.white, letterSpacing: 0.5)),
+        ),
       ),
       body: _buildBody(vm),
     );
@@ -169,80 +193,87 @@ class _AdminBrandListScreenState extends State<AdminBrandListScreen> {
     }
     if (vm.errorMessage != null && vm.brands.isEmpty) {
       return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(vm.errorMessage!, style: AppTextStyles.bodyMd),
-            const SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: () => vm.loadBrands(),
-              child: const Text('Thử lại'),
-            ),
-          ],
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.error_outline_rounded, size: 64, color: AppColors.error),
+              const SizedBox(height: 16),
+              Text(vm.errorMessage!, style: AppTextStyles.bodyMd, textAlign: TextAlign.center),
+              const SizedBox(height: 24),
+              ElevatedButton(
+                onPressed: () => vm.loadBrands(),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primary,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                ),
+                child: const Text('Thử lại', style: TextStyle(color: Colors.white)),
+              ),
+            ],
+          ),
         ),
       );
     }
     if (vm.brands.isEmpty) {
-      return const Center(
-        child: Text('Chưa có thương hiệu nào.', style: AppTextStyles.bodyMd),
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.branding_watermark_rounded, size: 64, color: AppColors.textHint.withValues(alpha: 0.2)),
+            const SizedBox(height: 16),
+            Text('Chưa có thương hiệu nào', style: AppTextStyles.headingSm.copyWith(color: AppColors.textHint)),
+          ],
+        ),
       );
     }
     return RefreshIndicator(
       onRefresh: () => vm.loadBrands(),
       child: ListView.builder(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        padding: const EdgeInsets.fromLTRB(16, 20, 16, 100),
         itemCount: vm.brands.length,
         itemBuilder: (context, index) {
           final brand = vm.brands[index];
           return Container(
             margin: const EdgeInsets.only(bottom: 16),
             decoration: BoxDecoration(
-              color: AppColors.surface,
-              borderRadius: BorderRadius.circular(20),
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(24),
               boxShadow: [
                 BoxShadow(
-                  color: AppColors.primaryShadow.withValues(alpha: 0.08),
-                  blurRadius: 12,
+                  color: Colors.black.withValues(alpha: 0.04),
+                  blurRadius: 10,
                   offset: const Offset(0, 4),
                 ),
               ],
             ),
             child: ListTile(
-              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               leading: Container(
-                width: 56,
-                height: 56,
+                width: 64,
+                height: 64,
                 decoration: BoxDecoration(
                   color: AppColors.surfaceDark,
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(16),
                 ),
                 child: ClipRRect(
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(16),
                   child: brand.logoUrl != null && brand.logoUrl!.isNotEmpty
                       ? Image.network(
                           brand.logoUrl!,
                           fit: BoxFit.cover,
-                          errorBuilder: (_, __, ___) => const Icon(
-                            Icons.branding_watermark_outlined,
-                            color: AppColors.textHint,
-                          ),
+                          errorBuilder: (_, __, ___) => const Icon(Icons.branding_watermark_rounded, color: AppColors.textHint, size: 24),
                         )
-                      : const Icon(
-                          Icons.branding_watermark_outlined,
-                          color: AppColors.textHint,
-                        ),
+                      : const Icon(Icons.branding_watermark_rounded, color: AppColors.textHint, size: 24),
                 ),
               ),
-              title: Text(
-                brand.name,
-                style: AppTextStyles.headingSm.copyWith(color: AppColors.textHeading),
-              ),
+              title: Text(brand.name, style: AppTextStyles.headingSm.copyWith(color: AppColors.textHeading, fontSize: 16)),
               subtitle: Padding(
-                padding: const EdgeInsets.only(top: 4),
+                padding: const EdgeInsets.only(top: 6),
                 child: Text(
-                  brand.description.isNotEmpty ? brand.description : 'Không có mô tả',
+                  brand.description.isNotEmpty ? brand.description : 'Chưa có mô tả chi tiết',
                   style: AppTextStyles.bodySm.copyWith(color: AppColors.textSecondary),
-                  maxLines: 1,
+                  maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
@@ -250,13 +281,13 @@ class _AdminBrandListScreenState extends State<AdminBrandListScreen> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   _CircleIconButton(
-                    icon: Icons.edit_rounded,
+                    icon: Icons.edit_note_rounded,
                     color: AppColors.primary,
                     onTap: () => _showBrandDialog(brand: brand),
                   ),
                   const SizedBox(width: 8),
                   _CircleIconButton(
-                    icon: Icons.delete_outline_rounded,
+                    icon: Icons.delete_sweep_rounded,
                     color: AppColors.error,
                     onTap: () => _confirmDelete(brand),
                   ),
@@ -284,14 +315,14 @@ class _CircleIconButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: color.withValues(alpha: 0.1),
-      shape: const CircleBorder(),
+      color: color.withValues(alpha: 0.08),
+      borderRadius: BorderRadius.circular(12),
       child: InkWell(
         onTap: onTap,
-        customBorder: const CircleBorder(),
+        borderRadius: BorderRadius.circular(12),
         child: Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Icon(icon, color: color, size: 20),
+          padding: const EdgeInsets.all(10),
+          child: Icon(icon, color: color, size: 22),
         ),
       ),
     );

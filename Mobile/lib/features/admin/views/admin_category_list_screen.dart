@@ -32,7 +32,9 @@ class _AdminCategoryListScreenState extends State<AdminCategoryListScreen> {
     final result = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: Text(category == null ? 'Thêm danh mục' : 'Sửa danh mục'),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Text(category == null ? 'Thêm danh mục' : 'Sửa danh mục',
+            style: AppTextStyles.headingSm),
         content: Form(
           key: formKey,
           child: Column(
@@ -40,21 +42,27 @@ class _AdminCategoryListScreenState extends State<AdminCategoryListScreen> {
             children: [
               TextFormField(
                 controller: nameController,
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   labelText: 'Tên danh mục *',
                   hintText: 'Nhập tên danh mục',
+                  border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12)),
+                  prefixIcon: const Icon(Icons.grid_view_rounded),
                 ),
                 validator: (v) =>
                     v == null || v.trim().isEmpty ? 'Vui lòng nhập tên' : null,
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 16),
               TextFormField(
                 controller: descController,
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   labelText: 'Mô tả',
-                  hintText: 'Nhập mô tả',
+                  hintText: 'Nhập mô tả danh mục',
+                  border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12)),
+                  prefixIcon: const Icon(Icons.notes_rounded),
                 ),
-                maxLines: 2,
+                maxLines: 3,
               ),
             ],
           ),
@@ -62,7 +70,11 @@ class _AdminCategoryListScreenState extends State<AdminCategoryListScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Huỷ'),
+            child: Text('HỦY',
+                style: TextStyle(
+                    color: AppColors.textSecondary,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 13)),
           ),
           ElevatedButton(
             onPressed: () {
@@ -72,11 +84,14 @@ class _AdminCategoryListScreenState extends State<AdminCategoryListScreen> {
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.primary,
+              foregroundColor: Colors.white,
+              elevation: 0,
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12)),
             ),
-            child: Text(
-              category == null ? 'Tạo' : 'Cập nhật',
-              style: const TextStyle(color: Colors.white),
-            ),
+            child: Text(category == null ? 'TẠO MỚI' : 'CẬP NHẬT',
+                style: AppTextStyles.labelBold),
           ),
         ],
       ),
@@ -102,10 +117,14 @@ class _AdminCategoryListScreenState extends State<AdminCategoryListScreen> {
           SnackBar(
             content: Text(success
                 ? (category == null
-                    ? 'Tạo danh mục thành công!'
-                    : 'Cập nhật thành công!')
+                    ? 'Đã thêm danh mục mới!'
+                    : 'Đã lưu thay đổi!')
                 : (vm.errorMessage ?? 'Có lỗi xảy ra')),
             backgroundColor: success ? AppColors.success : AppColors.error,
+            behavior: SnackBarBehavior.floating,
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            margin: const EdgeInsets.all(16),
           ),
         );
       }
@@ -118,17 +137,30 @@ class _AdminCategoryListScreenState extends State<AdminCategoryListScreen> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: const Text('Xác nhận xoá'),
-        content: Text('Bạn có chắc muốn xoá "${category.name}"?'),
+        content: Text(
+            'Bạn có chắc muốn xoá danh mục "${category.name}"? Thao tác này có thể ảnh hưởng đến các sản phẩm thuộc danh mục này.'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Huỷ'),
+            child: Text('HỦY',
+                style: TextStyle(
+                    color: AppColors.textSecondary,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 13)),
           ),
-          TextButton(
+          ElevatedButton(
             onPressed: () => Navigator.pop(ctx, true),
-            style: TextButton.styleFrom(foregroundColor: AppColors.error),
-            child: const Text('Xoá'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.error,
+              foregroundColor: Colors.white,
+              elevation: 0,
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12)),
+            ),
+            child: const Text('XÓA DANH MỤC',
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
           ),
         ],
       ),
@@ -139,9 +171,13 @@ class _AdminCategoryListScreenState extends State<AdminCategoryListScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content:
-                Text(success ? 'Đã xoá danh mục' : (vm.errorMessage ?? 'Lỗi')),
+            content: Text(
+                success ? 'Đã xoá danh mục thành công' : (vm.errorMessage ?? 'Lỗi')),
             backgroundColor: success ? AppColors.success : AppColors.error,
+            behavior: SnackBarBehavior.floating,
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            margin: const EdgeInsets.all(16),
           ),
         );
       }
@@ -153,11 +189,28 @@ class _AdminCategoryListScreenState extends State<AdminCategoryListScreen> {
     final vm = context.watch<AdminCategoryViewModel>();
 
     return Scaffold(
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => _showCategoryDialog(),
-        backgroundColor: AppColors.primary,
-        icon: const Icon(Icons.add_rounded, color: Colors.white),
-        label: Text('THÊM MỚI', style: AppTextStyles.labelBold.copyWith(color: Colors.white)),
+      backgroundColor: Colors.transparent,
+      floatingActionButton: Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: [
+            BoxShadow(
+              color: AppColors.primary.withValues(alpha: 0.3),
+              blurRadius: 15,
+              offset: const Offset(0, 8),
+            ),
+          ],
+        ),
+        child: FloatingActionButton.extended(
+          onPressed: () => _showCategoryDialog(),
+          backgroundColor: AppColors.primary,
+          elevation: 0,
+          highlightElevation: 0,
+          icon: const Icon(Icons.add_rounded, color: Colors.white),
+          label: Text('THÊM DANH MỤC',
+              style: AppTextStyles.labelBold
+                  .copyWith(color: Colors.white, letterSpacing: 0.5)),
+        ),
       ),
       body: _buildBody(vm),
     );
@@ -169,65 +222,91 @@ class _AdminCategoryListScreenState extends State<AdminCategoryListScreen> {
     }
     if (vm.errorMessage != null && vm.categories.isEmpty) {
       return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(vm.errorMessage!, style: AppTextStyles.bodyMd),
-            const SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: () => vm.loadCategories(),
-              child: const Text('Thử lại'),
-            ),
-          ],
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.error_outline_rounded,
+                  size: 64, color: AppColors.error),
+              const SizedBox(height: 16),
+              Text(vm.errorMessage!,
+                  style: AppTextStyles.bodyMd, textAlign: TextAlign.center),
+              const SizedBox(height: 24),
+              ElevatedButton(
+                onPressed: () => vm.loadCategories(),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primary,
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12)),
+                ),
+                child: const Text('Thử lại', style: TextStyle(color: Colors.white)),
+              ),
+            ],
+          ),
         ),
       );
     }
     if (vm.categories.isEmpty) {
-      return const Center(
-        child: Text('Chưa có danh mục nào.', style: AppTextStyles.bodyMd),
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.category_rounded,
+                size: 64, color: AppColors.textHint.withValues(alpha: 0.2)),
+            const SizedBox(height: 16),
+            Text('Chưa có danh mục nào',
+                style: AppTextStyles.headingSm
+                    .copyWith(color: AppColors.textHint)),
+          ],
+        ),
       );
     }
     return RefreshIndicator(
       onRefresh: () => vm.loadCategories(),
       child: ListView.builder(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        padding: const EdgeInsets.fromLTRB(16, 20, 16, 100),
         itemCount: vm.categories.length,
         itemBuilder: (context, index) {
           final category = vm.categories[index];
           return Container(
             margin: const EdgeInsets.only(bottom: 16),
             decoration: BoxDecoration(
-              color: AppColors.surface,
-              borderRadius: BorderRadius.circular(20),
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(24),
               boxShadow: [
                 BoxShadow(
-                  color: AppColors.primaryShadow.withValues(alpha: 0.08),
-                  blurRadius: 12,
+                  color: Colors.black.withValues(alpha: 0.04),
+                  blurRadius: 10,
                   offset: const Offset(0, 4),
                 ),
               ],
             ),
             child: ListTile(
-              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              contentPadding:
+                  const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               leading: Container(
-                width: 52,
-                height: 52,
+                width: 64,
+                height: 64,
                 decoration: BoxDecoration(
-                  color: AppColors.primary.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(12),
+                  color: AppColors.primary.withValues(alpha: 0.08),
+                  borderRadius: BorderRadius.circular(16),
                 ),
-                child: const Icon(Icons.category_outlined, color: AppColors.primary, size: 24),
+                child: const Icon(Icons.grid_view_rounded,
+                    color: AppColors.primary, size: 28),
               ),
-              title: Text(
-                category.name,
-                style: AppTextStyles.headingSm.copyWith(color: AppColors.textHeading),
-              ),
+              title: Text(category.name,
+                  style: AppTextStyles.headingSm
+                      .copyWith(color: AppColors.textHeading, fontSize: 16)),
               subtitle: Padding(
-                padding: const EdgeInsets.only(top: 4),
+                padding: const EdgeInsets.only(top: 6),
                 child: Text(
-                  category.description.isNotEmpty ? category.description : 'Không có mô tả',
-                  style: AppTextStyles.bodySm.copyWith(color: AppColors.textSecondary),
-                  maxLines: 1,
+                  category.description.isNotEmpty
+                      ? category.description
+                      : 'Chưa có mô tả chi tiết',
+                  style: AppTextStyles.bodySm
+                      .copyWith(color: AppColors.textSecondary),
+                  maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
@@ -235,13 +314,13 @@ class _AdminCategoryListScreenState extends State<AdminCategoryListScreen> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   _CircleIconButton(
-                    icon: Icons.edit_rounded,
+                    icon: Icons.edit_note_rounded,
                     color: AppColors.primary,
                     onTap: () => _showCategoryDialog(category: category),
                   ),
                   const SizedBox(width: 8),
                   _CircleIconButton(
-                    icon: Icons.delete_outline_rounded,
+                    icon: Icons.delete_sweep_rounded,
                     color: AppColors.error,
                     onTap: () => _confirmDelete(category),
                   ),
@@ -269,14 +348,14 @@ class _CircleIconButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: color.withValues(alpha: 0.1),
-      shape: const CircleBorder(),
+      color: color.withValues(alpha: 0.08),
+      borderRadius: BorderRadius.circular(12),
       child: InkWell(
         onTap: onTap,
-        customBorder: const CircleBorder(),
+        borderRadius: BorderRadius.circular(12),
         child: Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Icon(icon, color: color, size: 20),
+          padding: const EdgeInsets.all(10),
+          child: Icon(icon, color: color, size: 22),
         ),
       ),
     );

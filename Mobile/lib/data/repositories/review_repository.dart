@@ -18,6 +18,30 @@ class ReviewRepository {
     throw UnimplementedError();
   }
 
+  Future<List<ReviewModel>> getMyReviews() async {
+    if (_useDummyData) {
+      await Future.delayed(const Duration(milliseconds: 500));
+      return []; // Return empty list or some dummy reviews
+    }
+    throw UnimplementedError();
+  }
+
+  Future<void> updateReview({
+    required int reviewId,
+    required int rating,
+    required String comment,
+  }) async {
+    if (_useDummyData) {
+      await Future.delayed(const Duration(milliseconds: 500));
+    }
+  }
+
+  Future<void> deleteReview(int reviewId) async {
+    if (_useDummyData) {
+      await Future.delayed(const Duration(milliseconds: 500));
+    }
+  }
+
   Future<void> submitReview({
     required int productId,
     required int rating,

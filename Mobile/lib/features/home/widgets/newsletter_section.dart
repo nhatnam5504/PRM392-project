@@ -8,87 +8,106 @@ class NewsletterSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.symmetric(
-        horizontal: 16,
-      ),
-      padding: const EdgeInsets.all(24),
+      margin: const EdgeInsets.symmetric(horizontal: 16),
+      padding: const EdgeInsets.all(28),
       decoration: BoxDecoration(
-        color: AppColors.primary,
-        borderRadius: BorderRadius.circular(20),
+        gradient: const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            Color(0xFF0F172A), // Slate 900
+            AppColors.primaryDark,
+          ],
+        ),
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.primaryShadow.withValues(alpha: 0.2),
+            blurRadius: 20,
+            offset: const Offset(0, 10),
+          ),
+        ],
       ),
-      child: Column(
-        crossAxisAlignment:
-            CrossAxisAlignment.start,
+      child: Stack(
         children: [
-          Text(
-            'Đừng bỏ lỡ các ưu đãi\nđộc quyền!',
-            style: AppTextStyles.headingLg.copyWith(
-              color: Colors.white,
+          // Decorative Background Icon
+          Positioned(
+            right: -20,
+            bottom: -20,
+            child: Icon(
+              Icons.send_rounded,
+              size: 100,
+              color: Colors.white.withValues(alpha: 0.05),
             ),
           ),
-          const SizedBox(height: 8),
-          Opacity(
-            opacity: 0.9,
-            child: Text(
-              'Đăng ký để nhận tin khuyến mãi '
-              'sớm nhất và mã giảm giá '
-              'cho đơn hàng đầu tiên.',
-              style: AppTextStyles.bodyMd.copyWith(
-                color: Colors.white,
-              ),
-            ),
-          ),
-          const SizedBox(height: 16),
-          Row(
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Expanded(
-                child: Container(
-                  height: 48,
-                  padding:
-                      const EdgeInsets.symmetric(
-                    horizontal: 16,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius:
-                        BorderRadius.circular(12),
-                  ),
-                  child: Align(
-                    alignment:
-                        Alignment.centerLeft,
-                    child: Text(
-                      'Địa chỉ email của bạn',
-                      style: AppTextStyles.bodyMd
-                          .copyWith(
-                        color: AppColors.textHint,
+              Text(
+                'Đừng bỏ lỡ các ưu đãi\nđộc quyền!',
+                style: AppTextStyles.headingLg.copyWith(
+                  color: Colors.white,
+                  height: 1.2,
+                  letterSpacing: -0.5,
+                ),
+              ),
+              const SizedBox(height: 12),
+              Text(
+                'Đăng ký nhận tin để hưởng ưu đãi sớm nhất và mã giảm giá cho đơn hàng đầu tiên.',
+                style: AppTextStyles.bodyMd.copyWith(
+                  color: Colors.white.withValues(alpha: 0.8),
+                  fontSize: 13,
+                ),
+              ),
+              const SizedBox(height: 24),
+              Row(
+                children: [
+                  Expanded(
+                    child: Container(
+                      height: 52,
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
+                      ),
+                      child: TextField(
+                        style: const TextStyle(color: Colors.white, fontSize: 13),
+                        decoration: InputDecoration(
+                          hintText: 'Địa chỉ email của bạn',
+                          hintStyle: TextStyle(color: Colors.white.withValues(alpha: 0.5), fontSize: 13),
+                          border: InputBorder.none,
+                          isDense: true,
+                        ),
                       ),
                     ),
                   ),
-                ),
-              ),
-              const SizedBox(width: 8),
-              Container(
-                height: 48,
-                width: 112,
-                decoration: BoxDecoration(
-                  color: AppColors.accent,
-                  borderRadius:
-                      BorderRadius.circular(12),
-                  boxShadow: const [
-                    BoxShadow(
-                      color:
-                          AppColors.accentShadow,
-                      blurRadius: 12,
-                      offset: Offset(0, 4),
+                  const SizedBox(width: 12),
+                  GestureDetector(
+                    onTap: () {},
+                    child: Container(
+                      height: 52,
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(16),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.1),
+                            blurRadius: 10,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: Center(
+                        child: Text(
+                          'Gửi ngay',
+                          style: AppTextStyles.labelBold.copyWith(color: AppColors.primary),
+                        ),
+                      ),
                     ),
-                  ],
-                ),
-                child: Center(
-                  child: Text(
-                    'Gửi ngay',
-                    style: AppTextStyles.buttonMd,
                   ),
-                ),
+                ],
               ),
             ],
           ),

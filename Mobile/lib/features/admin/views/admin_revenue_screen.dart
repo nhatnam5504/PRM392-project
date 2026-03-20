@@ -95,34 +95,29 @@ class _AdminRevenueScreenState extends State<AdminRevenueScreen> {
   Widget _buildHeader(AdminRevenueViewModel vm) {
     return Container(
       width: double.infinity,
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.03),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      padding: const EdgeInsets.fromLTRB(20, 24, 20, 24),
+      color: Colors.transparent,
+      padding: const EdgeInsets.fromLTRB(20, 24, 20, 16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
-            padding: const EdgeInsets.fromLTRB(20, 24, 20, 24),
+            padding: const EdgeInsets.all(24),
             decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                colors: [Color(0xFF0891B2), Color(0xFF06B6D4), Color(0xFF22D3EE)],
+              gradient: LinearGradient(
+                colors: [
+                  AppColors.primary.withValues(alpha: 0.9),
+                  AppColors.primary,
+                  AppColors.primary.withValues(alpha: 0.8),
+                ],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
-              borderRadius: BorderRadius.circular(24),
+              borderRadius: BorderRadius.circular(28),
               boxShadow: [
                 BoxShadow(
-                  color: const Color(0xFF0891B2).withValues(alpha: 0.3),
-                  blurRadius: 20,
-                  offset: const Offset(0, 8),
+                  color: AppColors.primary.withValues(alpha: 0.3),
+                  blurRadius: 25,
+                  offset: const Offset(0, 12),
                 ),
               ],
             ),
@@ -131,48 +126,64 @@ class _AdminRevenueScreenState extends State<AdminRevenueScreen> {
               children: [
                 Row(
                   children: [
-                    const Icon(Icons.auto_graph_rounded, color: Colors.white, size: 20),
-                    const SizedBox(width: 8),
+                    Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.2),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: const Icon(Icons.auto_graph_rounded, color: Colors.white, size: 20),
+                    ),
+                    const SizedBox(width: 12),
                     Text(
                       'TỔNG DOANH THU',
                       style: AppTextStyles.labelBold.copyWith(
                         color: Colors.white.withValues(alpha: 0.9),
-                        letterSpacing: 1.2,
+                        letterSpacing: 1.5,
+                        fontSize: 12,
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: 16),
                 Text(
                   formatVND(vm.totalRevenue),
                   style: const TextStyle(
                     color: Colors.white,
-                    fontSize: 32,
+                    fontSize: 36,
                     fontWeight: FontWeight.w900,
-                    letterSpacing: -1,
+                    letterSpacing: -1.5,
                   ),
                 ),
-                const SizedBox(height: 20),
-                Row(
-                  children: [
-                    _HeaderStatItem(
-                      label: 'Đơn hàng',
-                      value: '${vm.totalCompleted}',
-                      icon: Icons.shopping_bag_outlined,
-                    ),
-                    Container(width: 1, height: 24, color: Colors.white24, margin: const EdgeInsets.symmetric(horizontal: 16)),
-                    _HeaderStatItem(
-                      label: 'Trung bình',
-                      value: _shortMoney(vm.avgOrderValue),
-                      icon: Icons.analytics_outlined,
-                    ),
-                    Container(width: 1, height: 24, color: Colors.white24, margin: const EdgeInsets.symmetric(horizontal: 16)),
-                    _HeaderStatItem(
-                      label: 'Đang xử lý',
-                      value: '${vm.totalPending}',
-                      icon: Icons.timer_outlined,
-                    ),
-                  ],
+                const SizedBox(height: 24),
+                Container(
+                  padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      _HeaderStatItem(
+                        label: 'Đơn hàng',
+                        value: '${vm.totalCompleted}',
+                        icon: Icons.shopping_bag_outlined,
+                      ),
+                      Container(width: 1, height: 24, color: Colors.white24),
+                      _HeaderStatItem(
+                        label: 'Trung bình',
+                        value: _shortMoney(vm.avgOrderValue),
+                        icon: Icons.analytics_outlined,
+                      ),
+                      Container(width: 1, height: 24, color: Colors.white24),
+                      _HeaderStatItem(
+                        label: 'Đang xử lý',
+                        value: '${vm.totalPending}',
+                        icon: Icons.timer_outlined,
+                      ),
+                    ],
+                  ),
                 ),
               ],
             ),
@@ -185,22 +196,21 @@ class _AdminRevenueScreenState extends State<AdminRevenueScreen> {
   // ─── Group By Selector ──────────────────────────
   Widget _buildGroupSelector(AdminRevenueViewModel vm) {
     final groups = [
-      (RevenueGroupBy.day, 'Theo ngày'),
-      (RevenueGroupBy.month, 'Theo tháng'),
-      (RevenueGroupBy.year, 'Theo năm'),
+      (RevenueGroupBy.day, 'Ngày'),
+      (RevenueGroupBy.month, 'Tháng'),
+      (RevenueGroupBy.year, 'Năm'),
     ];
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+      padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
       child: Row(
         children: [
-          Text('Biểu đồ doanh thu',
-              style: AppTextStyles.labelBold),
+          Text('Phân tích thị trường', style: AppTextStyles.headingSm.copyWith(color: AppColors.textHeading, fontSize: 18)),
           const Spacer(),
           Container(
+            padding: const EdgeInsets.all(4),
             decoration: BoxDecoration(
-              color: AppColors.surfaceDark,
-              borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: AppColors.border),
+              color: AppColors.surfaceDark.withValues(alpha: 0.5),
+              borderRadius: BorderRadius.circular(14),
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
@@ -213,22 +223,26 @@ class _AdminRevenueScreenState extends State<AdminRevenueScreen> {
                   },
                   child: AnimatedContainer(
                     duration: const Duration(milliseconds: 200),
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 12, vertical: 6),
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                     decoration: BoxDecoration(
-                      color: isActive
-                          ? AppColors.primary.withValues(alpha: 0.12)
-                          : Colors.transparent,
-                      borderRadius: BorderRadius.circular(20),
+                      color: isActive ? Colors.white : Colors.transparent,
+                      borderRadius: BorderRadius.circular(10),
+                      boxShadow: isActive
+                          ? [
+                              BoxShadow(
+                                color: Colors.black.withValues(alpha: 0.05),
+                                blurRadius: 4,
+                                offset: const Offset(0, 2),
+                              )
+                            ]
+                          : null,
                     ),
                     child: Text(
                       g.$2,
                       style: TextStyle(
-                        fontSize: 11,
-                        fontWeight: FontWeight.w600,
-                        color: isActive
-                            ? AppColors.primary
-                            : AppColors.textSecondary,
+                        fontSize: 12,
+                        fontWeight: isActive ? FontWeight.bold : FontWeight.w600,
+                        color: isActive ? AppColors.primary : AppColors.textSecondary,
                       ),
                     ),
                   ),
@@ -245,63 +259,49 @@ class _AdminRevenueScreenState extends State<AdminRevenueScreen> {
   Widget _buildChart(AdminRevenueViewModel vm) {
     final points = vm.chartPoints;
     if (points.isEmpty) {
-      return const Padding(
-        padding: EdgeInsets.all(40),
-        child: Center(
-          child: Text('Chưa có dữ liệu hoàn tất'),
+      return Padding(
+        padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
+        child: Container(
+          height: 200,
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(color: AppColors.border.withValues(alpha: 0.5)),
+          ),
+          child: Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.query_stats_rounded, size: 48, color: AppColors.textHint.withValues(alpha: 0.3)),
+                const SizedBox(height: 12),
+                Text('Chưa có dữ liệu giao dịch', style: AppTextStyles.bodyMd.copyWith(color: AppColors.textHint)),
+              ],
+            ),
+          ),
         ),
       );
     }
 
     final maxY = points.map((p) => p.revenue).reduce((a, b) => a > b ? a : b);
-    final chartMax = (maxY * 1.25).ceilToDouble();
-
-    // Show tooltip above touched bar
-    String? tooltipText;
-    if (_touchedIndex != null &&
-        _touchedIndex! >= 0 &&
-        _touchedIndex! < points.length) {
-      final p = points[_touchedIndex!];
-      tooltipText =
-          '${p.label}\n${formatVND(p.revenue)}\n${p.count} đơn';
-    }
+    final chartMax = (maxY * 1.2).ceilToDouble();
 
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+      padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
       child: Container(
         decoration: BoxDecoration(
-          color: AppColors.surface,
-          borderRadius: BorderRadius.circular(16),
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(24),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.05),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
+              color: Colors.black.withValues(alpha: 0.03),
+              blurRadius: 15,
+              offset: const Offset(0, 8),
             ),
           ],
         ),
-        padding: const EdgeInsets.fromLTRB(12, 16, 16, 12),
+        padding: const EdgeInsets.fromLTRB(16, 24, 20, 16),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            if (tooltipText != null)
-              Container(
-                margin: const EdgeInsets.only(bottom: 8),
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                decoration: BoxDecoration(
-                  color: AppColors.primary,
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Text(
-                  tooltipText,
-                  style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 11,
-                      fontWeight: FontWeight.w600),
-                  textAlign: TextAlign.center,
-                ),
-              ),
             SizedBox(
               height: 220,
               child: BarChart(
@@ -310,17 +310,27 @@ class _AdminRevenueScreenState extends State<AdminRevenueScreen> {
                   minY: 0,
                   barTouchData: BarTouchData(
                     touchTooltipData: BarTouchTooltipData(
-                      getTooltipColor: (_) => Colors.transparent,
-                      tooltipPadding: EdgeInsets.zero,
-                      tooltipMargin: 0,
-                      getTooltipItem: (_, __, ___, ____) => null,
+                      getTooltipColor: (_) => AppColors.primary,
+                      tooltipRoundedRadius: 8,
+                      tooltipPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      getTooltipItem: (group, groupIndex, rod, rodIndex) {
+                        final p = points[groupIndex];
+                        return BarTooltipItem(
+                          '${p.label}\n',
+                          const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13),
+                          children: [
+                            TextSpan(
+                              text: formatVND(p.revenue),
+                              style: TextStyle(color: Colors.white.withValues(alpha: 0.9), fontWeight: FontWeight.w500, fontSize: 11),
+                            ),
+                          ],
+                        );
+                      },
                     ),
                     touchCallback: (event, response) {
-                      if (event is FlTapUpEvent ||
-                          event is FlPanUpdateEvent) {
+                      if (event is FlTapUpEvent || event is FlPanUpdateEvent) {
                         setState(() {
-                          _touchedIndex =
-                              response?.spot?.touchedBarGroupIndex;
+                          _touchedIndex = response?.spot?.touchedBarGroupIndex;
                         });
                       }
                     },
@@ -330,26 +340,17 @@ class _AdminRevenueScreenState extends State<AdminRevenueScreen> {
                     bottomTitles: AxisTitles(
                       sideTitles: SideTitles(
                         showTitles: true,
-                        reservedSize: 28,
-                        interval: 1,
+                        reservedSize: 32,
                         getTitlesWidget: (value, meta) {
                           final idx = value.toInt();
-                          if (idx < 0 || idx >= points.length) {
-                            return const SizedBox.shrink();
-                          }
-                          // Show every label or skip if too many
-                          final skip = (points.length / 6).ceil();
-                          if (skip > 1 && idx % skip != 0) {
-                            return const SizedBox.shrink();
-                          }
+                          if (idx < 0 || idx >= points.length) return const SizedBox.shrink();
+                          final skip = (points.length / 5).ceil();
+                          if (idx % skip != 0) return const SizedBox.shrink();
                           return Padding(
-                            padding: const EdgeInsets.only(top: 4),
+                            padding: const EdgeInsets.only(top: 8),
                             child: Text(
                               points[idx].label,
-                              style: const TextStyle(
-                                  fontSize: 9,
-                                  color: AppColors.textHint,
-                                  fontWeight: FontWeight.w500),
+                              style: const TextStyle(fontSize: 10, color: AppColors.textHint, fontWeight: FontWeight.bold),
                             ),
                           );
                         },
@@ -358,29 +359,25 @@ class _AdminRevenueScreenState extends State<AdminRevenueScreen> {
                     leftTitles: AxisTitles(
                       sideTitles: SideTitles(
                         showTitles: true,
-                        reservedSize: 52,
+                        reservedSize: 45,
                         getTitlesWidget: (value, meta) {
                           if (value == 0) return const SizedBox.shrink();
                           return Text(
                             _shortMoney(value),
-                            style: const TextStyle(
-                                fontSize: 9, color: AppColors.textHint),
+                            style: const TextStyle(fontSize: 10, color: AppColors.textHint, fontWeight: FontWeight.w500),
                           );
                         },
                       ),
                     ),
-                    rightTitles: const AxisTitles(
-                        sideTitles: SideTitles(showTitles: false)),
-                    topTitles: const AxisTitles(
-                        sideTitles: SideTitles(showTitles: false)),
+                    rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                    topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
                   ),
                   gridData: FlGridData(
                     show: true,
                     drawVerticalLine: false,
                     getDrawingHorizontalLine: (_) => FlLine(
-                      color: AppColors.border.withValues(alpha: 0.6),
+                      color: AppColors.border.withValues(alpha: 0.1),
                       strokeWidth: 1,
-                      dashArray: [4, 4],
                     ),
                   ),
                   borderData: FlBorderData(show: false),
@@ -391,19 +388,12 @@ class _AdminRevenueScreenState extends State<AdminRevenueScreen> {
                       barRods: [
                         BarChartRodData(
                           toY: points[i].revenue,
-                          width: points.length > 15 ? 8 : 14,
-                          borderRadius: const BorderRadius.vertical(
-                              top: Radius.circular(6)),
+                          width: points.length > 15 ? 8 : 16,
+                          borderRadius: const BorderRadius.vertical(top: Radius.circular(4)),
                           gradient: LinearGradient(
                             colors: isTouched
-                                ? [
-                                    const Color(0xFF0891B2),
-                                    const Color(0xFF0D1B5E),
-                                  ]
-                                : [
-                                    const Color(0xFF38BDF8),
-                                    const Color(0xFF0891B2),
-                                  ],
+                                ? [AppColors.primary, AppColors.primary.withValues(alpha: 0.7)]
+                                : [AppColors.primary.withValues(alpha: 0.2), AppColors.primary.withValues(alpha: 0.4)],
                             begin: Alignment.bottomCenter,
                             end: Alignment.topCenter,
                           ),
@@ -423,22 +413,24 @@ class _AdminRevenueScreenState extends State<AdminRevenueScreen> {
   // ─── Recent Transactions ───────────────────────
   Widget _buildRecentList(AdminRevenueViewModel vm) {
     final recent = vm.payments.reversed.take(10).toList();
+    if (recent.isEmpty) return const SizedBox.shrink();
+
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+      padding: const EdgeInsets.fromLTRB(20, 24, 20, 0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text('Giao dịch gần đây',
-                  style: AppTextStyles.labelBold),
-              const Spacer(),
-              Text('${vm.payments.length} giao dịch',
-                  style: AppTextStyles.bodySm
-                      .copyWith(color: AppColors.textHint)),
+              Text('Giao dịch mới nhất', style: AppTextStyles.headingSm.copyWith(color: AppColors.textHeading, fontSize: 18)),
+              TextButton(
+                onPressed: () {},
+                child: Text('Xem tất cả', style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold, fontSize: 13)),
+              ),
             ],
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: 12),
           ...recent.map((p) => _TransactionRow(payment: p)),
         ],
       ),
@@ -446,16 +438,11 @@ class _AdminRevenueScreenState extends State<AdminRevenueScreen> {
   }
 
   String _shortMoney(double amount) {
-    if (amount >= 1000000) {
-      return '${(amount / 1000000).toStringAsFixed(1)}M';
-    } else if (amount >= 1000) {
-      return '${(amount / 1000).toStringAsFixed(0)}K';
-    }
+    if (amount >= 1000000) return '${(amount / 1000000).toStringAsFixed(1)}M';
+    if (amount >= 1000) return '${(amount / 1000).toStringAsFixed(0)}K';
     return amount.toStringAsFixed(0);
   }
 }
-
-// ─── Header Stat Chip ───────────────────────────
 
 // ─── Transaction Row ────────────────────────────
 class _TransactionRow extends StatelessWidget {
@@ -467,49 +454,52 @@ class _TransactionRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final isCompleted = payment.isCompleted;
     final color = isCompleted ? AppColors.success : AppColors.warning;
-    final label = isCompleted ? 'Thành công' : 'Chờ xử lý';
+    final bgOpacity = isCompleted ? 0.08 : 0.12;
 
     String formattedDate = '';
     try {
       final dt = payment.dateTime.toLocal();
-      formattedDate = '${dt.day}/${dt.month}/${dt.year} • ${dt.hour}:${dt.minute.toString().padLeft(2, '0')}';
+      formattedDate = '${dt.day}/${dt.month} • ${dt.hour}:${dt.minute.toString().padLeft(2, '0')}';
     } catch (_) {}
 
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(16),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.02),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
           ),
         ],
       ),
       child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         leading: Container(
-          width: 44,
-          height: 44,
+          width: 52,
+          height: 52,
           decoration: BoxDecoration(
-            color: color.withValues(alpha: 0.1),
-            borderRadius: BorderRadius.circular(12),
+            color: color.withValues(alpha: bgOpacity),
+            borderRadius: BorderRadius.circular(16),
           ),
           child: Icon(
-            isCompleted ? Icons.add_rounded : Icons.history_rounded,
+            isCompleted ? Icons.check_circle_rounded : Icons.pending_rounded,
             color: color,
-            size: 24,
+            size: 26,
           ),
         ),
         title: Text(
           payment.paymentMethod,
-          style: AppTextStyles.labelBold.copyWith(color: AppColors.textHeading),
+          style: AppTextStyles.labelBold.copyWith(color: AppColors.textHeading, fontSize: 15),
         ),
-        subtitle: Text(
-          formattedDate,
-          style: AppTextStyles.caption.copyWith(color: AppColors.textHint),
+        subtitle: Padding(
+          padding: const EdgeInsets.only(top: 4),
+          child: Text(
+            formattedDate,
+            style: AppTextStyles.caption.copyWith(color: AppColors.textHint, fontWeight: FontWeight.w500),
+          ),
         ),
         trailing: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -517,15 +507,23 @@ class _TransactionRow extends StatelessWidget {
           children: [
             Text(
               '+${formatVND(payment.amount)}',
-              style: AppTextStyles.labelBold.copyWith(color: AppColors.textHeading, fontSize: 14),
+              style: TextStyle(
+                color: AppColors.textHeading,
+                fontWeight: FontWeight.w900,
+                fontSize: 16,
+                letterSpacing: -0.5,
+              ),
             ),
-            const SizedBox(height: 4),
-            Text(
-              label,
-              style: AppTextStyles.caption.copyWith(
-                color: color,
-                fontWeight: FontWeight.bold,
-                fontSize: 10,
+            const SizedBox(height: 6),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+              decoration: BoxDecoration(
+                color: color.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(6),
+              ),
+              child: Text(
+                isCompleted ? 'THÀNH CÔNG' : 'ĐANG XỬ LÝ',
+                style: TextStyle(color: color, fontWeight: FontWeight.w800, fontSize: 9, letterSpacing: 0.5),
               ),
             ),
           ],
@@ -554,17 +552,17 @@ class _HeaderStatItem extends StatelessWidget {
         Row(
           children: [
             Icon(icon, size: 12, color: Colors.white70),
-            const SizedBox(width: 4),
+            const SizedBox(width: 6),
             Text(
-              label,
-              style: TextStyle(color: Colors.white.withValues(alpha: 0.7), fontSize: 10),
+              label.toUpperCase(),
+              style: TextStyle(color: Colors.white.withValues(alpha: 0.7), fontSize: 9, fontWeight: FontWeight.bold, letterSpacing: 0.5),
             ),
           ],
         ),
-        const SizedBox(height: 2),
+        const SizedBox(height: 6),
         Text(
           value,
-          style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.bold),
+          style: const TextStyle(color: Colors.white, fontSize: 17, fontWeight: FontWeight.w900),
         ),
       ],
     );

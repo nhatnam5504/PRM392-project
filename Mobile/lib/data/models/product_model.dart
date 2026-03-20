@@ -59,7 +59,7 @@ class ProductModel {
   bool get isOnSale => originalPrice != null && originalPrice! > price;
 
   double get discountPercent =>
-      isOnSale ? (originalPrice! - price) / originalPrice! : 0;
+      isOnSale ? ((originalPrice! - price) / originalPrice! * 100) : 0;
 
   /// Parse from BE ProductResponse JSON.
   /// BE returns: {id, name, description, price, quantity, reserve,

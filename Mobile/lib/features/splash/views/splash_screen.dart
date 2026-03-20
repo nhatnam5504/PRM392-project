@@ -48,55 +48,84 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.primary,
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              width: 80,
-              height: 80,
+      backgroundColor: Colors.white,
+      body: Stack(
+        children: [
+          // Subtle background elements
+          Positioned(
+            top: -150,
+            right: -150,
+            child: Container(
+              width: 400,
+              height: 400,
               decoration: BoxDecoration(
-                color: Colors.white.withValues(
-                  alpha: 0.2,
-                ),
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: const Icon(
-                Icons.devices,
-                color: Colors.white,
-                size: 48,
+                color: AppColors.primary.withValues(alpha: 0.03),
+                shape: BoxShape.circle,
               ),
             ),
-            const SizedBox(height: 24),
-            Row(
+          ),
+          Center(
+            child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Text(
-                  'TECH',
-                  style: AppTextStyles.displayLarge.copyWith(
-                    color: Colors.white,
+                Hero(
+                  tag: 'app_logo',
+                  child: Container(
+                    width: 100,
+                    height: 100,
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [AppColors.primary, const Color(0xFF22D3EE)],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      borderRadius: BorderRadius.circular(32),
+                      boxShadow: [
+                        BoxShadow(
+                          color: AppColors.primary.withValues(alpha: 0.2),
+                          blurRadius: 25,
+                          offset: const Offset(0, 10),
+                        ),
+                      ],
+                    ),
+                    child: const Icon(Icons.devices_other_rounded, color: Colors.white, size: 56),
                   ),
                 ),
-                Text(
-                  'GEAR',
-                  style: AppTextStyles.displayLarge.copyWith(
-                    color: AppColors.accent,
+                const SizedBox(height: 32),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      'TECH',
+                      style: AppTextStyles.displayLarge.copyWith(
+                        color: AppColors.textPrimary,
+                        letterSpacing: 2,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                    Text(
+                      'GEAR',
+                      style: AppTextStyles.displayLarge.copyWith(
+                        color: AppColors.primary,
+                        letterSpacing: 2,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 80),
+                const SizedBox(
+                  width: 32,
+                  height: 32,
+                  child: CircularProgressIndicator(
+                    color: AppColors.primary,
+                    strokeWidth: 3,
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 48),
-            const SizedBox(
-              width: 24,
-              height: 24,
-              child: CircularProgressIndicator(
-                color: Colors.white,
-                strokeWidth: 2,
-              ),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

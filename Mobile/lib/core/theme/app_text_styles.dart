@@ -21,6 +21,13 @@ class AppTextStyles {
     color: AppColors.textHeading,
     height: 1.33,
   );
+  static const displaySmall = TextStyle(
+    fontFamily: _fontFamily,
+    fontSize: 20,
+    fontWeight: FontWeight.w700,
+    color: AppColors.textHeading,
+    height: 1.3,
+  );
   static const headingLg = TextStyle(
     fontFamily: _fontFamily,
     fontSize: 20,

@@ -23,13 +23,16 @@ class OrderViewModel extends ChangeNotifier {
   List<UserOrderModel> filteredOrders(
     String statusFilter,
   ) {
-    if (statusFilter == 'ALL') {
-      return _orders;
+    final s = statusFilter.toUpperCase();
+    if (s == 'PROCESSING') {
+      return _orders.where((o) => ['PENDING', 'CONFIRMED'].contains(o.status.toUpperCase())).toList();
+    }
+    if (s == 'PAID') {
+      return _orders.where((o) => ['PAID', 'SHIPPING', 'DELIVERED', 'COMPLETED'].contains(o.status.toUpperCase())).toList();
     }
     return _orders
         .where((o) =>
-            o.status.toUpperCase() ==
-            statusFilter.toUpperCase())
+            o.status.toUpperCase() == s)
         .toList();
   }
 

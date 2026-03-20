@@ -17,25 +17,28 @@ class SectionHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(
-        horizontal: 16,
-      ),
+      padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Row(
         children: [
           Container(
             width: 4,
-            height: 24,
+            height: 18,
             decoration: BoxDecoration(
-              color: AppColors.primary,
-              borderRadius:
-                  BorderRadius.circular(2),
+              gradient: const LinearGradient(
+                colors: [AppColors.primary, Color(0xFF22D3EE)],
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+              ),
+              borderRadius: BorderRadius.circular(2),
             ),
           ),
-          const SizedBox(width: 8),
+          const SizedBox(width: 10),
           Text(
             title,
             style: AppTextStyles.headingSm.copyWith(
-              letterSpacing: 0.5,
+              color: AppColors.textHeading,
+              letterSpacing: -0.2,
+              fontWeight: FontWeight.w800,
             ),
           ),
           const Spacer(),
@@ -43,12 +46,18 @@ class SectionHeader extends StatelessWidget {
           if (onViewAll != null)
             GestureDetector(
               onTap: onViewAll,
-              child: Text(
-                'Xem tất cả',
-                style: AppTextStyles.labelMd
-                    .copyWith(
-                  color: AppColors.primary,
-                ),
+              child: Row(
+                children: [
+                   Text(
+                    'Tất cả',
+                    style: AppTextStyles.labelMd.copyWith(
+                      color: AppColors.primary,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const SizedBox(width: 4),
+                  const Icon(Icons.arrow_forward_ios_rounded, size: 12, color: AppColors.primary),
+                ],
               ),
             ),
         ],

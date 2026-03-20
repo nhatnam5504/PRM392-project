@@ -106,285 +106,275 @@ class _RegisterScreenState
     final authVM = context.watch<AuthViewModel>();
 
     return Scaffold(
-      backgroundColor: AppColors.surface,
-      appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(
-            Icons.arrow_back,
-            color: AppColors.primary,
-          ),
-          onPressed: () => context.pop(),
-        ),
-        title: const Text('Đăng ký'),
-        centerTitle: true,
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(
-          horizontal: 24,
-        ),
-        child: Column(
-          children: [
-            const SizedBox(height: 24),
-            // Logo section
-            Container(
-              width: 80,
-              height: 80,
+      backgroundColor: Colors.white,
+      body: Stack(
+        children: [
+          Positioned(
+            top: -100,
+            left: -100,
+            child: Container(
+              width: 300,
+              height: 300,
               decoration: BoxDecoration(
-                color: AppColors.primaryLight,
-                borderRadius:
-                    BorderRadius.circular(20),
-              ),
-              child: const Icon(
-                Icons.devices,
-                color: AppColors.primary,
-                size: 48,
+                color: AppColors.primary.withValues(alpha: 0.05),
+                shape: BoxShape.circle,
               ),
             ),
-            const SizedBox(height: 16),
-            Row(
-              mainAxisAlignment:
-                  MainAxisAlignment.center,
-              children: [
-                Text(
-                  'Tech',
-                  style: AppTextStyles
-                      .displayMedium
-                      .copyWith(
-                    color: AppColors.primary,
-                  ),
-                ),
-                Text(
-                  'Gear',
-                  style: AppTextStyles
-                      .displayMedium
-                      .copyWith(
-                    color: AppColors.accent,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 24),
-            Align(
-              alignment: Alignment.centerLeft,
-              child: Text(
-                'Tạo tài khoản mới',
-                style: AppTextStyles.displayMedium,
-              ),
-            ),
-            const SizedBox(height: 24),
-            _buildField(
-              'Họ và tên',
-              _nameController,
-              'Nhập họ và tên',
-              enabled: !authVM.isLoading,
-            ),
-            const SizedBox(height: 16),
-            _buildField(
-              'Số điện thoại',
-              _phoneController,
-              'Nhập số điện thoại',
-              keyboardType: TextInputType.phone,
-              enabled: !authVM.isLoading,
-            ),
-            const SizedBox(height: 16),
-            _buildField(
-              'Email',
-              _emailController,
-              'Nhập email',
-              keyboardType:
-                  TextInputType.emailAddress,
-              enabled: !authVM.isLoading,
-            ),
-            const SizedBox(height: 16),
-            _buildPasswordField(
-              'Mật khẩu',
-              _passwordController,
-              'Nhập mật khẩu',
-              _obscurePassword,
-              () {
-                setState(() {
-                  _obscurePassword =
-                      !_obscurePassword;
-                });
-              },
-              enabled: !authVM.isLoading,
-            ),
-            const SizedBox(height: 16),
-            _buildPasswordField(
-              'Xác nhận mật khẩu',
-              _confirmPasswordController,
-              'Nhập lại mật khẩu',
-              _obscureConfirm,
-              () {
-                setState(() {
-                  _obscureConfirm =
-                      !_obscureConfirm;
-                });
-              },
-              enabled: !authVM.isLoading,
-            ),
-            const SizedBox(height: 16),
-            Row(
-              crossAxisAlignment:
-                  CrossAxisAlignment.start,
-              children: [
-                Checkbox(
-                  value: _agreedToTerms,
-                  onChanged: (value) {
-                    setState(() {
-                      _agreedToTerms = value ?? false;
-                    });
-                  },
-                  activeColor: AppColors.primary,
-                ),
-                Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.only(
-                      top: 12,
+          ),
+          SafeArea(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 28),
+              child: Column(
+                children: [
+                  const SizedBox(height: 20),
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: IconButton(
+                      icon: const Icon(Icons.arrow_back_ios_new_rounded, color: AppColors.textPrimary, size: 20),
+                      onPressed: () => context.pop(),
                     ),
-                    child: Text.rich(
-                      TextSpan(
-                        text: 'Tôi đồng ý với ',
-                        style: AppTextStyles.bodySm,
-                        children: [
-                          TextSpan(
-                            text:
-                                'Điều khoản sử dụng',
-                            style: AppTextStyles
-                                .bodySm
-                                .copyWith(
-                              color:
-                                  AppColors.primary,
-                              fontWeight:
-                                  FontWeight.w600,
-                            ),
-                          ),
-                          const TextSpan(
-                            text: ' và ',
-                          ),
-                          TextSpan(
-                            text:
-                                'Chính sách bảo mật',
-                            style: AppTextStyles
-                                .bodySm
-                                .copyWith(
-                              color:
-                                  AppColors.primary,
-                              fontWeight:
-                                  FontWeight.w600,
-                            ),
+                  ),
+                  const SizedBox(height: 10),
+                  // Logo section
+                  Hero(
+                    tag: 'app_logo',
+                    child: Container(
+                      width: 80,
+                      height: 80,
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [AppColors.primary, const Color(0xFF22D3EE)],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                        borderRadius: BorderRadius.circular(24),
+                        boxShadow: [
+                          BoxShadow(
+                            color: AppColors.primary.withValues(alpha: 0.2),
+                            blurRadius: 15,
+                            offset: const Offset(0, 8),
                           ),
                         ],
                       ),
+                      child: const Icon(Icons.devices_other_rounded, color: Colors.white, size: 40),
                     ),
                   ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 24),
-            SizedBox(
-              width: double.infinity,
-              height: 56,
-              child: ElevatedButton(
-                onPressed: (_agreedToTerms &&
-                        !authVM.isLoading)
-                    ? _handleRegister
-                    : null,
-                child: authVM.isLoading
-                    ? const SizedBox(
+                  const SizedBox(height: 20),
+                  Text(
+                    'Tạo tài khoản mới',
+                    style: AppTextStyles.displayMedium.copyWith(
+                      fontWeight: FontWeight.w900,
+                      fontSize: 28,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Tham gia TechGear để nhận nhiều ưu đãi hẫn dẫn',
+                    style: AppTextStyles.bodyMd.copyWith(color: AppColors.textSecondary),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 40),
+                  // Fields
+                  _buildInputField(
+                    label: 'Họ và tên',
+                    controller: _nameController,
+                    hint: 'Nguyễn Văn A',
+                    icon: Icons.person_outline_rounded,
+                    enabled: !authVM.isLoading,
+                  ),
+                  const SizedBox(height: 20),
+                  _buildInputField(
+                    label: 'Số điện thoại',
+                    controller: _phoneController,
+                    hint: '0123 456 789',
+                    icon: Icons.phone_android_rounded,
+                    keyboardType: TextInputType.phone,
+                    enabled: !authVM.isLoading,
+                  ),
+                  const SizedBox(height: 20),
+                  _buildInputField(
+                    label: 'Email',
+                    controller: _emailController,
+                    hint: 'example@email.com',
+                    icon: Icons.alternate_email_rounded,
+                    keyboardType: TextInputType.emailAddress,
+                    enabled: !authVM.isLoading,
+                  ),
+                  const SizedBox(height: 20),
+                  _buildInputField(
+                    label: 'Mật khẩu',
+                    controller: _passwordController,
+                    hint: '••••••••',
+                    icon: Icons.lock_outline_rounded,
+                    isPassword: true,
+                    enabled: !authVM.isLoading,
+                  ),
+                  const SizedBox(height: 20),
+                  _buildInputField(
+                    label: 'Xác nhận mật khẩu',
+                    controller: _confirmPasswordController,
+                    hint: '••••••••',
+                    icon: Icons.lock_reset_rounded,
+                    isPassword: true,
+                    isConfirm: true,
+                    enabled: !authVM.isLoading,
+                  ),
+                  const SizedBox(height: 24),
+                  // Terms
+                  Row(
+                    children: [
+                      SizedBox(
                         width: 24,
                         height: 24,
-                        child:
-                            CircularProgressIndicator(
-                          color: Colors.white,
-                          strokeWidth: 2,
+                        child: Checkbox(
+                          value: _agreedToTerms,
+                          onChanged: (v) => setState(() => _agreedToTerms = v ?? false),
+                          activeColor: AppColors.primary,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
                         ),
-                      )
-                    : const Text('Đăng ký'),
-              ),
-            ),
-            const SizedBox(height: 24),
-            Row(
-              mainAxisAlignment:
-                  MainAxisAlignment.center,
-              children: [
-                Text(
-                  'Đã có tài khoản?',
-                  style: AppTextStyles.bodyMd
-                      .copyWith(
-                    color: AppColors.textSecondary,
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Text.rich(
+                          TextSpan(
+                            text: 'Tôi đồng ý với ',
+                            style: AppTextStyles.bodySm.copyWith(color: AppColors.textSecondary),
+                            children: [
+                              TextSpan(
+                                text: 'Điều khoản',
+                                style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.w800),
+                              ),
+                              const TextSpan(text: ' & '),
+                              TextSpan(
+                                text: 'Chính sách',
+                                style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.w800),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
-                ),
-                const SizedBox(width: 4),
-                GestureDetector(
-                  onTap: () =>
-                      context.push('/login'),
-                  child: Text(
-                    'Đăng nhập ngay',
-                    style: AppTextStyles.labelBold
-                        .copyWith(
-                      color: AppColors.primary,
+                  const SizedBox(height: 32),
+                  // Register button
+                  SizedBox(
+                    width: double.infinity,
+                    height: 60,
+                    child: Container(
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(20),
+                        gradient: LinearGradient(
+                          colors: _agreedToTerms ? [AppColors.primary, const Color(0xFF0891B2)] : [Colors.grey, Colors.grey.shade400],
+                          begin: Alignment.centerLeft,
+                          end: Alignment.centerRight,
+                        ),
+                        boxShadow: _agreedToTerms ? [
+                          BoxShadow(
+                            color: AppColors.primary.withValues(alpha: 0.3),
+                            blurRadius: 15,
+                            offset: const Offset(0, 8),
+                          ),
+                        ] : [],
+                      ),
+                      child: ElevatedButton(
+                        onPressed: (_agreedToTerms && !authVM.isLoading) ? _handleRegister : null,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.transparent,
+                          shadowColor: Colors.transparent,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                        ),
+                        child: authVM.isLoading
+                            ? const SizedBox(
+                                width: 24,
+                                height: 24,
+                                child: CircularProgressIndicator(color: Colors.white, strokeWidth: 3),
+                              )
+                            : Text('Đăng ký tài khoản', style: AppTextStyles.buttonLg.copyWith(fontWeight: FontWeight.w900)),
+                      ),
                     ),
                   ),
-                ),
-              ],
+                  const SizedBox(height: 32),
+                  // Login link
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        'Đã có tài khoản?',
+                        style: AppTextStyles.bodyMd.copyWith(color: AppColors.textSecondary),
+                      ),
+                      const SizedBox(width: 6),
+                      GestureDetector(
+                        onTap: () => context.pop(),
+                        child: Text(
+                          'Đăng nhập ngay',
+                          style: AppTextStyles.labelBold.copyWith(
+                            color: AppColors.primary,
+                            decoration: TextDecoration.underline,
+                            decorationColor: AppColors.primary,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 40),
+                ],
+              ),
             ),
-            const SizedBox(height: 32),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
 
-  Widget _buildField(
-    String label,
-    TextEditingController controller,
-    String hint, {
+  Widget _buildInputField({
+    required String label,
+    required TextEditingController controller,
+    required String hint,
+    required IconData icon,
+    bool isPassword = false,
+    bool isConfirm = false,
+    bool enabled = true,
     TextInputType? keyboardType,
-    bool enabled = true,
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: AppTextStyles.labelBold),
-        const SizedBox(height: 8),
-        TextField(
-          controller: controller,
-          decoration: InputDecoration(hintText: hint),
-          keyboardType: keyboardType,
-          enabled: enabled,
-        ),
-      ],
-    );
-  }
-
-  Widget _buildPasswordField(
-    String label,
-    TextEditingController controller,
-    String hint,
-    bool obscure,
-    VoidCallback toggleObscure, {
-    bool enabled = true,
-  }) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(label, style: AppTextStyles.labelBold),
-        const SizedBox(height: 8),
-        TextField(
-          controller: controller,
-          obscureText: obscure,
-          enabled: enabled,
-          decoration: InputDecoration(
-            hintText: hint,
-            suffixIcon: IconButton(
-              icon: Icon(
-                obscure
-                    ? Icons.visibility_off
-                    : Icons.visibility,
-                color: AppColors.textHint,
-              ),
-              onPressed: toggleObscure,
+        Text(label, style: AppTextStyles.labelBold.copyWith(fontSize: 14)),
+        const SizedBox(height: 10),
+        Container(
+          decoration: BoxDecoration(
+            color: AppColors.surfaceDark.withValues(alpha: 0.4),
+            borderRadius: BorderRadius.circular(18),
+            border: Border.all(color: AppColors.surfaceDark),
+          ),
+          child: TextField(
+            controller: controller,
+            obscureText: isPassword && (isConfirm ? _obscureConfirm : _obscurePassword),
+            enabled: enabled,
+            keyboardType: keyboardType,
+            style: AppTextStyles.bodyMd.copyWith(fontWeight: FontWeight.w600),
+            decoration: InputDecoration(
+              hintText: hint,
+              hintStyle: AppTextStyles.bodyMd.copyWith(color: AppColors.textHint.withValues(alpha: 0.5)),
+              prefixIcon: Icon(icon, color: AppColors.textHint, size: 20),
+              suffixIcon: isPassword
+                  ? IconButton(
+                      icon: Icon(
+                        (isConfirm ? _obscureConfirm : _obscurePassword) ? Icons.visibility_off_rounded : Icons.visibility_rounded,
+                        color: AppColors.textHint,
+                        size: 20,
+                      ),
+                      onPressed: () => setState(() {
+                        if (isConfirm) {
+                          _obscureConfirm = !_obscureConfirm;
+                        } else {
+                          _obscurePassword = !_obscurePassword;
+                        }
+                      }),
+                    )
+                  : null,
+              border: InputBorder.none,
+              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 15),
             ),
           ),
         ),

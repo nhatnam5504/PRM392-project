@@ -23,34 +23,30 @@ class _AdminProductListScreenState extends State<AdminProductListScreen> {
     });
   }
 
-  Future<void> _confirmDelete(ProductModel product) async {
+  Future<void> _deleteProduct(ProductModel product) async {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Xác nhận xoá'),
-        content: Text('Bạn có chắc muốn xoá "${product.name}"?'),
+        title: const Text('Xác nhận xóa'),
+        content: Text('Bạn có chắc chắn muốn xóa "${product.name}"?'),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Huỷ'),
-          ),
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Hủy')),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
             style: TextButton.styleFrom(foregroundColor: AppColors.error),
-            child: const Text('Xoá'),
+            child: const Text('Xóa'),
           ),
         ],
       ),
     );
+
     if (confirmed == true && mounted) {
       final vm = context.read<AdminProductViewModel>();
       final success = await vm.deleteProduct(product.id);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(
-              success ? 'Đã xoá sản phẩm' : (vm.errorMessage ?? 'Lỗi'),
-            ),
+            content: Text(success ? 'Đã xóa sản phẩm' : (vm.errorMessage ?? 'Có lỗi xảy ra')),
             backgroundColor: success ? AppColors.success : AppColors.error,
           ),
         );
@@ -63,13 +59,28 @@ class _AdminProductListScreenState extends State<AdminProductListScreen> {
     final vm = context.watch<AdminProductViewModel>();
 
     return Scaffold(
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => context.push('/admin/products/add'),
-        backgroundColor: AppColors.primary,
-        icon: const Icon(Icons.add, color: Colors.white),
-        label: Text(
-          'Thêm SP',
-          style: AppTextStyles.labelBold.copyWith(color: Colors.white),
+      backgroundColor: Colors.transparent,
+      floatingActionButton: Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: [
+            BoxShadow(
+              color: AppColors.primary.withValues(alpha: 0.3),
+              blurRadius: 15,
+              offset: const Offset(0, 8),
+            ),
+          ],
+        ),
+        child: FloatingActionButton.extended(
+          onPressed: () => context.push('/admin/products/add'),
+          backgroundColor: AppColors.primary,
+          elevation: 0,
+          highlightElevation: 0,
+          icon: const Icon(Icons.add_rounded, color: Colors.white),
+          label: Text(
+            'THÊM SẢN PHẨM',
+            style: AppTextStyles.labelBold.copyWith(color: Colors.white, letterSpacing: 1),
+          ),
         ),
       ),
       body: _buildBody(vm),
@@ -83,16 +94,24 @@ class _AdminProductListScreenState extends State<AdminProductListScreen> {
     if (vm.errorMessage != null && vm.products.isEmpty) {
       return Center(
         child: Padding(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(24),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              SelectableText(vm.errorMessage!,
-                  style: AppTextStyles.bodyMd, textAlign: TextAlign.center),
+              Icon(Icons.error_outline_rounded, color: AppColors.error, size: 64),
               const SizedBox(height: 16),
+              const Text('Đã có lỗi xảy ra', style: AppTextStyles.headingSm),
+              const SizedBox(height: 8),
+              Text(vm.errorMessage!,
+                  style: AppTextStyles.bodyMd.copyWith(color: AppColors.textSecondary), textAlign: TextAlign.center),
+              const SizedBox(height: 24),
               ElevatedButton(
                 onPressed: () => vm.loadProducts(),
-                child: const Text('Thử lại'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primary,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                ),
+                child: const Text('Thử lại', style: TextStyle(color: Colors.white)),
               ),
             ],
           ),
@@ -105,26 +124,33 @@ class _AdminProductListScreenState extends State<AdminProductListScreen> {
       child: Column(
         children: [
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            margin: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+            padding: const EdgeInsets.all(4),
             decoration: BoxDecoration(
-              color: AppColors.surface,
-              border: Border(bottom: BorderSide(color: AppColors.divider.withValues(alpha: 0.5))),
+              color: AppColors.surfaceDark.withValues(alpha: 0.5),
+              borderRadius: BorderRadius.circular(16),
             ),
             child: TabBar(
-              labelPadding: const EdgeInsets.symmetric(horizontal: 0),
               indicatorSize: TabBarIndicatorSize.tab,
               indicator: BoxDecoration(
-                borderRadius: BorderRadius.circular(20),
-                color: AppColors.primary.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(12),
+                color: Colors.white,
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.05),
+                    blurRadius: 4,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
               ),
               labelColor: AppColors.primary,
               unselectedLabelColor: AppColors.textSecondary,
-              labelStyle: AppTextStyles.labelBold.copyWith(fontSize: 14),
-              unselectedLabelStyle: AppTextStyles.labelMd.copyWith(fontSize: 14),
+              labelStyle: AppTextStyles.labelBold.copyWith(fontSize: 13),
+              unselectedLabelStyle: AppTextStyles.labelMd.copyWith(fontSize: 13),
               dividerColor: Colors.transparent,
               tabs: const [
-                Tab(child: Center(child: Text('📦 SẢN PHẨM'))),
-                Tab(child: Center(child: Text('🛠️ DỊCH VỤ'))),
+                Tab(child: Text('📦 SẢN PHẨM')),
+                Tab(child: Text('🛠️ DỊCH VỤ')),
               ],
             ),
           ),
@@ -142,8 +168,7 @@ class _AdminProductListScreenState extends State<AdminProductListScreen> {
   }
 
   Widget _buildProductList(AdminProductViewModel vm, bool isProduct) {
-    final filteredProducts =
-        vm.products.where((p) => p.type == isProduct).toList();
+    final filteredProducts = vm.products.where((p) => p.type == isProduct).toList();
 
     if (filteredProducts.isEmpty) {
       return Center(
@@ -164,7 +189,7 @@ class _AdminProductListScreenState extends State<AdminProductListScreen> {
           return _ProductCard(
             product: product,
             onEdit: () => context.push('/admin/products/edit/${product.id}'),
-            onDelete: () => _confirmDelete(product),
+            onDelete: () => _deleteProduct(product),
           );
         },
       ),
@@ -197,30 +222,28 @@ class _ProductCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(20),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
-            color: AppColors.primaryShadow.withValues(alpha: 0.1),
-            blurRadius: 15,
-            offset: const Offset(0, 6),
+            color: Colors.black.withValues(alpha: 0.04),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
           ),
         ],
       ),
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(24),
         child: IntrinsicHeight(
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // Product Image
               _buildImageSection(),
-              // Product Info
               Expanded(
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                  padding: const EdgeInsets.all(16),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -231,29 +254,46 @@ class _ProductCard extends StatelessWidget {
                           Text(
                             '#${product.id}',
                             style: AppTextStyles.labelSm.copyWith(
-                              color: AppColors.textHint,
-                              letterSpacing: 0.5,
+                              color: AppColors.textHint.withValues(alpha: 0.6),
+                              fontSize: 10,
+                              fontWeight: FontWeight.w800,
                             ),
                           ),
                         ],
                       ),
-                      const SizedBox(height: 10),
+                      const SizedBox(height: 12),
                       Text(
                         product.name,
                         style: AppTextStyles.headingSm.copyWith(
                           color: AppColors.textHeading,
+                          fontSize: 15,
+                          height: 1.3,
                         ),
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                       ),
-                      const SizedBox(height: 4),
+                      const SizedBox(height: 6),
                       Row(
                         children: [
-                          Icon(Icons.tag_rounded, size: 12, color: AppColors.textHint),
-                          const SizedBox(width: 4),
+                          Container(
+                            padding: const EdgeInsets.all(4),
+                            decoration: BoxDecoration(
+                              color: AppColors.surfaceDark,
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                            child: const Icon(Icons.inventory_2_rounded, size: 10, color: AppColors.textSecondary),
+                          ),
+                          const SizedBox(width: 6),
                           Text(
-                            '${product.brandName} • ${product.categoryName}',
-                            style: AppTextStyles.bodySm.copyWith(color: AppColors.textSecondary),
+                            product.brandName,
+                            style: AppTextStyles.bodyMd.copyWith(
+                              color: AppColors.textSecondary,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          Text(
+                            ' • ${product.categoryName}',
+                            style: AppTextStyles.bodySm.copyWith(color: AppColors.textHint),
                           ),
                         ],
                       ),
@@ -271,22 +311,24 @@ class _ProductCard extends StatelessWidget {
                                 style: AppTextStyles.priceMd.copyWith(
                                   color: AppColors.primary,
                                   fontSize: 18,
+                                  fontWeight: FontWeight.w900,
                                 ),
                               ),
-                              const SizedBox(height: 2),
+                              const SizedBox(height: 4),
                               Row(
                                 children: [
                                   Icon(
-                                    Icons.inventory_2_outlined,
+                                    product.stockQuantity < 10 ? Icons.warning_amber_rounded : Icons.check_circle_outline_rounded,
                                     size: 14,
-                                    color: product.stockQuantity < 10 ? AppColors.error : AppColors.textSecondary,
+                                    color: product.stockQuantity < 10 ? AppColors.error : AppColors.success,
                                   ),
                                   const SizedBox(width: 4),
                                   Text(
                                     'Kho: ${product.stockQuantity}',
                                     style: AppTextStyles.bodySm.copyWith(
                                       color: product.stockQuantity < 10 ? AppColors.error : AppColors.textSecondary,
-                                      fontWeight: product.stockQuantity < 10 ? FontWeight.bold : FontWeight.w500,
+                                      fontWeight: product.stockQuantity < 10 ? FontWeight.w900 : FontWeight.w600,
+                                      fontSize: 12,
                                     ),
                                   ),
                                 ],
@@ -309,44 +351,31 @@ class _ProductCard extends StatelessWidget {
 
   Widget _buildImageSection() {
     return Container(
-      width: 130,
-      decoration: BoxDecoration(
-        color: AppColors.surfaceDark,
-      ),
-      child: Stack(
-        fit: StackFit.expand,
-        children: [
-          product.imageUrls.isNotEmpty
-              ? Image.network(
-                  product.imageUrls.first,
-                  fit: BoxFit.cover,
-                  errorBuilder: (_, __, ___) => const Icon(
-                    Icons.image_not_supported_outlined,
+      width: 110,
+      margin: const EdgeInsets.all(8),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(16),
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            Container(color: AppColors.surfaceDark),
+            product.imageUrls.isNotEmpty
+                ? Image.network(
+                    product.imageUrls.first,
+                    fit: BoxFit.cover,
+                    errorBuilder: (_, __, ___) => const Icon(
+                      Icons.broken_image_outlined,
+                      color: AppColors.textHint,
+                      size: 24,
+                    ),
+                  )
+                : const Icon(
+                    Icons.inventory_2_outlined,
                     color: AppColors.textHint,
-                    size: 32,
+                    size: 24,
                   ),
-                )
-              : const Icon(
-                  Icons.inventory_2_outlined,
-                  color: AppColors.textHint,
-                  size: 32,
-                ),
-          // Gradient overlay for better look
-          Positioned.fill(
-            child: DecoratedBox(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [
-                    Colors.black.withValues(alpha: 0.1),
-                    Colors.transparent,
-                  ],
-                  begin: Alignment.bottomCenter,
-                  end: Alignment.topCenter,
-                ),
-              ),
-            ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -354,20 +383,35 @@ class _ProductCard extends StatelessWidget {
   Widget _buildStatusBadge() {
     final bool isActive = product.active;
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration: BoxDecoration(
         color: isActive 
             ? AppColors.success.withValues(alpha: 0.1) 
             : AppColors.error.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(6),
+        borderRadius: BorderRadius.circular(8),
       ),
-      child: Text(
-        isActive ? 'ĐANG BÁN' : 'NGỪNG BÁN',
-        style: AppTextStyles.labelSm.copyWith(
-          color: isActive ? AppColors.success : AppColors.error,
-          fontWeight: FontWeight.bold,
-          fontSize: 10,
-        ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 6,
+            height: 6,
+            decoration: BoxDecoration(
+              color: isActive ? AppColors.success : AppColors.error,
+              shape: BoxShape.circle,
+            ),
+          ),
+          const SizedBox(width: 6),
+          Text(
+            isActive ? 'ĐANG BÁN' : 'NGỪNG BÁN',
+            style: AppTextStyles.labelSm.copyWith(
+              color: isActive ? AppColors.success : AppColors.error,
+              fontWeight: FontWeight.w900,
+              fontSize: 9,
+              letterSpacing: 0.5,
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -377,13 +421,13 @@ class _ProductCard extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         _CircleIconButton(
-          icon: Icons.edit_rounded,
+          icon: Icons.edit_note_rounded,
           color: AppColors.primary,
           onTap: onEdit,
         ),
         const SizedBox(width: 8),
         _CircleIconButton(
-          icon: Icons.delete_outline_rounded,
+          icon: Icons.delete_sweep_rounded,
           color: AppColors.error,
           onTap: onDelete,
         ),
@@ -406,14 +450,14 @@ class _CircleIconButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: color.withValues(alpha: 0.1),
-      shape: const CircleBorder(),
+      color: color.withValues(alpha: 0.08),
+      borderRadius: BorderRadius.circular(12),
       child: InkWell(
         onTap: onTap,
-        customBorder: const CircleBorder(),
+        borderRadius: BorderRadius.circular(12),
         child: Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Icon(icon, color: color, size: 20),
+          padding: const EdgeInsets.all(10),
+          child: Icon(icon, color: color, size: 22),
         ),
       ),
     );

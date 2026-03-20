@@ -79,7 +79,7 @@ class _BannerCarouselState
     return Column(
       children: [
         SizedBox(
-          height: 200,
+          height: 220,
           child: PageView.builder(
             controller: _pageController,
             itemCount: widget.products.length,
@@ -93,15 +93,14 @@ class _BannerCarouselState
             },
           ),
         ),
-        const SizedBox(height: 14),
+        const SizedBox(height: 16),
         _DotIndicator(
           count: widget.products.length,
           currentIndex: _currentPage,
           onTap: (index) {
             _pageController.animateToPage(
               index,
-              duration:
-                  const Duration(milliseconds: 400),
+              duration: const Duration(milliseconds: 400),
               curve: Curves.easeInOut,
             );
           },
@@ -128,13 +127,9 @@ class _ProductBannerCard extends StatelessWidget {
       animation: pageController,
       builder: (context, child) {
         double scale = 1.0;
-        if (pageController
-            .position.haveDimensions) {
-          final page =
-              pageController.page ?? 0.0;
-          scale =
-              (1 - ((page - index).abs() * 0.12))
-                  .clamp(0.88, 1.0);
+        if (pageController.position.haveDimensions) {
+          final page = pageController.page ?? 0.0;
+          scale = (1 - ((page - index).abs() * 0.1)).clamp(0.9, 1.0);
         }
         return Center(
           child: Transform.scale(
@@ -148,231 +143,180 @@ class _ProductBannerCard extends StatelessWidget {
   }
 
   Widget _buildCard(BuildContext context) {
-    final imageUrl = product.imageUrls.isNotEmpty
-        ? product.imageUrls.first
-        : '';
+    final imageUrl = product.imageUrls.isNotEmpty ? product.imageUrls.first : '';
 
     return GestureDetector(
-      onTap: () {
-        context.push('/products/${product.id}');
-      },
+      onTap: () => context.push('/products/${product.id}'),
       child: Container(
-        margin: const EdgeInsets.symmetric(
-          horizontal: 6,
-        ),
+        margin: const EdgeInsets.symmetric(horizontal: 8),
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(28),
           boxShadow: [
             BoxShadow(
-              color: AppColors.primaryShadow
-                  .withValues(alpha: 0.18),
-              blurRadius: 20,
-              offset: const Offset(0, 8),
+              color: AppColors.primary.withValues(alpha: 0.15),
+              blurRadius: 25,
+              offset: const Offset(0, 12),
             ),
           ],
         ),
         child: ClipRRect(
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(28),
           child: Stack(
             fit: StackFit.expand,
             children: [
-              // Background gradient
+              // Rich Gradient Background
               Container(
                 decoration: const BoxDecoration(
                   gradient: LinearGradient(
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                     colors: [
-                      Color(0xFF0E7490),
-                      Color(0xFF0891B2),
-                      Color(0xFF22D3EE),
+                      Color(0xFF0F172A), // Slate 900
+                      Color(0xFF1E293B), // Slate 800
+                      Color(0xFF0F172A),
                     ],
                   ),
                 ),
               ),
 
-              // Product image (right side)
+              // Decorative Elements
+              Positioned(
+                right: -40,
+                top: -40,
+                child: Container(
+                  width: 180,
+                  height: 180,
+                  decoration: BoxDecoration(
+                    color: AppColors.primary.withValues(alpha: 0.08),
+                    shape: BoxShape.circle,
+                  ),
+                ),
+              ),
+              Positioned(
+                left: -20,
+                bottom: -20,
+                child: Container(
+                  width: 120,
+                  height: 120,
+                  decoration: BoxDecoration(
+                    color: AppColors.primary.withValues(alpha: 0.05),
+                    shape: BoxShape.circle,
+                  ),
+                ),
+              ),
+
+              // Product Image (Right)
               Positioned(
                 right: -10,
-                top: 10,
-                bottom: 10,
-                width:
-                    MediaQuery.of(context)
-                        .size
-                        .width *
-                    0.42,
+                top: 20,
+                bottom: 20,
+                width: MediaQuery.of(context).size.width * 0.5,
                 child: Hero(
                   tag: 'banner_product_${product.id}',
                   child: imageUrl.isNotEmpty
                       ? Image.network(
                           imageUrl,
                           fit: BoxFit.contain,
-                          errorBuilder:
-                              (_, __, ___) =>
-                                  _buildPlaceholderIcon(),
-                          loadingBuilder: (_,
-                              child,
-                              loadingProgress) {
-                            if (loadingProgress ==
-                                null) {
-                              return child;
-                            }
-                            return Center(
-                              child:
-                                  CircularProgressIndicator(
-                                strokeWidth: 2,
-                                color: Colors.white
-                                    .withValues(
-                                  alpha: 0.5,
-                                ),
-                              ),
-                            );
-                          },
+                          errorBuilder: (_, __, ___) => _buildPlaceholderIcon(),
                         )
                       : _buildPlaceholderIcon(),
                 ),
               ),
 
-              // Subtle pattern overlay
-              Positioned.fill(
-                child: Container(
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.centerLeft,
-                      end: Alignment.centerRight,
-                      stops: const [0.0, 0.55, 1.0],
-                      colors: [
-                        Colors.black
-                            .withValues(alpha: 0.15),
-                        Colors.transparent,
-                        Colors.transparent,
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-
-              // Content (left side)
+              // Content (Left)
               Padding(
-                padding: const EdgeInsets.all(20),
+                padding: const EdgeInsets.all(28),
                 child: Column(
-                  crossAxisAlignment:
-                      CrossAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Badges row
-                    Row(
-                      children: [
-                        if (product.isHot)
-                          const _Badge(
-                            text: '🔥 HOT',
-                            color: AppColors.accent,
+                    // Hot/New Badge
+                    if (product.isHot || product.isNew)
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: product.isHot 
+                              ? [AppColors.error, const Color(0xFFFF6B6B)] 
+                              : [AppColors.primary, const Color(0xFF22D3EE)],
                           ),
-                        if (product.isNew) ...[
-                          if (product.isHot)
-                            const SizedBox(
-                              width: 6,
+                          borderRadius: BorderRadius.circular(20),
+                          boxShadow: [
+                            BoxShadow(
+                              color: (product.isHot ? AppColors.error : AppColors.primary).withValues(alpha: 0.3),
+                              blurRadius: 8,
                             ),
-                          const _Badge(
-                            text: 'MỚI',
-                            color:
-                                AppColors.success,
-                          ),
-                        ],
-                        if (product.isOnSale) ...[
-                          if (product.isHot ||
-                              product.isNew)
-                            const SizedBox(
-                              width: 6,
-                            ),
-                          _Badge(
-                            text: formatDiscount(
-                              product
-                                  .discountPercent,
-                            ),
-                            color: AppColors.error,
-                          ),
-                        ],
-                      ],
-                    ),
-
-                    const Spacer(),
-
-                    // Brand
-                    Text(
-                      product.brandName
-                          .toUpperCase(),
-                      style: TextStyle(
-                        fontSize: 10,
-                        fontWeight: FontWeight.w700,
-                        color: Colors.white
-                            .withValues(alpha: 0.70),
-                        letterSpacing: 1.5,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-
-                    // Product name
-                    SizedBox(
-                      width: MediaQuery.of(context)
-                              .size
-                              .width *
-                          0.45,
-                      child: Text(
-                        product.name,
-                        maxLines: 2,
-                        overflow:
-                            TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          fontSize: 18,
-                          fontWeight:
-                              FontWeight.w800,
-                          color: Colors.white,
-                          height: 1.2,
+                          ],
                         ),
+                        child: Text(
+                          product.isHot ? '🔥 SIÊU ƯU ĐÃI' : '✨ MỚI RA MẮT',
+                          style: const TextStyle(color: Colors.white, fontSize: 8, fontWeight: FontWeight.w900, letterSpacing: 0.5),
+                        ),
+                      ),
+                    const Spacer(),
+                    Text(
+                      product.brandName.toUpperCase(),
+                      style: TextStyle(
+                        color: Colors.white.withValues(alpha: 0.5),
+                        fontSize: 10,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: 3,
                       ),
                     ),
                     const SizedBox(height: 8),
-
-                    // Price row
+                    SizedBox(
+                      width: MediaQuery.of(context).size.width * 0.42,
+                      child: Text(
+                        product.name,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 22,
+                          fontWeight: FontWeight.w900,
+                          height: 1.1,
+                          letterSpacing: -0.5,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
                     Row(
+                      crossAxisAlignment: CrossAxisAlignment.baseline,
+                      textBaseline: TextBaseline.alphabetic,
                       children: [
                         Text(
                           formatVND(product.price),
                           style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight:
-                                FontWeight.w800,
-                            color:
-                                Color(0xFFFFD700),
+                            color: Color(0xFF22D3EE),
+                            fontSize: 20,
+                            fontWeight: FontWeight.w900,
                           ),
                         ),
                         if (product.isOnSale) ...[
-                          const SizedBox(width: 8),
+                          const SizedBox(width: 10),
                           Text(
-                            formatVND(
-                              product
-                                  .originalPrice!,
-                            ),
+                            formatVND(product.originalPrice!),
                             style: TextStyle(
+                              color: Colors.white.withValues(alpha: 0.3),
                               fontSize: 12,
-                              color: Colors.white
-                                  .withValues(
-                                alpha: 0.60,
-                              ),
-                              decoration:
-                                  TextDecoration
-                                      .lineThrough,
-                              decorationColor:
-                                  Colors.white
-                                      .withValues(
-                                alpha: 0.60,
-                              ),
+                              decoration: TextDecoration.lineThrough,
+                              fontWeight: FontWeight.w500,
                             ),
                           ),
                         ],
                       ],
                     ),
                   ],
+                ),
+              ),
+              
+              // Glossy border mask effect
+              Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(28),
+                  border: Border.all(
+                    color: Colors.white.withValues(alpha: 0.08),
+                    width: 1.5,
+                  ),
                 ),
               ),
             ],
@@ -386,41 +330,8 @@ class _ProductBannerCard extends StatelessWidget {
     return Center(
       child: Icon(
         Icons.devices_rounded,
-        size: 56,
-        color: Colors.white.withValues(alpha: 0.3),
-      ),
-    );
-  }
-}
-
-class _Badge extends StatelessWidget {
-  final String text;
-  final Color color;
-
-  const _Badge({
-    required this.text,
-    required this.color,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: 8,
-        vertical: 4,
-      ),
-      decoration: BoxDecoration(
-        color: color,
-        borderRadius: BorderRadius.circular(6),
-      ),
-      child: Text(
-        text,
-        style: const TextStyle(
-          fontSize: 9,
-          fontWeight: FontWeight.w700,
-          color: Colors.white,
-          letterSpacing: 0.5,
-        ),
+        size: 60,
+        color: Colors.white.withValues(alpha: 0.2),
       ),
     );
   }
@@ -440,36 +351,26 @@ class _DotIndicator extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Row(
-      mainAxisAlignment:
-          MainAxisAlignment.center,
+      mainAxisAlignment: MainAxisAlignment.center,
       children: List.generate(count, (index) {
         final isActive = index == currentIndex;
         return GestureDetector(
           onTap: () => onTap?.call(index),
           child: AnimatedContainer(
-            duration: const Duration(
-              milliseconds: 300,
-            ),
-            curve: Curves.easeInOut,
-            width: isActive ? 28 : 8,
-            height: 8,
-            margin: const EdgeInsets.symmetric(
-              horizontal: 3,
-            ),
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.easeOutCubic,
+            width: isActive ? 24 : 8,
+            height: 6,
+            margin: const EdgeInsets.symmetric(horizontal: 4),
             decoration: BoxDecoration(
-              color: isActive
-                  ? AppColors.primary
-                  : AppColors.border,
-              borderRadius:
-                  BorderRadius.circular(4),
+              color: isActive ? AppColors.primary : AppColors.border.withValues(alpha: 0.5),
+              borderRadius: BorderRadius.circular(10),
               boxShadow: isActive
                   ? [
                       BoxShadow(
-                        color: AppColors.primary
-                            .withValues(alpha: 0.3),
-                        blurRadius: 6,
-                        offset:
-                            const Offset(0, 2),
+                        color: AppColors.primary.withValues(alpha: 0.3),
+                        blurRadius: 8,
+                        offset: const Offset(0, 2),
                       ),
                     ]
                   : null,

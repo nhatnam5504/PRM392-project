@@ -15,8 +15,7 @@ class CartScreen extends StatefulWidget {
   const CartScreen({super.key});
 
   @override
-  State<CartScreen> createState() =>
-      _CartScreenState();
+  State<CartScreen> createState() => _CartScreenState();
 }
 
 class _CartScreenState extends State<CartScreen> {
@@ -45,24 +44,15 @@ class _CartScreenState extends State<CartScreen> {
     final profileVm = context.read<ProfileViewModel>();
     final dealsVm = context.read<DealsViewModel>();
 
-    // Load user data for default name
     if (profileVm.user == null) {
       profileVm.loadProfile();
     }
-    
-    // Pre-fill name from profile
     _nameController.text = profileVm.user?.name ?? '';
     
     cartVm.loadCart();
     if (dealsVm.promotions.isEmpty) {
       dealsVm.loadDeals();
     }
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    // Logic moved to didChangeDependencies for profileVm access
   }
 
   void _syncOrderInfo(CartViewModel vm) {
@@ -79,38 +69,33 @@ class _CartScreenState extends State<CartScreen> {
     return Consumer<CartViewModel>(
       builder: (context, vm, _) {
         return Scaffold(
-          backgroundColor: AppColors.background,
+          backgroundColor: Colors.white,
           appBar: AppBar(
-            title: const Text(
-              'Giỏ hàng của bạn',
+            backgroundColor: Colors.white,
+            elevation: 0,
+            title: const Text('Giỏ hàng', style: AppTextStyles.headingMd),
+            centerTitle: true,
+            leading: IconButton(
+              icon: const Icon(Icons.arrow_back_ios_new_rounded, color: AppColors.textPrimary, size: 20),
+              onPressed: () => context.pop(),
             ),
             actions: [
               if (!vm.isEmpty)
                 TextButton(
-                  onPressed: () =>
-                      _showClearDialog(vm),
+                  onPressed: () => _showClearDialog(vm),
                   child: Text(
                     'Xóa hết',
-                    style: AppTextStyles.labelBold
-                        .copyWith(
-                      color: AppColors.primary,
-                    ),
+                    style: AppTextStyles.labelBold.copyWith(color: AppColors.error, fontSize: 13),
                   ),
                 ),
             ],
           ),
           body: vm.isLoading
-              ? const Center(
-                  child:
-                      CircularProgressIndicator(
-                    color: AppColors.primary,
-                  ),
-                )
+              ? const Center(child: CircularProgressIndicator(color: AppColors.primary))
               : vm.isEmpty
                   ? _buildEmptyCart()
                   : _buildCartContent(vm),
-          bottomNavigationBar:
-              vm.isEmpty ? null : _buildBottom(vm),
+          bottomNavigationBar: vm.isEmpty ? null : _buildBottom(vm),
         );
       },
     );
@@ -119,29 +104,34 @@ class _CartScreenState extends State<CartScreen> {
   Widget _buildEmptyCart() {
     return Center(
       child: Column(
-        mainAxisSize: MainAxisSize.min,
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Icon(
-            Icons.shopping_cart_outlined,
-            size: 80,
-            color: AppColors.textHint,
-          ),
-          const SizedBox(height: 16),
-          const Text(
-            'Giỏ hàng trống',
-            style: AppTextStyles.headingSm,
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'Hãy thêm sản phẩm vào giỏ hàng',
-            style: AppTextStyles.bodyMd.copyWith(
-              color: AppColors.textSecondary,
+          Container(
+            padding: const EdgeInsets.all(32),
+            decoration: BoxDecoration(
+              color: AppColors.surfaceDark,
+              shape: BoxShape.circle,
             ),
+            child: const Icon(Icons.shopping_cart_outlined, size: 64, color: AppColors.textHint),
           ),
           const SizedBox(height: 24),
-          ElevatedButton(
-            onPressed: () => context.go('/shop'),
-            child: const Text('Mua sắm ngay'),
+          const Text('Giỏ hàng của bạn đang trống', style: AppTextStyles.headingSm),
+          const SizedBox(height: 8),
+          Text('Có vẻ như bạn chưa chọn được sản phẩm nào.', style: AppTextStyles.bodyMd.copyWith(color: AppColors.textSecondary)),
+          const SizedBox(height: 32),
+          SizedBox(
+            width: 200,
+            height: 50,
+            child: ElevatedButton(
+              onPressed: () => context.go('/'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primary,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                elevation: 0,
+              ),
+              child: const Text('MUA SẮM NGAY'),
+            ),
           ),
         ],
       ),
@@ -149,802 +139,159 @@ class _CartScreenState extends State<CartScreen> {
   }
 
   Widget _buildCartContent(CartViewModel vm) {
-    final dealsVm =
-        context.watch<DealsViewModel>();
+    final dealsVm = context.watch<DealsViewModel>();
     final bogoProductIds = <int>{};
     for (final promo in dealsVm.bogoPromotions) {
-      if (promo.isActive &&
-          promo.applicableProductIds != null) {
-        bogoProductIds.addAll(
-          promo.applicableProductIds!,
-        );
+      if (promo.isActive && promo.applicableProductIds != null) {
+        bogoProductIds.addAll(promo.applicableProductIds!);
       }
     }
 
     return ListView(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.fromLTRB(20, 10, 20, 32),
       children: [
-        ...vm.items.expand(
-          (item) {
-            final isBogo = bogoProductIds
-                .contains(item.productId);
-            return [
-              _buildCartItem(item, vm),
-              if (isBogo)
-                _buildBogoFreeItem(item),
-            ];
-          },
-        ),
-        const SizedBox(height: 12),
-        _buildOrderInfoSection(vm),
-        const SizedBox(height: 12),
-        // Summary
-        _buildSummary(vm),
+        ...vm.items.expand((item) {
+          final isBogo = bogoProductIds.contains(item.productId);
+          return [
+            _buildCartItem(item, vm),
+            if (isBogo) _buildBogoFreeItem(item),
+          ];
+        }),
+        const SizedBox(height: 24),
+        _buildOrderInfoSection(),
+        const SizedBox(height: 100),
       ],
     );
   }
 
-  Widget _buildOrderInfoSection(CartViewModel vm) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: const [
-          BoxShadow(
-            color: Color(0x0D000000),
-            blurRadius: 2,
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'THÔNG TIN GIAO HÀNG',
-            style: AppTextStyles.labelSm.copyWith(
-              color: AppColors.textSecondary,
-              letterSpacing: 0.8,
-            ),
-          ),
-          const SizedBox(height: 16),
-          _buildField(
-            controller: _nameController,
-            label: 'Tên người nhận',
-            hint: 'Nhập tên người nhận',
-            icon: Icons.person_outlined,
-          ),
-          const SizedBox(height: 12),
-          _buildField(
-            controller: _phoneController,
-            label: 'Số điện thoại',
-            hint: 'Nhập số điện thoại',
-            icon: Icons.phone_outlined,
-            keyboardType: TextInputType.phone,
-          ),
-          const SizedBox(height: 12),
-          _buildField(
-            controller: _addressController,
-            label: 'Địa chỉ giao hàng',
-            hint: 'Nhập địa chỉ cụ thể',
-            icon: Icons.location_on_outlined,
-            maxLines: 2,
-          ),
-          const SizedBox(height: 12),
-          _buildField(
-            controller: _noteController,
-            label: 'Ghi chú (Tùy chọn)',
-            hint: 'Ví dụ: Giao cho Hà',
-            icon: Icons.note_add_outlined,
-            maxLines: 2,
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildField({
-    required TextEditingController controller,
-    required String label,
-    required String hint,
-    required IconData icon,
-    TextInputType? keyboardType,
-    int maxLines = 1,
-  }) {
+  Widget _buildOrderInfoSection() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
-          children: [
-            Icon(icon, size: 16, color: AppColors.textSecondary),
-            const SizedBox(width: 6),
-            Text(
-              label,
-              style: AppTextStyles.labelBold.copyWith(
-                fontSize: 12,
-                color: AppColors.textSecondary,
-              ),
-            ),
-          ],
+        const Padding(
+          padding: EdgeInsets.only(left: 4, bottom: 16),
+          child: Text('Thông tin giao hàng', style: AppTextStyles.headingSm),
         ),
-        const SizedBox(height: 6),
-        TextField(
-          controller: controller,
-          keyboardType: keyboardType,
-          maxLines: maxLines,
-          style: AppTextStyles.bodyMd,
-          decoration: InputDecoration(
-            hintText: hint,
-            hintStyle: AppTextStyles.bodyMd.copyWith(color: AppColors.textHint),
-            filled: true,
-            fillColor: AppColors.inputBackground,
-            contentPadding: const EdgeInsets.symmetric(
-              horizontal: 12,
-              vertical: 10,
-            ),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: const BorderSide(color: AppColors.border),
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: const BorderSide(color: AppColors.border),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: const BorderSide(
-                color: AppColors.primary,
-                width: 1.2,
-              ),
-            ),
+        Container(
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: AppColors.surfaceDark, width: 1.5),
+          ),
+          child: Column(
+            children: [
+              _buildTextField('Họ và tên', _nameController, Icons.person_outline),
+              const Padding(padding: EdgeInsets.symmetric(vertical: 8), child: Divider(height: 1, color: AppColors.surfaceDark)),
+              _buildTextField('Số điện thoại', _phoneController, Icons.phone_android_outlined, keyboardType: TextInputType.phone),
+              const Padding(padding: EdgeInsets.symmetric(vertical: 8), child: Divider(height: 1, color: AppColors.surfaceDark)),
+              _buildTextField('Địa chỉ giao hàng', _addressController, Icons.location_on_outlined),
+              const Padding(padding: EdgeInsets.symmetric(vertical: 8), child: Divider(height: 1, color: AppColors.surfaceDark)),
+              _buildTextField('Ghi chú cho shipper', _noteController, Icons.sticky_note_2_outlined),
+            ],
           ),
         ),
       ],
     );
   }
 
-  Widget _buildCartItem(
-    CartItemModel item,
-    CartViewModel vm,
-  ) {
-    return Dismissible(
-      key: ValueKey(item.productId),
-      direction: DismissDirection.endToStart,
-      background: Container(
-        margin: const EdgeInsets.only(bottom: 12),
-        padding: const EdgeInsets.only(right: 20),
-        decoration: BoxDecoration(
-          color: AppColors.error,
-          borderRadius:
-              BorderRadius.circular(12),
-        ),
-        alignment: Alignment.centerRight,
-        child: const Icon(
-          Icons.delete_outline,
-          color: Colors.white,
-        ),
-      ),
-      onDismissed: (_) =>
-          vm.removeItem(item.productId),
-      child: Container(
-        margin: const EdgeInsets.only(bottom: 12),
-        padding: const EdgeInsets.all(12),
-        decoration: BoxDecoration(
-          color: AppColors.surface,
-          borderRadius:
-              BorderRadius.circular(12),
-          boxShadow: const [
-            BoxShadow(
-              color: Color(0x0D000000),
-              blurRadius: 2,
-            ),
-          ],
-        ),
-        child: Row(
-          children: [
-            // Product image
-            ClipRRect(
-              borderRadius:
-                  BorderRadius.circular(8),
-              child: item.imageUrl.isNotEmpty
-                  ? Image.network(
-                      item.imageUrl,
-                      width: 96,
-                      height: 96,
-                      fit: BoxFit.cover,
-                      errorBuilder:
-                          (_, __, ___) =>
-                              _buildImgPlaceholder(),
-                    )
-                  : _buildImgPlaceholder(),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment:
-                    CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    item.productName,
-                    style:
-                        AppTextStyles.labelBold,
-                    maxLines: 2,
-                    overflow:
-                        TextOverflow.ellipsis,
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    item.brandName,
-                    style: AppTextStyles.bodySm
-                        .copyWith(
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Row(
-                    mainAxisAlignment:
-                        MainAxisAlignment
-                            .spaceBetween,
-                    children: [
-                      Text(
-                        formatVND(item.price),
-                        style:
-                            AppTextStyles.priceSm,
-                      ),
-                      _buildQuantitySelector(
-                        item,
-                        vm,
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildImgPlaceholder() {
-    return Container(
-      width: 96,
-      height: 96,
-      decoration: BoxDecoration(
-        color: AppColors.surfaceDark,
-        borderRadius:
-            BorderRadius.circular(8),
-      ),
-      child: const Icon(
-        Icons.image_outlined,
-        color: AppColors.border,
-      ),
-    );
-  }
-
-  Widget _buildBogoFreeItem(CartItemModel item) {
-    return Container(
-      margin: const EdgeInsets.only(
-        bottom: 12,
-        left: 24,
-      ),
-      padding: const EdgeInsets.all(10),
-      decoration: BoxDecoration(
-        color: AppColors.primaryLight
-            .withValues(alpha: 0.4),
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(
-          color: AppColors.primary
-              .withValues(alpha: 0.3),
-        ),
-      ),
-      child: Row(
-        children: [
-          ClipRRect(
-            borderRadius:
-                BorderRadius.circular(6),
-            child: item.imageUrl.isNotEmpty
-                ? Image.network(
-                    item.imageUrl,
-                    width: 48,
-                    height: 48,
-                    fit: BoxFit.cover,
-                    errorBuilder:
-                        (_, __, ___) =>
-                            _buildSmallPlaceholder(),
-                  )
-                : _buildSmallPlaceholder(),
-          ),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Column(
-              crossAxisAlignment:
-                  CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Container(
-                      padding:
-                          const EdgeInsets.symmetric(
-                        horizontal: 5,
-                        vertical: 1,
-                      ),
-                      decoration: BoxDecoration(
-                        color: AppColors.primary,
-                        borderRadius:
-                            BorderRadius.circular(
-                          3,
-                        ),
-                      ),
-                      child: Text(
-                        'TẶNG KÈM',
-                        style: AppTextStyles
-                            .labelSm
-                            .copyWith(
-                          color: Colors.white,
-                          fontSize: 8,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 4),
-                    Container(
-                      padding:
-                          const EdgeInsets.symmetric(
-                        horizontal: 5,
-                        vertical: 1,
-                      ),
-                      decoration: BoxDecoration(
-                        color: AppColors.accent,
-                        borderRadius:
-                            BorderRadius.circular(
-                          3,
-                        ),
-                      ),
-                      child: Text(
-                        'BOGO',
-                        style: AppTextStyles
-                            .labelSm
-                            .copyWith(
-                          color: Colors.white,
-                          fontSize: 8,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  item.productName,
-                  style: AppTextStyles.bodySm,
-                  maxLines: 1,
-                  overflow:
-                      TextOverflow.ellipsis,
-                ),
-                const SizedBox(height: 2),
-                Row(
-                  children: [
-                    Text(
-                      '0đ',
-                      style: AppTextStyles
-                          .labelBold
-                          .copyWith(
-                        color: AppColors.success,
-                        fontSize: 12,
-                      ),
-                    ),
-                    const SizedBox(width: 6),
-                    Text(
-                      formatVND(item.price),
-                      style: AppTextStyles
-                          .priceStrike
-                          .copyWith(fontSize: 11),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-          Text(
-            'x${item.quantity}',
-            style: AppTextStyles.bodySm.copyWith(
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildSmallPlaceholder() {
-    return Container(
-      width: 48,
-      height: 48,
-      decoration: BoxDecoration(
-        color: AppColors.surfaceDark,
-        borderRadius:
-            BorderRadius.circular(6),
-      ),
-      child: const Icon(
-        Icons.card_giftcard,
-        color: AppColors.primary,
-        size: 20,
-      ),
-    );
-  }
-
-  Widget _buildQuantitySelector(
-    CartItemModel item,
-    CartViewModel vm,
-  ) {
-    return Container(
-      padding: const EdgeInsets.all(4),
-      decoration: BoxDecoration(
-        color: AppColors.surfaceDark,
-        borderRadius:
-            BorderRadius.circular(8),
-      ),
-      child: Row(
-        children: [
-          GestureDetector(
-            onTap: () {
-              if (item.quantity > 1) {
-                vm.updateQuantity(
-                  item.productId,
-                  item.quantity - 1,
-                );
-              } else {
-                vm.removeItem(item.productId);
-              }
-            },
-            child: Container(
-              width: 24,
-              height: 24,
-              decoration: BoxDecoration(
-                color: AppColors.surface,
-                borderRadius:
-                    BorderRadius.circular(4),
-              ),
-              child: const Icon(
-                Icons.remove,
-                size: 14,
-              ),
-            ),
-          ),
-          Padding(
-            padding:
-                const EdgeInsets.symmetric(
-              horizontal: 8,
-            ),
-            child: Text(
-              item.quantity
-                  .toString()
-                  .padLeft(2, '0'),
-              style: AppTextStyles.labelMd
-                  .copyWith(
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-          ),
-          GestureDetector(
-            onTap: () {
-              if (!item.isMaxQty) {
-                vm.updateQuantity(
-                  item.productId,
-                  item.quantity + 1,
-                );
-              }
-            },
-            child: Container(
-              width: 24,
-              height: 24,
-              decoration: BoxDecoration(
-                color: item.isMaxQty
-                    ? AppColors.textHint
-                    : AppColors.primary,
-                borderRadius:
-                    BorderRadius.circular(4),
-              ),
-              child: const Icon(
-                Icons.add,
-                size: 14,
-                color: Colors.white,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildVoucherSection(CartViewModel vm) {
-    final controller = TextEditingController();
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius:
-            BorderRadius.circular(12),
-        boxShadow: const [
-          BoxShadow(
-            color: Color(0x0D000000),
-            blurRadius: 2,
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment:
-            CrossAxisAlignment.start,
-        children: [
-          Text(
-            'MÃ GIẢM GIÁ',
-            style: AppTextStyles.labelSm
-                .copyWith(letterSpacing: 0.8),
-          ),
-          const SizedBox(height: 12),
-          if (vm.appliedVoucher != null)
-            Row(
-              children: [
-                const Icon(
-                  Icons.check_circle,
-                  color: AppColors.success,
-                  size: 18,
-                ),
-                const SizedBox(width: 8),
-                Text(
-                  'Mã ${vm.appliedVoucher!.code} '
-                  'đã áp dụng',
-                  style: AppTextStyles.labelBold
-                      .copyWith(
-                    color: AppColors.success,
-                  ),
-                ),
-                const Spacer(),
-                GestureDetector(
-                  onTap: vm.removeVoucher,
-                  child: const Icon(
-                    Icons.close,
-                    size: 18,
-                    color: AppColors.textHint,
-                  ),
-                ),
-              ],
-            )
-          else
-            Row(
-              children: [
-                Expanded(
-                  child: SizedBox(
-                    height: 36,
-                    child: TextField(
-                      controller: controller,
-                      decoration:
-                          InputDecoration(
-                        hintText:
-                            'Nhập mã giảm giá',
-                        hintStyle: AppTextStyles
-                            .bodyMd
-                            .copyWith(
-                          color:
-                              AppColors.textHint,
-                        ),
-                        prefixIcon: const Icon(
-                          Icons
-                              .confirmation_number_outlined,
-                          size: 16,
-                          color:
-                              AppColors.textHint,
-                        ),
-                        prefixIconConstraints:
-                            const BoxConstraints(
-                          minWidth: 36,
-                        ),
-                        filled: true,
-                        fillColor: AppColors
-                            .inputBackground,
-                        contentPadding:
-                            const EdgeInsets
-                                .symmetric(
-                          horizontal: 12,
-                        ),
-                        border:
-                            OutlineInputBorder(
-                          borderRadius:
-                              BorderRadius
-                                  .circular(8),
-                          borderSide:
-                              const BorderSide(
-                            color:
-                                AppColors.divider,
-                          ),
-                        ),
-                        enabledBorder:
-                            OutlineInputBorder(
-                          borderRadius:
-                              BorderRadius
-                                  .circular(8),
-                          borderSide:
-                              const BorderSide(
-                            color:
-                                AppColors.divider,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                GestureDetector(
-                  onTap: () {
-                    if (controller
-                        .text.isNotEmpty) {
-                      vm.applyVoucher(
-                        controller.text,
-                      );
-                    }
-                  },
-                  child: Container(
-                    height: 36,
-                    width: 80,
-                    decoration: BoxDecoration(
-                      color: AppColors.accent,
-                      borderRadius:
-                          BorderRadius.circular(
-                        8,
-                      ),
-                    ),
-                    child: Center(
-                      child: Text(
-                        'Áp dụng',
-                        style: AppTextStyles
-                            .labelBold
-                            .copyWith(
-                          color: Colors.white,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          if (vm.errorMessage != null &&
-              vm.appliedVoucher == null)
-            Padding(
-              padding:
-                  const EdgeInsets.only(top: 8),
-              child: Text(
-                vm.errorMessage!,
-                style: AppTextStyles.bodySm
-                    .copyWith(
-                  color: AppColors.error,
-                ),
-              ),
-            ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildSummary(CartViewModel vm) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius:
-            BorderRadius.circular(12),
-        boxShadow: const [
-          BoxShadow(
-            color: Color(0x0D000000),
-            blurRadius: 2,
-          ),
-        ],
-      ),
-      child: Column(
-        children: [
-          _SummaryRow(
-            'Tạm tính',
-            formatVND(vm.subtotal),
-          ),
-          if (vm.discount > 0) ...[
-            const SizedBox(height: 12),
-            _SummaryRow(
-              'Giảm giá',
-              '-${formatVND(vm.discount)}',
-              valueColor: AppColors.success,
-            ),
-          ],
-          const SizedBox(height: 12),
-          const Divider(
-            color: AppColors.divider,
-          ),
-          const SizedBox(height: 12),
-          Row(
-            mainAxisAlignment:
-                MainAxisAlignment.spaceBetween,
-            children: [
-              const Text(
-                'Tổng cộng',
-                style: AppTextStyles.headingSm,
-              ),
-              Text(
-                formatVND(vm.total),
-                style: AppTextStyles.priceLg,
-              ),
-            ],
-          ),
-        ],
+  Widget _buildTextField(String label, TextEditingController controller, IconData icon, {TextInputType? keyboardType}) {
+    return TextField(
+      controller: controller,
+      keyboardType: keyboardType,
+      style: AppTextStyles.bodyMd.copyWith(fontWeight: FontWeight.w600),
+      decoration: InputDecoration(
+        labelText: label,
+        labelStyle: AppTextStyles.bodySm.copyWith(color: AppColors.textHint),
+        prefixIcon: Icon(icon, size: 20, color: AppColors.primary),
+        border: InputBorder.none,
+        contentPadding: const EdgeInsets.symmetric(vertical: 8),
       ),
     );
   }
 
   Widget _buildBottom(CartViewModel vm) {
     return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: const BoxDecoration(
-        color: AppColors.surface,
-        border: Border(
-          top: BorderSide(
-            color: AppColors.borderLight,
+      padding: const EdgeInsets.fromLTRB(20, 16, 20, 32),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 10,
+            offset: const Offset(0, -5),
           ),
-        ),
+        ],
       ),
-      child: SizedBox(
-        height: 56,
-        child: ElevatedButton(
-          onPressed: () async {
-            // Validation: Required fields check
-            if (_nameController.text.trim().isEmpty ||
-                _phoneController.text.trim().isEmpty ||
-                _addressController.text.trim().isEmpty) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Vui lòng nhập đầy đủ tên, số điện thoại và địa chỉ nhận hàng.'),
-                  backgroundColor: AppColors.error,
-                ),
-              );
-              return;
-            }
-
-            // Đồng bộ thông tin trước khi gọi checkAvailability
-            _syncOrderInfo(vm);
-            
-            final checkoutVm = context.read<CheckoutViewModel>();
-            final dealsVm = context.read<DealsViewModel>();
-            
-            // Xây dựng danh sách BOGOIds
-            final bogoIds = <int>{};
-            for (final promo in dealsVm.bogoPromotions) {
-              if (promo.isActive && promo.applicableProductIds != null) {
-                bogoIds.addAll(promo.applicableProductIds!);
-              }
-            }
-
-            // Gọi check available ngay tại bước giỏ hàng kèm đủ thông tin
-            final success = await checkoutVm.checkAvailability(
-              items: vm.items,
-              bogoProductIds: bogoIds,
-              recipientName: _nameController.text,
-              phoneNumber: _phoneController.text,
-              address: _addressController.text,
-              note: _noteController.text,
-            );
-
-            if (success && mounted) {
-              context.push('/checkout');
-            } else if (!success && mounted) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(
-                    checkoutVm.errorMessage ?? 'Không thể kiểm tra sản phẩm.',
-                  ),
-                ),
-              );
-            }
-          },
-          child: Text(
-            'Tiến hành thanh toán '
-            '(${vm.itemCount})',
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text('Tổng thanh toán', style: AppTextStyles.bodyMd.copyWith(color: AppColors.textSecondary, fontWeight: FontWeight.w600)),
+              Text(formatVND(vm.total), style: AppTextStyles.labelBold.copyWith(fontSize: 18, color: AppColors.primary)),
+            ],
           ),
-        ),
+          const SizedBox(height: 16),
+          SizedBox(
+            width: double.infinity,
+            height: 54,
+            child: ElevatedButton(
+              onPressed: () async {
+                if (_nameController.text.trim().isEmpty || _phoneController.text.trim().isEmpty || _addressController.text.trim().isEmpty) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Vui lòng nhập đầy đủ thông tin giao hàng'),
+                      behavior: SnackBarBehavior.floating,
+                      backgroundColor: AppColors.error,
+                    ),
+                  );
+                  return;
+                }
+
+                _syncOrderInfo(vm);
+                
+                final checkoutVm = context.read<CheckoutViewModel>();
+                final dealsVm = context.read<DealsViewModel>();
+                
+                final bogoIds = <int>{};
+                for (final promo in dealsVm.bogoPromotions) {
+                  if (promo.isActive && promo.applicableProductIds != null) {
+                    bogoIds.addAll(promo.applicableProductIds!);
+                  }
+                }
+
+                final success = await checkoutVm.checkAvailability(
+                  items: vm.items,
+                  bogoProductIds: bogoIds,
+                  recipientName: _nameController.text,
+                  phoneNumber: _phoneController.text,
+                  address: _addressController.text,
+                  note: _noteController.text,
+                );
+
+                if (success && mounted) {
+                  context.push('/checkout');
+                } else if (!success && mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(checkoutVm.errorMessage ?? 'Không thể kiểm tra sản phẩm.'),
+                      behavior: SnackBarBehavior.floating,
+                    ),
+                  );
+                }
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primary,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                elevation: 0,
+              ),
+              child: Text('TIẾN HÀNH THANH TOÁN (${vm.itemCount})', style: AppTextStyles.labelBold.copyWith(color: Colors.white)),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -953,30 +300,103 @@ class _CartScreenState extends State<CartScreen> {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Xóa giỏ hàng'),
-        content: const Text(
-          'Bạn có chắc muốn xóa tất cả '
-          'sản phẩm khỏi giỏ hàng?',
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: const Text('Xóa giỏ hàng?'),
+        content: const Text('Tất cả sản phẩm trong giỏ hàng sẽ bị gỡ bỏ. Bạn chắc chắn chứ?'),
         actions: [
-          TextButton(
-            onPressed: () =>
-                Navigator.pop(ctx),
-            child: const Text('Hủy'),
-          ),
+          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Hủy')),
           TextButton(
             onPressed: () {
               vm.clearCart();
               Navigator.pop(ctx);
             },
-            child: Text(
-              'Xóa hết',
-              style: TextStyle(
-                color: AppColors.error,
-              ),
-            ),
+            child: const Text('Xóa tất cả', style: TextStyle(color: AppColors.error)),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildCartItem(CartItemModel item, CartViewModel vm) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.surfaceDark),
+      ),
+      child: Row(
+        children: [
+          ClipRRect(
+            borderRadius: BorderRadius.circular(12),
+            child: Image.network(item.imageUrl, width: 80, height: 80, fit: BoxFit.cover,
+                errorBuilder: (_, __, ___) => Container(color: AppColors.surfaceDark, width: 80, height: 80, child: const Icon(Icons.image_outlined))),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(item.productName, style: AppTextStyles.labelBold, maxLines: 2, overflow: TextOverflow.ellipsis),
+                const SizedBox(height: 4),
+                Text(formatVND(item.price), style: AppTextStyles.priceSm.copyWith(color: AppColors.primary)),
+              ],
+            ),
+          ),
+          Row(
+            children: [
+              _QtyButton(icon: Icons.remove, onTap: () => vm.updateQuantity(item.productId, item.quantity - 1)),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 12),
+                child: Text('${item.quantity}', style: AppTextStyles.labelBold),
+              ),
+              _QtyButton(icon: Icons.add, onTap: () => vm.updateQuantity(item.productId, item.quantity + 1)),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildBogoFreeItem(CartItemModel item) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16, left: 24),
+      padding: const EdgeInsets.all(8),
+      decoration: BoxDecoration(
+        color: AppColors.primary.withValues(alpha: 0.05),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppColors.primary.withValues(alpha: 0.2)),
+      ),
+      child: Row(
+        children: [
+          const Icon(Icons.card_giftcard_rounded, color: AppColors.primary, size: 20),
+          const SizedBox(width: 12),
+          Expanded(child: Text('Tặng kèm 1 ${item.productName}', style: AppTextStyles.bodySm.copyWith(color: AppColors.primary, fontWeight: FontWeight.bold))),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+            decoration: BoxDecoration(color: AppColors.primary, borderRadius: BorderRadius.circular(4)),
+            child: const Text('MIỄN PHÍ', style: TextStyle(color: Colors.white, fontSize: 9, fontWeight: FontWeight.bold)),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _QtyButton extends StatelessWidget {
+  final IconData icon;
+  final VoidCallback onTap;
+  const _QtyButton({super.key, required this.icon, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.all(4),
+        decoration: BoxDecoration(shape: BoxShape.circle, border: Border.all(color: AppColors.surfaceDark)),
+        child: Icon(icon, size: 16, color: AppColors.textPrimary),
       ),
     );
   }
@@ -986,32 +406,15 @@ class _SummaryRow extends StatelessWidget {
   final String label;
   final String value;
   final Color? valueColor;
-
-  const _SummaryRow(
-    this.label,
-    this.value, {
-    this.valueColor,
-  });
+  const _SummaryRow(this.label, this.value, {this.valueColor});
 
   @override
   Widget build(BuildContext context) {
     return Row(
-      mainAxisAlignment:
-          MainAxisAlignment.spaceBetween,
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(
-          label,
-          style: AppTextStyles.bodyMd.copyWith(
-            color: AppColors.textSecondary,
-          ),
-        ),
-        Text(
-          value,
-          style:
-              AppTextStyles.labelBold.copyWith(
-            color: valueColor,
-          ),
-        ),
+        Text(label, style: AppTextStyles.bodyMd.copyWith(color: AppColors.textSecondary)),
+        Text(value, style: AppTextStyles.labelBold.copyWith(color: valueColor ?? AppColors.textPrimary)),
       ],
     );
   }

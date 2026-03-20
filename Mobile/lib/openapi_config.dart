@@ -8,6 +8,7 @@
 // For local/staging development, replace the URL with a staging endpoint or
 // a local file path (e.g. 'assets/api-spec.json').
 
+/* TEMPORARILY DISABLED DUE TO VERSION MISMATCH ERRORS
 import 'package:openapi_generator_annotations/openapi_generator_annotations.dart';
 
 @Openapi(
@@ -42,3 +43,4 @@ class ProductsOpenApiConfig extends OpenapiGeneratorConfig {}
   outputDirectory: 'lib/generated/users',
 )
 class UsersOpenApiConfig extends OpenapiGeneratorConfig {}
+*/

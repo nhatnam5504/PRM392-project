@@ -11,9 +11,67 @@ class ReviewViewModel extends ChangeNotifier {
 
   bool _isLoading = false;
   String? _errorMessage;
+  List<dynamic> _myReviews = [];
 
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
+  List<dynamic> get myReviews => _myReviews;
+
+  Future<void> fetchMyReviews() async {
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
+    try {
+      _myReviews = await _repository.getMyReviews();
+    } catch (e) {
+      _errorMessage = 'Không thể tải đánh giá của bạn.';
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<bool> updateReview({
+    required int reviewId,
+    required int rating,
+    required String comment,
+  }) async {
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
+    try {
+      await _repository.updateReview(
+        reviewId: reviewId,
+        rating: rating,
+        comment: comment,
+      );
+      await fetchMyReviews();
+      return true;
+    } catch (e) {
+      _errorMessage = 'Không thể cập nhật đánh giá.';
+      return false;
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<bool> deleteReview(int reviewId) async {
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
+    try {
+      await _repository.deleteReview(reviewId);
+      await fetchMyReviews();
+      return true;
+    } catch (e) {
+      _errorMessage = 'Không thể xóa đánh giá.';
+      return false;
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
 
   Future<bool> submitReview({
     required int productId,

@@ -70,98 +70,139 @@ class _SearchScreenState extends State<SearchScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
-        title: TextField(
-          controller: _controller,
-          autofocus: true,
-          decoration: InputDecoration(
-            hintText: 'Tìm kiếm sản phẩm...',
-            border: InputBorder.none,
-            enabledBorder: InputBorder.none,
-            focusedBorder: InputBorder.none,
-            filled: false,
-            suffixIcon: _controller.text.isNotEmpty
-                ? IconButton(
-                    icon: const Icon(Icons.close, size: 20),
-                    onPressed: () {
-                      _controller.clear();
-                      _onSearchChanged('');
-                    },
-                  )
-                : null,
+        backgroundColor: Colors.white,
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: AppColors.textPrimary, size: 20),
+          onPressed: () => context.pop(),
+        ),
+        titleSpacing: 0,
+        title: Container(
+          margin: const EdgeInsets.only(right: 20),
+          height: 46,
+          decoration: BoxDecoration(
+            color: AppColors.surfaceDark.withOpacity(0.5),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: AppColors.surfaceDark),
           ),
-          style: AppTextStyles.bodyLg,
-          onChanged: _onSearchChanged,
-          onSubmitted: (q) {
-            if (q.trim().isNotEmpty) _performSearch(q.trim());
-          },
+          child: TextField(
+            controller: _controller,
+            autofocus: true,
+            decoration: InputDecoration(
+              hintText: 'Tìm kiếm sản phẩm...',
+              hintStyle: AppTextStyles.bodyMd.copyWith(color: AppColors.textHint, fontSize: 14),
+              prefixIcon: const Icon(Icons.search_rounded, color: AppColors.textHint, size: 20),
+              border: InputBorder.none,
+              contentPadding: const EdgeInsets.symmetric(vertical: 11),
+              suffixIcon: _controller.text.isNotEmpty
+                  ? IconButton(
+                      icon: const Icon(Icons.close_rounded, size: 18, color: AppColors.textSecondary),
+                      onPressed: () {
+                        _controller.clear();
+                        _onSearchChanged('');
+                      },
+                    )
+                  : null,
+            ),
+            style: AppTextStyles.bodyMd.copyWith(fontWeight: FontWeight.w600),
+            onChanged: _onSearchChanged,
+            onSubmitted: (q) {
+              if (q.trim().isNotEmpty) _performSearch(q.trim());
+            },
+          ),
         ),
       ),
       body: _isSearching
-          ? const Center(child: CircularProgressIndicator())
+          ? const Center(child: CircularProgressIndicator(color: AppColors.primary, strokeWidth: 3))
           : !_hasSearched
-              ? Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Gợi ý tìm kiếm',
-                        style: AppTextStyles.labelBold,
-                      ),
-                      const SizedBox(height: 12),
-                      Wrap(
-                        spacing: 8,
-                        runSpacing: 8,
-                        children: [
-                          'Pin sạc dự phòng',
-                          'Ốp lưng',
-                          'AirTag',
-                          'Tai nghe',
-                        ]
-                            .map(
-                              (term) => GestureDetector(
-                                onTap: () {
-                                  _controller.text = term;
-                                  _onSearchChanged(term);
-                                },
-                                child: Chip(
-                                  label: Text(
-                                    term,
-                                    style: AppTextStyles.bodySm,
-                                  ),
-                                  backgroundColor: AppColors.surfaceDark,
-                                ),
-                              ),
-                            )
-                            .toList(),
-                      ),
-                    ],
-                  ),
-                )
+              ? _buildSuggestions()
               : _results.isEmpty
-                  ? Center(
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const Icon(Icons.search_off,
-                              size: 48, color: AppColors.border),
-                          const SizedBox(height: 12),
-                          Text(
-                            'Không tìm thấy "${_controller.text}"',
-                            style: AppTextStyles.bodyLg,
-                          ),
-                        ],
-                      ),
-                    )
-                  : ListView.builder(
-                      padding: const EdgeInsets.all(16),
-                      itemCount: _results.length,
-                      itemBuilder: (context, index) {
-                        final product = _results[index];
-                        return _SearchResultItem(product: product);
-                      },
-                    ),
+                  ? _buildEmptyState()
+                  : _buildSearchResults(),
+    );
+  }
+
+  Widget _buildSuggestions() {
+    final popular = ['Pin sạc dự phòng', 'Ốp lưng iPhone', 'Cáp sạc Type-C', 'Tai nghe Bluetooth', 'Loa Marshall'];
+    
+    return Padding(
+      padding: const EdgeInsets.all(24),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(Icons.trending_up_rounded, color: AppColors.primary, size: 20),
+              const SizedBox(width: 10),
+              Text('Gợi ý tìm kiếm', style: AppTextStyles.labelBold.copyWith(fontSize: 15, fontWeight: FontWeight.w900)),
+            ],
+          ),
+          const SizedBox(height: 20),
+          Wrap(
+            spacing: 10,
+            runSpacing: 10,
+            children: popular.map((term) => GestureDetector(
+              onTap: () {
+                _controller.text = term;
+                _onSearchChanged(term);
+              },
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(color: AppColors.surfaceDark),
+                  boxShadow: [
+                    BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 4, offset: const Offset(0, 2)),
+                  ],
+                ),
+                child: Text(term, style: AppTextStyles.bodySm.copyWith(fontWeight: FontWeight.w600, color: AppColors.textSecondary)),
+              ),
+            )).toList(),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSearchResults() {
+    return ListView.builder(
+      padding: const EdgeInsets.all(20),
+      itemCount: _results.length,
+      itemBuilder: (context, index) {
+        final product = _results[index];
+        return _SearchResultItem(product: product);
+      },
+    );
+  }
+
+  Widget _buildEmptyState() {
+    return Center(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              color: AppColors.surfaceDark.withOpacity(0.3),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(Icons.search_off_rounded, size: 64, color: AppColors.textHint.withOpacity(0.5)),
+          ),
+          const SizedBox(height: 24),
+          Text(
+            'Không tìm thấy kết quả',
+            style: AppTextStyles.headingSm.copyWith(fontWeight: FontWeight.w900),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Thử tìm kiếm với từ khóa khác xem sao!',
+            style: AppTextStyles.bodySm.copyWith(color: AppColors.textHint),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -176,72 +217,89 @@ class _SearchResultItem extends StatelessWidget {
     return GestureDetector(
       onTap: () => context.push('/products/${product.id}'),
       child: Container(
-        margin: const EdgeInsets.only(bottom: 12),
+        margin: const EdgeInsets.only(bottom: 16),
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: AppColors.surface,
-          borderRadius: BorderRadius.circular(12),
-          boxShadow: const [
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: AppColors.surfaceDark.withOpacity(0.5)),
+          boxShadow: [
             BoxShadow(
-              color: Color(0x0D000000),
-              blurRadius: 4,
-              offset: Offset(0, 2),
+              color: Colors.black.withOpacity(0.03),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
             ),
           ],
         ),
         child: Row(
           children: [
             // Image
-            ClipRRect(
-              borderRadius: BorderRadius.circular(8),
-              child: SizedBox(
-                width: 80,
-                height: 80,
-                child: product.imageUrls.isNotEmpty
-                    ? Image.network(
-                        product.imageUrls.first,
-                        fit: BoxFit.cover,
-                        errorBuilder: (_, __, ___) => Container(
-                          color: AppColors.inputBackground,
-                          child: const Icon(Icons.image_outlined,
-                              size: 32, color: AppColors.border),
-                        ),
-                      )
-                    : Container(
-                        color: AppColors.inputBackground,
-                        child: const Icon(Icons.image_outlined,
-                            size: 32, color: AppColors.border),
-                      ),
+            Hero(
+              tag: 'product_image_${product.id}',
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(14),
+                child: Container(
+                  width: 90,
+                  height: 90,
+                  color: AppColors.surfaceDark.withOpacity(0.3),
+                  child: product.imageUrls.isNotEmpty
+                      ? Image.network(
+                          product.imageUrls.first,
+                          fit: BoxFit.contain,
+                          errorBuilder: (_, __, ___) => const Icon(Icons.image_outlined, color: AppColors.textHint),
+                        )
+                      : const Icon(Icons.image_outlined, color: AppColors.textHint),
+                ),
               ),
             ),
-            const SizedBox(width: 12),
+            const SizedBox(width: 16),
             // Info
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    product.brandName,
-                    style: AppTextStyles.labelSm.copyWith(
-                      color: AppColors.primary,
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: AppColors.primary.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: Text(
+                      product.brandName.toUpperCase(),
+                      style: AppTextStyles.labelBold.copyWith(color: AppColors.primary, fontSize: 9, letterSpacing: 1),
                     ),
                   ),
-                  const SizedBox(height: 4),
+                  const SizedBox(height: 8),
                   Text(
                     product.name,
-                    style: AppTextStyles.labelMd,
+                    style: AppTextStyles.labelBold.copyWith(fontSize: 15, fontWeight: FontWeight.w800, height: 1.2),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   ),
-                  const SizedBox(height: 6),
-                  Text(
-                    formatVND(product.price),
-                    style: AppTextStyles.priceMd,
+                  const SizedBox(height: 10),
+                  Row(
+                    children: [
+                      Text(
+                        formatVND(product.price),
+                        style: AppTextStyles.priceMd.copyWith(color: AppColors.primary, fontWeight: FontWeight.w900),
+                      ),
+                      if (product.isOnSale) ...[
+                        const SizedBox(width: 8),
+                        Text(
+                          formatVND(product.originalPrice!),
+                          style: AppTextStyles.caption.copyWith(
+                            decoration: TextDecoration.lineThrough,
+                            color: AppColors.textHint,
+                            fontSize: 11,
+                          ),
+                        ),
+                      ],
+                    ],
                   ),
                 ],
               ),
             ),
-            const Icon(Icons.chevron_right, color: AppColors.border),
+            const Icon(Icons.chevron_right_rounded, color: AppColors.textHint, size: 24),
           ],
         ),
       ),

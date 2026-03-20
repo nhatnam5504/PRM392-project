@@ -132,92 +132,126 @@ class _AdminPromotionFormDialogState extends State<AdminPromotionFormDialog> {
     final vm = context.watch<AdminPromotionViewModel>();
     
     return Dialog(
+      backgroundColor: Colors.white,
       insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
       child: Container(
-        padding: const EdgeInsets.all(20),
+        width: double.infinity,
+        constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.85, maxWidth: 500),
+        padding: const EdgeInsets.all(24),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
-                  widget.initialPromotion != null
-                      ? 'Chỉnh sửa Khuyến mãi'
-                      : 'Thêm Khuyến mãi',
-                  style: AppTextStyles.headingSm,
+                Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: AppColors.primary.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Icon(
+                    widget.initialPromotion != null ? Icons.edit_note_rounded : Icons.add_circle_outline_rounded,
+                    color: AppColors.primary,
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Text(
+                    widget.initialPromotion != null ? 'Chỉnh sửa Khuyến mãi' : 'Thêm Khuyến mãi mới',
+                    style: AppTextStyles.headingSm.copyWith(fontWeight: FontWeight.w800),
+                  ),
                 ),
                 IconButton(
                   onPressed: () => Navigator.pop(context),
-                  icon: const Icon(Icons.close),
+                  icon: const Icon(Icons.close_rounded, color: AppColors.textSecondary),
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(),
                 ),
               ],
             ),
-            const Divider(),
+            const SizedBox(height: 16),
+            const Divider(height: 1),
+            const SizedBox(height: 20),
             Flexible(
               child: SingleChildScrollView(
+                physics: const BouncingScrollPhysics(),
                 child: Form(
                   key: _formKey,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const SizedBox(height: 12),
-                      _buildTextField(_codeController, 'Mã khuyến mãi', 'VD: KM100', Icons.code),
-                      const SizedBox(height: 12),
-                      _buildTextField(_descriptionController, 'Mô tả', 'Mô tả chi tiết', Icons.description, maxLines: 2),
-                      const SizedBox(height: 12),
+                      _buildTextField(_codeController, 'Mã khuyến mãi', 'Ví dụ: SUMMER2024', Icons.qr_code_rounded),
+                      const SizedBox(height: 16),
+                      _buildTextField(_descriptionController, 'Mô tả chi tiết', 'Nội dung chương trình...', Icons.description_outlined, maxLines: 2),
+                      const SizedBox(height: 16),
                       _buildDropdownType(),
-                      const SizedBox(height: 12),
+                      const SizedBox(height: 16),
                       Row(
                         children: [
-                          Expanded(child: _buildTextField(_discountValueController, 'Giá trị giảm', '0', Icons.money, isNumber: true)),
-                          const SizedBox(width: 12),
-                          Expanded(child: _buildTextField(_quantityController, 'Số lượng', '0', Icons.confirmation_number, isNumber: true)),
-                        ],
-                      ),
-                      const SizedBox(height: 12),
-                      Row(
-                        children: [
-                          Expanded(child: _buildTextField(_minOrderAmountController, 'Đơn hàng tối thiểu', '0', Icons.shopping_bag, isNumber: true)),
-                          const SizedBox(width: 12),
-                          Expanded(child: _buildTextField(_maxDiscountValueController, 'Giảm tối đa', '0', Icons.arrow_upward, isNumber: true)),
+                          Expanded(child: _buildTextField(_discountValueController, 'Giá trị giảm', '0', Icons.local_offer_outlined, isNumber: true)),
+                          const SizedBox(width: 16),
+                          Expanded(child: _buildTextField(_quantityController, 'Số lượng lượt', '0', Icons.numbers_rounded, isNumber: true)),
                         ],
                       ),
                       const SizedBox(height: 16),
+                      Row(
+                        children: [
+                          Expanded(child: _buildTextField(_minOrderAmountController, 'Đơn tối thiểu', '0', Icons.shopping_bag_outlined, isNumber: true)),
+                          const SizedBox(width: 16),
+                          Expanded(child: _buildTextField(_maxDiscountValueController, 'Giảm tối đa', '0', Icons.vertical_align_top_rounded, isNumber: true)),
+                        ],
+                      ),
+                      const SizedBox(height: 24),
                       _buildDateSection(),
-                      const SizedBox(height: 12),
-                      SwitchListTile(
-                        title: const Text('Kích hoạt ngay', style: AppTextStyles.bodyMd),
-                        value: _active,
-                        onChanged: (val) => setState(() => _active = val),
-                        activeColor: AppColors.primary,
-                        contentPadding: EdgeInsets.zero,
+                      const SizedBox(height: 16),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 4),
+                        child: Row(
+                          children: [
+                            const Icon(Icons.bolt_rounded, color: Colors.amber, size: 20),
+                            const SizedBox(width: 12),
+                            const Expanded(child: Text('Kích hoạt khuyến mãi ngay', style: AppTextStyles.bodyMd)),
+                            Switch.adaptive(
+                              value: _active,
+                              onChanged: (val) => setState(() => _active = val),
+                              activeColor: AppColors.primary,
+                            ),
+                          ],
+                        ),
                       ),
                       if (_selectedType == PromotionType.bogo) ...[
-                        const SizedBox(height: 16),
-                        const Text('Sản phẩm áp dụng (BOGO)', style: AppTextStyles.labelBold),
-                        const SizedBox(height: 8),
+                        const SizedBox(height: 24),
+                        Row(
+                          children: [
+                            const Icon(Icons.inventory_2_outlined, size: 18, color: AppColors.primary),
+                            const SizedBox(width: 8),
+                            Text(
+                              'SẢN PHẨM ÁP DỤNG (BOGO)',
+                              style: AppTextStyles.labelBold.copyWith(color: AppColors.primary, fontSize: 11, letterSpacing: 1),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 12),
                         _buildProductSelector(vm.allProducts),
                       ],
-                      const SizedBox(height: 24),
+                      const SizedBox(height: 32),
                       SizedBox(
                         width: double.infinity,
-                        height: 48,
+                        height: 54,
                         child: ElevatedButton(
                           onPressed: vm.isLoading ? null : _submit,
                           style: ElevatedButton.styleFrom(
                             backgroundColor: AppColors.primary,
                             foregroundColor: Colors.white,
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                            elevation: 0,
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                           ),
                           child: vm.isLoading
-                              ? const CircularProgressIndicator(color: Colors.white)
+                              ? const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 3))
                               : Text(
-                                  widget.initialPromotion != null
-                                      ? 'LƯU THAY ĐỔI'
-                                      : 'LƯU KHUYẾN MÃI',
-                                  style: AppTextStyles.labelBold,
+                                  widget.initialPromotion != null ? 'LƯU THAY ĐỔI' : 'TẠO KHUYẾN MÃI',
+                                  style: AppTextStyles.labelBold.copyWith(fontSize: 15, letterSpacing: 1),
                                 ),
                         ),
                       ),
@@ -233,44 +267,77 @@ class _AdminPromotionFormDialogState extends State<AdminPromotionFormDialog> {
   }
 
   Widget _buildTextField(TextEditingController controller, String label, String hint, IconData icon, {bool isNumber = false, int maxLines = 1}) {
-    return TextFormField(
-      controller: controller,
-      keyboardType: isNumber ? TextInputType.number : TextInputType.text,
-      maxLines: maxLines,
-      decoration: InputDecoration(
-        labelText: label,
-        hintText: hint,
-        prefixIcon: Icon(icon, color: AppColors.primary, size: 20),
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-        isDense: true,
-      ),
-      validator: (value) {
-        if (value == null || value.isEmpty) return 'Bắt buộc';
-        return null;
-      },
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(left: 4, bottom: 8),
+          child: Text(label, style: AppTextStyles.labelBold.copyWith(color: AppColors.textSecondary, fontSize: 12)),
+        ),
+        TextFormField(
+          controller: controller,
+          keyboardType: isNumber ? TextInputType.number : TextInputType.text,
+          maxLines: maxLines,
+          style: AppTextStyles.bodyMd.copyWith(fontWeight: FontWeight.w600),
+          decoration: InputDecoration(
+            hintText: hint,
+            hintStyle: AppTextStyles.bodyMd.copyWith(color: AppColors.textHint.withValues(alpha: 0.5)),
+            prefixIcon: Icon(icon, color: AppColors.primary, size: 20),
+            filled: true,
+            fillColor: AppColors.surfaceDark.withValues(alpha: 0.3),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(16),
+              borderSide: BorderSide.none,
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(16),
+              borderSide: BorderSide.none,
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(16),
+              borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
+            ),
+            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+          ),
+          validator: (value) {
+            if (value == null || value.isEmpty) return 'Bắt buộc nhập';
+            return null;
+          },
+        ),
+      ],
     );
   }
 
   Widget _buildDropdownType() {
-    return DropdownButtonFormField<PromotionType>(
-      value: _selectedType,
-      decoration: InputDecoration(
-        labelText: 'Loại khuyến mãi',
-        prefixIcon: const Icon(Icons.category, color: AppColors.primary, size: 20),
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-        isDense: true,
-      ),
-      items: PromotionType.values.map((type) {
-        return DropdownMenuItem(
-          value: type,
-          child: Text(type.name.toUpperCase()),
-        );
-      }).toList(),
-      onChanged: (val) {
-        if (val != null) setState(() => _selectedType = val);
-      },
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(left: 4, bottom: 8),
+          child: Text('Loại khuyến mãi', style: AppTextStyles.labelBold.copyWith(color: AppColors.textSecondary, fontSize: 12)),
+        ),
+        DropdownButtonFormField<PromotionType>(
+          value: _selectedType,
+          style: AppTextStyles.bodyMd.copyWith(fontWeight: FontWeight.w600, color: AppColors.textHeading),
+          decoration: InputDecoration(
+            prefixIcon: const Icon(Icons.auto_awesome_rounded, color: AppColors.primary, size: 20),
+            filled: true,
+            fillColor: AppColors.surfaceDark.withValues(alpha: 0.3),
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide.none),
+            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          ),
+          items: PromotionType.values.map((type) {
+            String label = type == PromotionType.percentage ? 'GIẢM THEO %' : (type == PromotionType.money ? 'GIẢM TIỀN MẶT' : 'MUA 1 TẶNG 1 (BOGO)');
+            return DropdownMenuItem(
+              value: type,
+              child: Text(label),
+            );
+          }).toList(),
+          onChanged: (val) {
+            if (val != null) setState(() => _selectedType = val);
+          },
+        ),
+      ],
     );
   }
 
@@ -279,84 +346,116 @@ class _AdminPromotionFormDialogState extends State<AdminPromotionFormDialog> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text('Thời hạn áp dụng', style: AppTextStyles.labelBold),
-        const SizedBox(height: 10),
-        Row(
-          children: [
-            Expanded(
-              child: InkWell(
-                onTap: () => _selectDate(context, true),
-                child: Container(
-                  padding: const EdgeInsets.all(10),
-                  decoration: BoxDecoration(
-                    border: Border.all(color: AppColors.border),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Column(
-                    children: [
-                      const Text('Bắt đầu', style: AppTextStyles.labelSm),
-                      Text(dateFormat.format(_startDate), style: AppTextStyles.bodyMd),
-                    ],
-                  ),
+        Padding(
+          padding: const EdgeInsets.only(left: 4, bottom: 12),
+          child: Text('THỜI HẠN CHƯƠNG TRÌNH', style: AppTextStyles.labelBold.copyWith(color: AppColors.textSecondary, fontSize: 11, letterSpacing: 1)),
+        ),
+        Container(
+          padding: const EdgeInsets.all(4),
+          decoration: BoxDecoration(
+            color: AppColors.surfaceDark.withValues(alpha: 0.3),
+            borderRadius: BorderRadius.circular(18),
+          ),
+          child: Row(
+            children: [
+              Expanded(
+                child: _DateTile(
+                  label: 'BẮT ĐẦU',
+                  date: dateFormat.format(_startDate),
+                  icon: Icons.calendar_today_rounded,
+                  onTap: () => _selectDate(context, true),
                 ),
               ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: InkWell(
-                onTap: () => _selectDate(context, false),
-                child: Container(
-                  padding: const EdgeInsets.all(10),
-                  decoration: BoxDecoration(
-                    border: Border.all(color: AppColors.border),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Column(
-                    children: [
-                      const Text('Kết thúc', style: AppTextStyles.labelSm),
-                      Text(dateFormat.format(_endDate), style: AppTextStyles.bodyMd),
-                    ],
-                  ),
+              Container(width: 1, height: 40, color: AppColors.divider.withValues(alpha: 0.5)),
+              Expanded(
+                child: _DateTile(
+                  label: 'KẾT THÚC',
+                  date: dateFormat.format(_endDate),
+                  icon: Icons.event_available_rounded,
+                  onTap: () => _selectDate(context, false),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ],
     );
   }
 
   Widget _buildProductSelector(List<ProductModel> products) {
-    return Container(
-      height: 150,
-      decoration: BoxDecoration(
-        border: Border.all(color: AppColors.border),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: ListView.builder(
-        itemCount: products.length,
-        itemBuilder: (context, index) {
-          final product = products[index];
-          final isSelected = _selectedProductIds.contains(product.id);
-          return CheckboxListTile(
-            title: Text(product.name, style: AppTextStyles.bodySm),
-            secondary: product.imageUrls.isNotEmpty 
-              ? Image.network(product.imageUrls.first, width: 24, height: 24, fit: BoxFit.cover)
-              : const Icon(Icons.image, size: 24),
-            value: isSelected,
-            activeColor: AppColors.primary,
-            dense: true,
-            onChanged: (val) {
-              setState(() {
-                if (val == true) {
-                  _selectedProductIds.add(product.id);
-                } else {
-                  _selectedProductIds.remove(product.id);
-                }
-              });
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(left: 4, bottom: 12),
+          child: Text('SẢN PHẨM ÁP DỤNG', style: AppTextStyles.labelBold.copyWith(color: AppColors.textSecondary, fontSize: 11, letterSpacing: 1)),
+        ),
+        Container(
+          height: 200,
+          decoration: BoxDecoration(
+            color: AppColors.surfaceDark.withValues(alpha: 0.3),
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: AppColors.divider.withValues(alpha: 0.2)),
+          ),
+          child: ListView.builder(
+            padding: const EdgeInsets.all(8),
+            itemCount: products.length,
+            itemBuilder: (context, index) {
+              final product = products[index];
+              final isSelected = _selectedProductIds.contains(product.id);
+              return CheckboxListTile(
+                value: isSelected,
+                title: Text(product.name, style: AppTextStyles.bodyMd),
+                subtitle: Text(product.categoryName, style: AppTextStyles.bodySm),
+                onChanged: (val) {
+                  setState(() {
+                    if (val == true) _selectedProductIds.add(product.id);
+                    else _selectedProductIds.remove(product.id);
+                  });
+                },
+              );
             },
-          );
-        },
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _DateTile extends StatelessWidget {
+  final String label;
+  final String date;
+  final IconData icon;
+  final VoidCallback onTap;
+
+  const _DateTile({
+    required this.label,
+    required this.date,
+    required this.icon,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(14),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(label, style: AppTextStyles.labelSm.copyWith(color: AppColors.textHint, fontSize: 9)),
+            const SizedBox(height: 4),
+            Row(
+              children: [
+                Icon(icon, size: 14, color: AppColors.primary),
+                const SizedBox(width: 8),
+                Text(date, style: AppTextStyles.labelBold.copyWith(fontSize: 13)),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }

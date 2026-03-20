@@ -40,185 +40,137 @@ class _ProfileScreenState
         final isLoading = profileVM.isLoading;
 
         return Scaffold(
-          backgroundColor: AppColors.background,
+          backgroundColor: Colors.white,
+          appBar: AppBar(
+            backgroundColor: Colors.white,
+            elevation: 0,
+            title: Text('Tài khoản', style: AppTextStyles.headingMd),
+            centerTitle: true,
+          ),
           body: SafeArea(
             child: isLoading
-                ? const Center(
-                    child:
-                        CircularProgressIndicator(),
-                  )
+                ? const Center(child: CircularProgressIndicator(color: AppColors.primary))
                 : ListView(
-                    padding:
-                        const EdgeInsets.all(16),
+                    padding: const EdgeInsets.fromLTRB(20, 10, 20, 40),
                     children: [
                       // Profile header
                       Container(
-                        padding:
-                            const EdgeInsets.all(20),
+                        padding: const EdgeInsets.all(24),
                         decoration: BoxDecoration(
-                          color: AppColors.surface,
-                          borderRadius:
-                              BorderRadius.circular(
-                                  16),
-                          boxShadow: const [
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(24),
+                          border: Border.all(color: AppColors.surfaceDark, width: 1.5),
+                          boxShadow: [
                             BoxShadow(
-                              color:
-                                  Color(0x0D000000),
-                              blurRadius: 2,
+                              color: Colors.black.withOpacity(0.02),
+                              blurRadius: 10,
+                              offset: const Offset(0, 4),
                             ),
                           ],
                         ),
                         child: Column(
                           children: [
-                            CircleAvatar(
-                              radius: 40,
-                              backgroundColor:
-                                  AppColors
-                                      .primaryLight,
-                              child: Text(
-                                (user?.name ??
-                                        'U')
-                                    .substring(0, 1)
-                                    .toUpperCase(),
-                                style: AppTextStyles
-                                    .displayLarge
-                                    .copyWith(
-                                  color: AppColors
-                                      .primary,
-                                ),
-                              ),
-                            ),
-                            const SizedBox(
-                                height: 12),
-                            Text(
-                              user?.name ??
-                                  'Chưa có tên',
-                              style: AppTextStyles
-                                  .headingMd,
-                            ),
-                            const SizedBox(
-                                height: 4),
-                            Text(
-                              user?.email ??
-                                  'Chưa có email',
-                              style: AppTextStyles
-                                  .bodyMd
-                                  .copyWith(
-                                color: AppColors
-                                    .textSecondary,
-                              ),
-                            ),
-                            const SizedBox(
-                                height: 12),
-                            if (user?.role !=
-                                null) ...[
-                              Container(
-                                padding:
-                                    const EdgeInsets
-                                        .symmetric(
-                                  horizontal: 12,
-                                  vertical: 6,
-                                ),
-                                decoration:
-                                    BoxDecoration(
-                                  color: AppColors
-                                      .primaryLight,
-                                  borderRadius:
-                                      BorderRadius
-                                          .circular(
-                                              20),
-                                ),
-                                child: Text(
-                                  user!.role!,
-                                  style:
-                                      AppTextStyles
-                                          .labelMd
-                                          .copyWith(
-                                    color: AppColors
-                                        .primary,
+                            Stack(
+                              alignment: Alignment.bottomRight,
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.all(4),
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    border: Border.all(color: AppColors.primary.withOpacity(0.2), width: 2),
+                                  ),
+                                  child: CircleAvatar(
+                                    radius: 45,
+                                    backgroundColor: AppColors.primary.withOpacity(0.1),
+                                    child: Text(
+                                      (user?.name ?? 'U').substring(0, 1).toUpperCase(),
+                                      style: AppTextStyles.displayLarge.copyWith(color: AppColors.primary, fontSize: 32),
+                                    ),
                                   ),
                                 ),
+                                Container(
+                                  padding: const EdgeInsets.all(6),
+                                  decoration: const BoxDecoration(color: AppColors.primary, shape: BoxShape.circle),
+                                  child: const Icon(Icons.edit_rounded, color: Colors.white, size: 14),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 16),
+                            Text(user?.name ?? 'Người dùng', style: AppTextStyles.headingMd),
+                            const SizedBox(height: 4),
+                            Text(user?.email ?? 'Chưa cập nhật email', style: AppTextStyles.bodyMd.copyWith(color: AppColors.textSecondary)),
+                            if (user?.role != null) ...[
+                              const SizedBox(height: 12),
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                                decoration: BoxDecoration(color: AppColors.primary.withOpacity(0.1), borderRadius: BorderRadius.circular(20)),
+                                child: Text(user!.role!.toUpperCase(), style: AppTextStyles.labelBold.copyWith(color: AppColors.primary, fontSize: 10, letterSpacing: 1)),
                               ),
                             ],
                           ],
                         ),
                       ),
-                      if (profileVM.errorMessage !=
-                          null) ...[
-                        const SizedBox(height: 8),
-                        Text(
-                          profileVM.errorMessage!,
-                          style: AppTextStyles.bodySm
-                              .copyWith(
-                            color: AppColors.error,
-                          ),
-                          textAlign:
-                              TextAlign.center,
+                      
+                      if (profileVM.errorMessage != null) ...[
+                        const SizedBox(height: 12),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                          child: Text(profileVM.errorMessage!, style: AppTextStyles.bodySm.copyWith(color: AppColors.error), textAlign: TextAlign.center),
                         ),
                       ],
+                      
+                      const SizedBox(height: 24),
+                      
+                      // Menus
+                      _MenuSection(
+                        title: 'TÀI KHOẢN',
+                        items: [
+                          _MenuItem(
+                            icon: Icons.person_outline_rounded,
+                            label: 'Thông tin cá nhân',
+                            onTap: () => context.push('/profile/edit'),
+                          ),
+                        ],
+                      ),
+                      
                       const SizedBox(height: 16),
-            // Account menu
-            _MenuSection(
-              title: 'Tài khoản',
-              items: [
-                _MenuItem(
-                  icon: Icons.person_outline,
-                  label: 'Thông tin cá nhân',
-                  onTap: () =>
-                      context.push('/profile/edit'),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            // Shopping menu
-            _MenuSection(
-              title: 'Mua sắm',
-              items: [
-                _MenuItem(
-                  icon: Icons.inventory_2_outlined,
-                  label: 'Đơn hàng',
-                  onTap: () =>
-                      context.push('/orders'),
-                ),
-              ],
-            ),
-            const SizedBox(height: 24),
-            // Logout button
-            OutlinedButton(
-              onPressed: _handleLogout,
-              style: OutlinedButton.styleFrom(
-                side: const BorderSide(
-                  color: AppColors.error,
-                ),
-                shape: RoundedRectangleBorder(
-                  borderRadius:
-                      BorderRadius.circular(12),
-                ),
-                minimumSize: const Size(
-                  double.infinity,
-                  52,
-                ),
-              ),
-              child: Text(
-                'Đăng xuất',
-                style: AppTextStyles.buttonLg
-                    .copyWith(
-                  color: AppColors.error,
-                ),
-              ),
-            ),
-            const SizedBox(height: 16),
-            Center(
-              child: Text(
-                'v1.0.0',
-                style: AppTextStyles.bodySm,
-              ),
-            ),
-            const SizedBox(height: 16),
-          ],
-        ),
-      ),
-    );
+                      
+                      _MenuSection(
+                        title: 'MUA SẮM',
+                        items: [
+                          _MenuItem(
+                            icon: Icons.inventory_2_outlined,
+                            label: 'Lịch sử đơn hàng',
+                            onTap: () => context.push('/orders'),
+                          ),
+                        ],
+                      ),
+
+                      const SizedBox(height: 32),
+                      
+                      // Logout
+                      SizedBox(
+                        width: double.infinity,
+                        height: 56,
+                        child: OutlinedButton.icon(
+                          onPressed: _handleLogout,
+                          icon: const Icon(Icons.logout_rounded, size: 20),
+                          label: const Text('ĐĂNG XUẤT'),
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: AppColors.error,
+                            side: const BorderSide(color: AppColors.error, width: 1.5),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                          ),
+                        ),
+                      ),
+                      
+                      const SizedBox(height: 24),
+                      Center(child: Text('Phiên bản 1.0.0 Premium', style: AppTextStyles.caption.copyWith(color: AppColors.textHint))),
+                      const SizedBox(height: 20),
+                    ],
+                  ),
+          ),
+        );
       },
     );
   }
@@ -228,44 +180,39 @@ class _MenuSection extends StatelessWidget {
   final String title;
   final List<_MenuItem> items;
 
-  const _MenuSection({
-    required this.title,
-    required this.items,
-  });
+  const _MenuSection({required this.title, required this.items});
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: const [
-          BoxShadow(
-            color: Color(0x0D000000),
-            blurRadius: 2,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(left: 4, bottom: 10),
+          child: Text(title, style: AppTextStyles.labelBold.copyWith(color: AppColors.textSecondary, fontSize: 11, letterSpacing: 1)),
+        ),
+        Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: AppColors.surfaceDark, width: 1.5),
           ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment:
-            CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(
-              16, 16, 16, 8,
-            ),
-            child: Text(
-              title,
-              style: AppTextStyles.labelSm
-                  .copyWith(
-                color: AppColors.textSecondary,
-                letterSpacing: 0.8,
-              ),
-            ),
+          child: Column(
+            children: List.generate(items.length, (index) {
+              return Column(
+                children: [
+                  items[index],
+                  if (index < items.length - 1)
+                    const Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 20),
+                      child: Divider(height: 1, color: AppColors.surfaceDark),
+                    ),
+                ],
+              );
+            }),
           ),
-          ...items,
-        ],
-      ),
+        ),
+      ],
     );
   }
 }
@@ -275,40 +222,25 @@ class _MenuItem extends StatelessWidget {
   final String label;
   final VoidCallback onTap;
 
-  const _MenuItem({
-    required this.icon,
-    required this.label,
-    required this.onTap,
-  });
+  const _MenuItem({required this.icon, required this.label, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
     return InkWell(
       onTap: onTap,
+      borderRadius: BorderRadius.circular(20),
       child: Padding(
-        padding: const EdgeInsets.symmetric(
-          horizontal: 16,
-          vertical: 14,
-        ),
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
         child: Row(
           children: [
-            Icon(
-              icon,
-              color: AppColors.primary,
-              size: 22,
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(color: AppColors.primary.withOpacity(0.1), borderRadius: BorderRadius.circular(10)),
+              child: Icon(icon, color: AppColors.primary, size: 20),
             ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Text(
-                label,
-                style: AppTextStyles.bodyMd,
-              ),
-            ),
-            const Icon(
-              Icons.chevron_right,
-              color: AppColors.textHint,
-              size: 20,
-            ),
+            const SizedBox(width: 16),
+            Expanded(child: Text(label, style: AppTextStyles.labelBold.copyWith(color: AppColors.textPrimary, fontSize: 14))),
+            const Icon(Icons.arrow_forward_ios_rounded, color: AppColors.textHint, size: 14),
           ],
         ),
       ),

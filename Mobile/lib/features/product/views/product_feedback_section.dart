@@ -28,43 +28,42 @@ class _ProductFeedbackSectionState
     return Consumer<FeedbackViewModel>(
       builder: (context, vm, _) {
         return Column(
-          crossAxisAlignment:
-              CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Section header
             Row(
-              mainAxisAlignment:
-                  MainAxisAlignment.spaceBetween,
               children: [
-                Text(
-                  'Đánh giá sản phẩm',
-                  style: AppTextStyles.headingSm,
+                Container(
+                  width: 4,
+                  height: 18,
+                  decoration: BoxDecoration(
+                    color: AppColors.primary,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
                 ),
+                const SizedBox(width: 10),
+                Text('Đánh giá khách hàng', style: AppTextStyles.headingSm.copyWith(fontWeight: FontWeight.w900)),
+                const SizedBox(width: 12),
                 if (vm.totalFeedbacks > 0)
-                  Text(
-                    '(${vm.totalFeedbacks})',
-                    style:
-                        AppTextStyles.bodyMd.copyWith(
-                      color:
-                          AppColors.textSecondary,
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: AppColors.primary.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Text(
+                      '${vm.totalFeedbacks}',
+                      style: AppTextStyles.labelBold.copyWith(color: AppColors.primary, fontSize: 11, fontWeight: FontWeight.w900),
                     ),
                   ),
               ],
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 24),
 
             if (vm.isLoading)
               const Padding(
-                padding: EdgeInsets.symmetric(
-                  vertical: 24,
-                ),
-                child: Center(
-                  child:
-                      CircularProgressIndicator(
-                    color: AppColors.primary,
-                    strokeWidth: 2.5,
-                  ),
-                ),
+                padding: EdgeInsets.symmetric(vertical: 40),
+                child: Center(child: CircularProgressIndicator(color: AppColors.primary, strokeWidth: 3)),
               )
             else if (vm.errorMessage != null)
               _buildErrorState(vm)
@@ -72,9 +71,16 @@ class _ProductFeedbackSectionState
               _buildEmptyState()
             else ...[
               _buildRatingSummary(vm),
-              const SizedBox(height: 16),
-              ...vm.feedbacks.map(
-                (f) => _buildFeedbackCard(f),
+              const SizedBox(height: 32),
+              ListView.separated(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: vm.feedbacks.length,
+                separatorBuilder: (_, __) => Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 8),
+                  child: Divider(height: 1, color: AppColors.surfaceDark.withValues(alpha: 0.5)),
+                ),
+                itemBuilder: (context, index) => _buildFeedbackCard(vm.feedbacks[index]),
               ),
             ],
           ],
@@ -83,91 +89,62 @@ class _ProductFeedbackSectionState
     );
   }
 
-  Widget _buildRatingSummary(
-    FeedbackViewModel vm,
-  ) {
+  Widget _buildRatingSummary(FeedbackViewModel vm) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: AppColors.primaryLight
-            .withValues(alpha: 0.5),
-        borderRadius: BorderRadius.circular(12),
+        color: AppColors.surfaceDark.withValues(alpha: 0.3),
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: AppColors.surfaceDark),
       ),
       child: Row(
         children: [
-          Column(
-            children: [
-              Text(
-                vm.averageRating.toStringAsFixed(1),
-                style: AppTextStyles.displayLarge
-                    .copyWith(
-                  color: AppColors.star,
-                ),
-              ),
-              const SizedBox(height: 4),
-              _buildStarRow(vm.averageRating, 18),
-              const SizedBox(height: 4),
-              Text(
-                '${vm.totalFeedbacks} đánh giá',
-                style: AppTextStyles.bodySm,
-              ),
-            ],
-          ),
-          const SizedBox(width: 24),
           Expanded(
+            flex: 2,
+            child: Column(
+              children: [
+                Text(
+                  vm.averageRating.toStringAsFixed(1),
+                  style: AppTextStyles.displayLarge.copyWith(
+                    color: AppColors.textPrimary, 
+                    fontWeight: FontWeight.w900,
+                    fontSize: 48,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                _buildStarRow(vm.averageRating, 16),
+                const SizedBox(height: 12),
+                Text(
+                  'Dựa trên ${vm.totalFeedbacks}\nđánh giá',
+                  style: AppTextStyles.caption.copyWith(color: AppColors.textSecondary, fontWeight: FontWeight.bold, height: 1.3),
+                  textAlign: TextAlign.center,
+                ),
+              ],
+            ),
+          ),
+          Container(width: 1.5, height: 100, color: AppColors.borderLight, margin: const EdgeInsets.symmetric(horizontal: 24)),
+          Expanded(
+            flex: 3,
             child: Column(
               children: List.generate(5, (index) {
                 final star = 5 - index;
-                final count = vm.feedbacks
-                    .where(
-                      (f) => f.rating == star,
-                    )
-                    .length;
-                final ratio =
-                    vm.totalFeedbacks > 0
-                        ? count /
-                            vm.totalFeedbacks
-                        : 0.0;
+                final count = vm.feedbacks.where((f) => f.rating == star).length;
+                final ratio = vm.totalFeedbacks > 0 ? count / vm.totalFeedbacks : 0.0;
                 return Padding(
-                  padding: const EdgeInsets.only(
-                    bottom: 4,
-                  ),
+                  padding: const EdgeInsets.only(bottom: 8),
                   child: Row(
                     children: [
-                      Text(
-                        '$star',
-                        style: AppTextStyles.bodySm,
-                      ),
-                      const SizedBox(width: 4),
-                      const Icon(
-                        Icons.star,
-                        size: 12,
-                        color: AppColors.star,
-                      ),
-                      const SizedBox(width: 8),
+                      Text('$star', style: AppTextStyles.caption.copyWith(fontWeight: FontWeight.w900, fontSize: 11)),
+                      const SizedBox(width: 12),
                       Expanded(
-                        child:
-                            LinearProgressIndicator(
-                          value: ratio,
-                          backgroundColor:
-                              AppColors.border,
-                          color: AppColors.star,
-                          minHeight: 6,
-                          borderRadius:
-                              BorderRadius.circular(
-                            3,
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(4),
+                          child: LinearProgressIndicator(
+                            value: ratio,
+                            backgroundColor: Colors.white,
+                            color: Colors.amber,
+                            minHeight: 6,
                           ),
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      SizedBox(
-                        width: 20,
-                        child: Text(
-                          '$count',
-                          style:
-                              AppTextStyles.bodySm,
-                          textAlign:
-                              TextAlign.right,
                         ),
                       ),
                     ],
@@ -183,70 +160,77 @@ class _ProductFeedbackSectionState
 
   Widget _buildFeedbackCard(FeedbackModel fb) {
     final dateFmt = DateFormat('dd/MM/yyyy');
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: AppColors.border,
-        ),
-      ),
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 12),
       child: Column(
-        crossAxisAlignment:
-            CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              // Avatar
-              CircleAvatar(
-                radius: 18,
-                backgroundColor:
-                    AppColors.primary
-                        .withValues(alpha: 0.15),
-                child: Text(
-                  fb.userName.isNotEmpty
-                      ? fb.userName[0]
-                          .toUpperCase()
-                      : '?',
-                  style: AppTextStyles.labelBold
-                      .copyWith(
-                    color: AppColors.primary,
+              // Modern Avatar
+              Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [AppColors.primary, const Color(0xFF22D3EE)],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  borderRadius: BorderRadius.circular(14),
+                  boxShadow: [
+                    BoxShadow(color: AppColors.primary.withValues(alpha: 0.2), blurRadius: 8, offset: const Offset(0, 4)),
+                  ],
+                ),
+                child: Center(
+                  child: Text(
+                    fb.userName.isNotEmpty ? fb.userName[0].toUpperCase() : '?',
+                    style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 18),
                   ),
                 ),
               ),
-              const SizedBox(width: 10),
+              const SizedBox(width: 16),
               Expanded(
                 child: Column(
-                  crossAxisAlignment:
-                      CrossAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      fb.userName,
-                      style:
-                          AppTextStyles.labelBold,
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      dateFmt.format(fb.date),
-                      style: AppTextStyles.bodySm,
+                    Text(fb.userName, style: AppTextStyles.labelBold.copyWith(height: 1.1, fontSize: 15, fontWeight: FontWeight.w800)),
+                    const SizedBox(height: 4),
+                    Row(
+                      children: [
+                        _buildStarRow(fb.rating.toDouble(), 12),
+                        const SizedBox(width: 12),
+                        Text(
+                          dateFmt.format(fb.date), 
+                          style: AppTextStyles.caption.copyWith(fontSize: 11, color: AppColors.textHint, fontWeight: FontWeight.w600),
+                        ),
+                      ],
                     ),
                   ],
                 ),
               ),
+              IconButton(
+                icon: const Icon(Icons.more_horiz_rounded, color: AppColors.textHint, size: 22),
+                onPressed: () {},
+              ),
             ],
           ),
-          const SizedBox(height: 10),
-          _buildStarRow(
-            fb.rating.toDouble(),
-            16,
-          ),
           if (fb.comment.isNotEmpty) ...[
-            const SizedBox(height: 8),
-            Text(
-              fb.comment,
-              style: AppTextStyles.bodyMd,
+            const SizedBox(height: 16),
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: AppColors.surfaceDark.withValues(alpha: 0.2),
+                borderRadius: const BorderRadius.only(
+                  topRight: Radius.circular(20),
+                  bottomLeft: Radius.circular(20),
+                  bottomRight: Radius.circular(20),
+                ),
+              ),
+              child: Text(
+                fb.comment,
+                style: AppTextStyles.bodyMd.copyWith(color: AppColors.textSecondary, height: 1.6, fontSize: 14),
+              ),
             ),
           ],
         ],
@@ -258,26 +242,15 @@ class _ProductFeedbackSectionState
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: List.generate(5, (index) {
-        if (index < rating.floor()) {
-          return Icon(
-            Icons.star,
-            size: size,
-            color: AppColors.star,
-          );
-        } else if (index < rating.ceil() &&
-            rating % 1 >= 0.5) {
-          return Icon(
-            Icons.star_half,
-            size: size,
-            color: AppColors.star,
-          );
-        } else {
-          return Icon(
-            Icons.star_border,
-            size: size,
-            color: AppColors.star,
-          );
+        IconData iconData = Icons.star_rounded;
+        Color iconColor = Colors.amber;
+        if (index >= rating) {
+          iconData = Icons.star_rounded;
+          iconColor = AppColors.textHint.withValues(alpha: 0.2);
+        } else if (index + 1 > rating && rating % 1 > 0) {
+          iconData = Icons.star_half_rounded;
         }
+        return Icon(iconData, size: size, color: iconColor);
       }),
     );
   }
@@ -285,20 +258,32 @@ class _ProductFeedbackSectionState
   Widget _buildEmptyState() {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.symmetric(
-        vertical: 24,
+      padding: const EdgeInsets.symmetric(vertical: 48),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceDark.withValues(alpha: 0.3),
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: AppColors.surfaceDark),
       ),
-      child: const Column(
+      child: Column(
         children: [
-          Icon(
-            Icons.rate_review_outlined,
-            size: 40,
-            color: AppColors.textHint,
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              shape: BoxShape.circle,
+              boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10)],
+            ),
+            child: const Icon(Icons.rate_review_outlined, size: 40, color: AppColors.textHint),
           ),
-          SizedBox(height: 8),
+          const SizedBox(height: 20),
           Text(
             'Chưa có đánh giá nào',
-            style: AppTextStyles.bodyMd,
+            style: AppTextStyles.bodyMd.copyWith(color: AppColors.textSecondary, fontWeight: FontWeight.w800),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Hãy là người đầu tiên đánh giá sản phẩm này!',
+            style: AppTextStyles.caption.copyWith(color: AppColors.textHint),
           ),
         ],
       ),
@@ -308,28 +293,26 @@ class _ProductFeedbackSectionState
   Widget _buildErrorState(FeedbackViewModel vm) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.symmetric(
-        vertical: 16,
+      padding: const EdgeInsets.symmetric(vertical: 32),
+      decoration: BoxDecoration(
+        color: AppColors.error.withValues(alpha: 0.05),
+        borderRadius: BorderRadius.circular(20),
       ),
       child: Column(
         children: [
-          Text(
-            vm.errorMessage!,
-            style: AppTextStyles.bodySm.copyWith(
-              color: AppColors.textSecondary,
-            ),
-          ),
-          const SizedBox(height: 8),
-          TextButton(
-            onPressed: () => vm.loadFeedbacks(
-              widget.productId,
-            ),
-            child: Text(
-              'Thử lại',
-              style: AppTextStyles.labelBold
-                  .copyWith(
-                color: AppColors.primary,
-              ),
+          const Icon(Icons.error_outline_rounded, color: AppColors.error, size: 32),
+          const SizedBox(height: 12),
+          Text(vm.errorMessage!, style: AppTextStyles.bodySm.copyWith(color: AppColors.error)),
+          const SizedBox(height: 16),
+          ElevatedButton.icon(
+            onPressed: () => vm.loadFeedbacks(widget.productId),
+            icon: const Icon(Icons.refresh_rounded, size: 18),
+            label: const Text('Thử lại'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.error,
+              foregroundColor: Colors.white,
+              elevation: 0,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
             ),
           ),
         ],
@@ -337,4 +320,5 @@ class _ProductFeedbackSectionState
     );
   }
 }
+
 
