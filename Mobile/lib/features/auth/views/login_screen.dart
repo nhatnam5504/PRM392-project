@@ -247,12 +247,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   padding: const EdgeInsets.symmetric(
                     horizontal: 16,
                   ),
-                  child: Text(
-                    'Hoặc đăng nhập với',
-                    style: AppTextStyles.bodySm.copyWith(
-                      color: AppColors.textHint,
-                    ),
-                  ),
+                 
                 ),
                 const Expanded(
                   child: Divider(
@@ -263,32 +258,7 @@ class _LoginScreenState extends State<LoginScreen> {
             ),
             const SizedBox(height: 24),
             // Social buttons
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                _SocialButton(
-                  icon: Icons.g_mobiledata,
-                  color: AppColors.surface,
-                  borderColor: AppColors.border,
-                  iconColor: AppColors.textPrimary,
-                  onTap: () {},
-                ),
-                const SizedBox(width: 16),
-                _SocialButton(
-                  icon: Icons.facebook,
-                  color: const Color(0xFF1877F2),
-                  iconColor: Colors.white,
-                  onTap: () {},
-                ),
-                const SizedBox(width: 16),
-                _SocialButton(
-                  icon: Icons.apple,
-                  color: Colors.black,
-                  iconColor: Colors.white,
-                  onTap: () {},
-                ),
-              ],
-            ),
+            
             const SizedBox(height: 32),
             // Register link
             Row(

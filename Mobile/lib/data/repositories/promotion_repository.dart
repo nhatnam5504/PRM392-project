@@ -56,4 +56,16 @@ class PromotionRepository {
       response.data as Map<String, dynamic>,
     );
   }
+
+  Future<PromotionModel> updatePromotion(
+    PromotionModel promotion,
+  ) async {
+    final response = await _dio.put(
+      ApiConstants.orderPromotions,
+      data: promotion.toJson(),
+    );
+    return PromotionModel.fromJson(
+      response.data as Map<String, dynamic>,
+    );
+  }
 }

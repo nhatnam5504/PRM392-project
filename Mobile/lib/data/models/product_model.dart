@@ -29,6 +29,7 @@ class ProductModel {
   final Map<String, String> specifications;
   final bool active; // from BE
   final String versionName; // from BE
+  final bool type; // true: Product, false: Service
 
   const ProductModel({
     required this.id,
@@ -52,6 +53,7 @@ class ProductModel {
     this.specifications = const {},
     this.active = true,
     this.versionName = '',
+    this.type = true,
   });
 
   bool get isOnSale => originalPrice != null && originalPrice! > price;
@@ -115,6 +117,7 @@ class ProductModel {
           {},
       active: json['active'] as bool? ?? true,
       versionName: json['versionName'] as String? ?? '',
+      type: json['type'] as bool? ?? true,
     );
   }
 
@@ -131,6 +134,7 @@ class ProductModel {
       'versionName': versionName,
       'brandName': brandName,
       'categoryName': categoryName,
+      'type': type,
     };
   }
 }

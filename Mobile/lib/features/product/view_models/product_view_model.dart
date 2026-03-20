@@ -41,6 +41,7 @@ class ProductViewModel extends ChangeNotifier {
     String? categoryId,
     String? search,
     String? sortBy,
+    bool? type,
     bool refresh = false,
   }) async {
     if (refresh) {
@@ -61,6 +62,9 @@ class ProductViewModel extends ChangeNotifier {
         _products = results;
       } else {
         _products = [..._products, ...results];
+      }
+      if (type != null) {
+        _products = _products.where((p) => p.type == type).toList();
       }
       _hasMore = results.length >= 20;
       _currentPage++;
@@ -143,6 +147,7 @@ class ProductViewModel extends ChangeNotifier {
     required int versionId,
     required int brandId,
     required int categoryId,
+    bool type = true,
     String? imagePath,
   }) async {
     _isLoading = true;
@@ -158,6 +163,7 @@ class ProductViewModel extends ChangeNotifier {
         versionId: versionId,
         brandId: brandId,
         categoryId: categoryId,
+        type: type,
         imagePath: imagePath,
       );
       _products = [product, ..._products];
@@ -182,6 +188,7 @@ class ProductViewModel extends ChangeNotifier {
     int? versionId,
     int? brandId,
     int? categoryId,
+    bool? type,
     String? imagePath,
   }) async {
     _isLoading = true;
@@ -198,6 +205,7 @@ class ProductViewModel extends ChangeNotifier {
         versionId: versionId,
         brandId: brandId,
         categoryId: categoryId,
+        type: type,
         imagePath: imagePath,
       );
       final idx = _products.indexWhere((p) => p.id == id);

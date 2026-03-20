@@ -28,6 +28,7 @@ class _AdminProductFormScreenState extends State<AdminProductFormScreen> {
   int? _selectedBrandId;
   int? _selectedVersionId;
   bool _active = true;
+  bool _isProductType = true;
   String? _imagePath;
   ProductModel? _editingProduct;
 
@@ -56,6 +57,7 @@ class _AdminProductFormScreenState extends State<AdminProductFormScreen> {
       _priceController.text = product.price.toInt().toString();
       _quantityController.text = product.stockQuantity.toString();
       _active = product.active;
+      _isProductType = product.type;
 
       // Match category: try ID first, fallback to name
       final catId = product.categoryId != 0 ? product.categoryId : null;
@@ -142,6 +144,7 @@ class _AdminProductFormScreenState extends State<AdminProductFormScreen> {
         versionId: _selectedVersionId!,
         brandId: _selectedBrandId!,
         categoryId: _selectedCategoryId!,
+        type: _isProductType,
         imagePath: _imagePath,
       );
     } else {
@@ -154,6 +157,7 @@ class _AdminProductFormScreenState extends State<AdminProductFormScreen> {
         versionId: _selectedVersionId!,
         brandId: _selectedBrandId!,
         categoryId: _selectedCategoryId!,
+        type: _isProductType,
         imagePath: _imagePath,
       );
     }
@@ -336,6 +340,38 @@ class _AdminProductFormScreenState extends State<AdminProductFormScreen> {
                               ))
                           .toList(),
                       onChanged: (v) => setState(() => _selectedVersionId = v),
+                    ),
+                    const SizedBox(height: 16),
+
+                    // Product/Service type
+                    _buildLabel('Loại *'),
+                    const SizedBox(height: 8),
+                    Container(
+                      decoration: BoxDecoration(
+                        border: Border.all(color: AppColors.border),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Column(
+                        children: [
+                          RadioListTile<bool>(
+                            title: const Text('Sản phẩm'),
+                            value: true,
+                            groupValue: _isProductType,
+                            onChanged: (v) => setState(() => _isProductType = v!),
+                            activeColor: AppColors.primary,
+                            dense: true,
+                          ),
+                          const Divider(height: 1),
+                          RadioListTile<bool>(
+                            title: const Text('Dịch vụ'),
+                            value: false,
+                            groupValue: _isProductType,
+                            onChanged: (v) => setState(() => _isProductType = v!),
+                            activeColor: AppColors.primary,
+                            dense: true,
+                          ),
+                        ],
+                      ),
                     ),
                     const SizedBox(height: 16),
 

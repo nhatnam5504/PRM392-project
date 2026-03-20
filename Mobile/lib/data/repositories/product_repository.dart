@@ -265,6 +265,7 @@ class ProductRepository {
     required int versionId,
     required int brandId,
     required int categoryId,
+    required bool type,
     String? imagePath,
   }) async {
     final formData = FormData();
@@ -280,6 +281,7 @@ class ProductRepository {
           'versionId': versionId,
           'brandId': brandId,
           'categoryId': categoryId,
+          'type': type,
         }),
         contentType: DioMediaType('application', 'json'),
       ),
@@ -312,6 +314,7 @@ class ProductRepository {
     int? versionId,
     int? brandId,
     int? categoryId,
+    bool? type,
     String? imagePath,
   }) async {
     final productData = <String, dynamic>{'id': id};
@@ -323,6 +326,7 @@ class ProductRepository {
     if (versionId != null) productData['versionId'] = versionId;
     if (brandId != null) productData['brandId'] = brandId;
     if (categoryId != null) productData['categoryId'] = categoryId;
+    if (type != null) productData['type'] = type;
     final formData = FormData();
     formData.files.add(MapEntry(
       'product',

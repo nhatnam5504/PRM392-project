@@ -32,7 +32,8 @@ class _HomeScreenState extends State<HomeScreen> {
         if (!mounted) return;
         final allProductIds = [
           ...homeVm.featuredProducts.map((p) => p.id),
-          ...homeVm.flashSaleProducts.map((p) => p.id),
+          ...homeVm.featuredServices.map((p) => p.id),
+          ...homeVm.bogoProducts.map((p) => p.id),
         ];
         if (allProductIds.isNotEmpty) {
           ratingVm.loadRatingsForProducts(
@@ -108,7 +109,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               SliverToBoxAdapter(
                                 child: SectionHeader(
                                   title: 'SẢN PHẨM NỔI BẬT',
-                                  onViewAll: () => context.push('/products'),
+                                  onViewAll: () => context.push('/products?type=product'),
                                 ),
                               ),
                               const SliverToBoxAdapter(
@@ -123,10 +124,29 @@ class _HomeScreenState extends State<HomeScreen> {
                                 child: SizedBox(height: 24),
                               ),
                             ],
-                            if (vm.flashSaleProducts.isNotEmpty) ...[
+                            if (vm.featuredServices.isNotEmpty) ...[
                               SliverToBoxAdapter(
                                 child: SectionHeader(
-                                  title: 'FLASH SALE',
+                                  title: 'DỊCH VỤ NỔI BẬT',
+                                  onViewAll: () => context.push('/products?type=service'),
+                                ),
+                              ),
+                              const SliverToBoxAdapter(
+                                child: SizedBox(height: 16),
+                              ),
+                              SliverToBoxAdapter(
+                                child: FeaturedProductsRow(
+                                  products: vm.featuredServices,
+                                ),
+                              ),
+                              const SliverToBoxAdapter(
+                                child: SizedBox(height: 24),
+                              ),
+                            ],
+                            if (vm.bogoProducts.isNotEmpty) ...[
+                              SliverToBoxAdapter(
+                                child: SectionHeader(
+                                  title: 'SIÊU DEAL MUA 1 TẶNG 1',
                                   trailing: Container(
                                     padding: const EdgeInsets.symmetric(
                                       horizontal: 8,
@@ -137,7 +157,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                       borderRadius: BorderRadius.circular(8),
                                     ),
                                     child: Text(
-                                      '⚡ 23:59:59',
+                                      '🎁 BOGO',
                                       style: AppTextStyles.labelSm.copyWith(
                                         color: Colors.white,
                                       ),
@@ -150,7 +170,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               ),
                               SliverToBoxAdapter(
                                 child: FeaturedProductsRow(
-                                  products: vm.flashSaleProducts,
+                                  products: vm.bogoProducts,
                                 ),
                               ),
                               const SliverToBoxAdapter(

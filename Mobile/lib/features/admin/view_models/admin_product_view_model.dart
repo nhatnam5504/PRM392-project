@@ -82,6 +82,7 @@ class AdminProductViewModel extends ChangeNotifier {
     required int versionId,
     required int brandId,
     required int categoryId,
+    required bool type,
     String? imagePath,
   }) async {
     _isLoading = true;
@@ -98,6 +99,7 @@ class AdminProductViewModel extends ChangeNotifier {
         versionId: versionId,
         brandId: brandId,
         categoryId: categoryId,
+        type: type,
         imagePath: imagePath,
       );
       _products = [product, ..._products];
@@ -122,6 +124,7 @@ class AdminProductViewModel extends ChangeNotifier {
     int? versionId,
     int? brandId,
     int? categoryId,
+    bool? type,
     String? imagePath,
   }) async {
     _isLoading = true;
@@ -139,6 +142,7 @@ class AdminProductViewModel extends ChangeNotifier {
         versionId: versionId,
         brandId: brandId,
         categoryId: categoryId,
+        type: type,
         imagePath: imagePath,
       );
       final idx = _products.indexWhere((p) => p.id == id);

@@ -91,6 +91,28 @@ class AdminPromotionViewModel extends ChangeNotifier {
     }
   }
 
+  Future<bool> updatePromotion(PromotionModel promotion) async {
+    _isLoading = true;
+    _errorMessage = null;
+    _successMessage = null;
+    notifyListeners();
+    try {
+      final updatedPromo = await _promotionRepo.updatePromotion(promotion);
+      final index = _promotions.indexWhere((p) => p.id == updatedPromo.id);
+      if (index != -1) {
+        _promotions[index] = updatedPromo;
+      }
+      _successMessage = 'Cập nhật khuyến mãi thành công!';
+      return true;
+    } catch (e) {
+      _errorMessage = 'Lỗi cập nhật khuyến mãi: ${_extractError(e)}';
+      return false;
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
   void clearMessages() {
     _errorMessage = null;
     _successMessage = null;

@@ -173,6 +173,26 @@ class _PromotionCard extends StatelessWidget {
                     style: AppTextStyles.labelSm.copyWith(color: statusColor),
                   ),
                 ),
+                const SizedBox(width: 8),
+                IconButton(
+                  onPressed: () {
+                    showDialog(
+                      context: context,
+                      builder: (context) => AdminPromotionFormDialog(
+                        initialPromotion: promotion,
+                      ),
+                    ).then((result) {
+                      if (result == true) {
+                        context.read<AdminPromotionViewModel>().loadPromotions();
+                      }
+                    });
+                  },
+                  icon: const Icon(Icons.edit_outlined, size: 20),
+                  color: AppColors.primary,
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(),
+                  visualDensity: VisualDensity.compact,
+                ),
               ],
             ),
             const SizedBox(height: 12),

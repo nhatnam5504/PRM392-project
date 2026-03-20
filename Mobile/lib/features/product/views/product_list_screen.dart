@@ -11,7 +11,9 @@ import '../view_models/product_view_model.dart';
 import '../../shared/view_models/product_rating_view_model.dart';
 
 class ProductListScreen extends StatefulWidget {
-  const ProductListScreen({super.key});
+  final bool? initialType;
+
+  const ProductListScreen({super.key, this.initialType});
 
   @override
   State<ProductListScreen> createState() => _ProductListScreenState();
@@ -86,8 +88,12 @@ class _ProductListScreenState extends State<ProductListScreen> {
     return Consumer<ProductViewModel>(
       builder: (context, vm, _) {
         final products = _filterLocally(vm.products);
+        final initialIdx = widget.initialType == false ? 1 : 0;
 
-        return Scaffold(
+        return DefaultTabController(
+          length: 2,
+          initialIndex: initialIdx,
+          child: Scaffold(
           appBar: AppBar(
             title: _showSearch
                 ? TextField(
@@ -132,6 +138,15 @@ class _ProductListScreenState extends State<ProductListScreen> {
                 onPressed: () => context.go('/cart'),
               ),
             ],
+            bottom: const TabBar(
+              labelColor: AppColors.primary,
+              unselectedLabelColor: AppColors.textHint,
+              indicatorColor: AppColors.primary,
+              tabs: [
+                Tab(text: 'Sản phẩm'),
+                Tab(text: 'Dịch vụ'),
+              ],
+            ),
           ),
           body: Column(
             children: [
@@ -273,81 +288,88 @@ class _ProductListScreenState extends State<ProductListScreen> {
                 ),
               // Product grid
               Expanded(
-                child: vm.isLoading && products.isEmpty
-                    ? const Center(child: CircularProgressIndicator())
-                    : vm.errorMessage != null && products.isEmpty
-                        ? Center(
-                            child: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Text(vm.errorMessage!),
-                                const SizedBox(height: 12),
-                                ElevatedButton(
-                                  onPressed: () =>
-                                      vm.loadProducts(refresh: true),
-                                  child: const Text('Thử lại'),
-                                ),
-                              ],
-                            ),
-                          )
-                        : products.isEmpty
-                            ? Center(
-                                child: Column(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    const Icon(Icons.search_off,
-                                        size: 48, color: AppColors.border),
-                                    const SizedBox(height: 12),
-                                    Text(
-                                      _searchQuery.isNotEmpty
-                                          ? 'Không tìm thấy "$_searchQuery"'
-                                          : 'Không có sản phẩm nào',
-                                      style: AppTextStyles.bodyLg,
-                                    ),
-                                  ],
-                                ),
-                              )
-                            : RefreshIndicator(
-                                onRefresh: () async {
-                                  _applyFilters();
-                                  final ratingVm =
-                                      context.read<ProductRatingViewModel>();
-                                  final vm =
-                                      context.read<ProductViewModel>();
-                                  final ids =
-                                      vm.products.map((p) => p.id).toList();
-                                  if (ids.isNotEmpty) {
-                                    ratingVm.loadRatingsForProducts(ids);
-                                  }
-                                },
-                                child: GridView.builder(
-                                  padding: const EdgeInsets.all(16),
-                                  gridDelegate:
-                                      const SliverGridDelegateWithFixedCrossAxisCount(
-                                    crossAxisCount: 2,
-                                    childAspectRatio: 0.55,
-                                    crossAxisSpacing: 12,
-                                    mainAxisSpacing: 12,
-                                  ),
-                                  itemCount: products.length,
-                                  itemBuilder: (context, index) {
-                                    final product = products[index];
-                                    return GestureDetector(
-                                      onTap: () => context
-                                          .push('/products/${product.id}'),
-                                      child: _ProductGridCard(
-                                        product: product,
-                                      ),
-                                    );
-                                  },
-                                ),
-                              ),
+                child: TabBarView(
+                  children: [
+                    _buildProductGrid(vm, products.where((p) => p.type).toList(), true),
+                    _buildProductGrid(vm, products.where((p) => !p.type).toList(), false),
+                  ],
+                ),
               ),
             ],
           ),
+        ),
+      );
+    },
+  );
+}
+
+Widget _buildProductGrid(ProductViewModel vm, List<ProductModel> products, bool isProduct) {
+  if (vm.isLoading && products.isEmpty) {
+    return const Center(child: CircularProgressIndicator());
+  }
+  if (vm.errorMessage != null && products.isEmpty) {
+    return Center(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(vm.errorMessage!),
+          const SizedBox(height: 12),
+          ElevatedButton(
+            onPressed: () => vm.loadProducts(refresh: true),
+            child: const Text('Thử lại'),
+          ),
+        ],
+      ),
+    );
+  }
+  if (products.isEmpty) {
+    return Center(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Icon(Icons.search_off, size: 48, color: AppColors.border),
+          const SizedBox(height: 12),
+          Text(
+            _searchQuery.isNotEmpty
+                ? 'Không tìm thấy "$_searchQuery"'
+                : isProduct ? 'Không có sản phẩm nào' : 'Không có dịch vụ nào',
+            style: AppTextStyles.bodyLg,
+          ),
+        ],
+      ),
+    );
+  }
+
+  return RefreshIndicator(
+    onRefresh: () async {
+      _applyFilters();
+      final ratingVm = context.read<ProductRatingViewModel>();
+      final vm = context.read<ProductViewModel>();
+      final ids = vm.products.map((p) => p.id).toList();
+      if (ids.isNotEmpty) {
+        ratingVm.loadRatingsForProducts(ids);
+      }
+    },
+    child: GridView.builder(
+      padding: const EdgeInsets.all(16),
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 2,
+        childAspectRatio: 0.55,
+        crossAxisSpacing: 12,
+        mainAxisSpacing: 12,
+      ),
+      itemCount: products.length,
+      itemBuilder: (context, index) {
+        final product = products[index];
+        return GestureDetector(
+          onTap: () => context.push('/products/${product.id}'),
+          child: _ProductGridCard(
+            product: product,
+          ),
         );
       },
-    );
+    ),
+  );
   }
 }
 

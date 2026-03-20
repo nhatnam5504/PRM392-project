@@ -104,7 +104,13 @@ final GoRouter router = GoRouter(
         ),
         GoRoute(
           path: AppRoutes.shop,
-          builder: (context, state) => const ProductListScreen(),
+          builder: (context, state) {
+            final typeStr = state.uri.queryParameters['type'];
+            final initialType = typeStr == 'product'
+                ? true
+                : (typeStr == 'service' ? false : null);
+            return ProductListScreen(initialType: initialType);
+          },
         ),
         GoRoute(
           path: AppRoutes.deals,
@@ -151,7 +157,13 @@ final GoRouter router = GoRouter(
     // Product routes (outside shell)
     GoRoute(
       path: AppRoutes.products,
-      builder: (context, state) => const ProductListScreen(),
+      builder: (context, state) {
+        final typeStr = state.uri.queryParameters['type'];
+        final initialType = typeStr == 'product'
+            ? true
+            : (typeStr == 'service' ? false : null);
+        return ProductListScreen(initialType: initialType);
+      },
     ),
     GoRoute(
       path: '/products/:id',

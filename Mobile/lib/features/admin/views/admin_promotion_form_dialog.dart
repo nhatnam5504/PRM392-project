@@ -8,7 +8,8 @@ import '../../../data/models/product_model.dart';
 import '../view_models/admin_promotion_view_model.dart';
 
 class AdminPromotionFormDialog extends StatefulWidget {
-  const AdminPromotionFormDialog({super.key});
+  final PromotionModel? initialPromotion;
+  const AdminPromotionFormDialog({super.key, this.initialPromotion});
 
   @override
   State<AdminPromotionFormDialog> createState() => _AdminPromotionFormDialogState();
@@ -33,6 +34,20 @@ class _AdminPromotionFormDialogState extends State<AdminPromotionFormDialog> {
   @override
   void initState() {
     super.initState();
+    if (widget.initialPromotion != null) {
+      final p = widget.initialPromotion!;
+      _codeController.text = p.code;
+      _descriptionController.text = p.description;
+      _discountValueController.text = p.discountValue.toString();
+      _maxDiscountValueController.text = p.maxDiscountValue.toString();
+      _minOrderAmountController.text = p.minOrderAmount.toString();
+      _quantityController.text = p.quantity.toString();
+      _selectedType = p.type;
+      _startDate = p.startDate;
+      _endDate = p.endDate;
+      _active = p.active;
+      _selectedProductIds = List<int>.from(p.applicableProductIds ?? []);
+    }
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<AdminPromotionViewModel>().loadAllProducts();
     });
@@ -71,7 +86,7 @@ class _AdminPromotionFormDialogState extends State<AdminPromotionFormDialog> {
     if (!_formKey.currentState!.validate()) return;
 
     final promotion = PromotionModel(
-      id: 0,
+      id: widget.initialPromotion?.id ?? 0,
       code: _codeController.text,
       description: _descriptionController.text,
       type: _selectedType,
@@ -86,12 +101,22 @@ class _AdminPromotionFormDialogState extends State<AdminPromotionFormDialog> {
     );
 
     final vm = context.read<AdminPromotionViewModel>();
-    final success = await vm.createPromotion(promotion);
+    final bool success;
+    if (widget.initialPromotion != null) {
+      success = await vm.updatePromotion(promotion);
+    } else {
+      success = await vm.createPromotion(promotion);
+    }
 
     if (mounted) {
       if (success) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Tạo khuyến mãi thành công'), backgroundColor: AppColors.success),
+          SnackBar(
+            content: Text(widget.initialPromotion != null
+                ? 'Cập nhật khuyến mãi thành công'
+                : 'Tạo khuyến mãi thành công'),
+            backgroundColor: AppColors.success,
+          ),
         );
         Navigator.pop(context, true);
       } else {
@@ -117,7 +142,12 @@ class _AdminPromotionFormDialogState extends State<AdminPromotionFormDialog> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text('Thêm Khuyến mãi', style: AppTextStyles.headingSm),
+                Text(
+                  widget.initialPromotion != null
+                      ? 'Chỉnh sửa Khuyến mãi'
+                      : 'Thêm Khuyến mãi',
+                  style: AppTextStyles.headingSm,
+                ),
                 IconButton(
                   onPressed: () => Navigator.pop(context),
                   icon: const Icon(Icons.close),
@@ -183,7 +213,12 @@ class _AdminPromotionFormDialogState extends State<AdminPromotionFormDialog> {
                           ),
                           child: vm.isLoading
                               ? const CircularProgressIndicator(color: Colors.white)
-                              : const Text('LƯU KHUYẾN MÃI', style: AppTextStyles.labelBold),
+                              : Text(
+                                  widget.initialPromotion != null
+                                      ? 'LƯU THAY ĐỔI'
+                                      : 'LƯU KHUYẾN MÃI',
+                                  style: AppTextStyles.labelBold,
+                                ),
                         ),
                       ),
                     ],

@@ -99,18 +99,56 @@ class _AdminProductListScreenState extends State<AdminProductListScreen> {
         ),
       );
     }
-    if (vm.products.isEmpty) {
-      return const Center(
-        child: Text('Chưa có sản phẩm nào.', style: AppTextStyles.bodyMd),
+
+    return DefaultTabController(
+      length: 2,
+      child: Column(
+        children: [
+          Container(
+            color: Colors.white,
+            child: const TabBar(
+              labelColor: AppColors.primary,
+              unselectedLabelColor: AppColors.textHint,
+              indicatorColor: AppColors.primary,
+              tabs: [
+                Tab(text: 'Sản phẩm'),
+                Tab(text: 'Dịch vụ'),
+              ],
+            ),
+          ),
+          Expanded(
+            child: TabBarView(
+              children: [
+                _buildProductList(vm, true),
+                _buildProductList(vm, false),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildProductList(AdminProductViewModel vm, bool isProduct) {
+    final filteredProducts =
+        vm.products.where((p) => p.type == isProduct).toList();
+
+    if (filteredProducts.isEmpty) {
+      return Center(
+        child: Text(
+          isProduct ? 'Chưa có sản phẩm nào.' : 'Chưa có dịch vụ nào.',
+          style: AppTextStyles.bodyMd,
+        ),
       );
     }
+
     return RefreshIndicator(
       onRefresh: () => vm.loadProducts(),
       child: ListView.builder(
         padding: const EdgeInsets.all(12),
-        itemCount: vm.products.length,
+        itemCount: filteredProducts.length,
         itemBuilder: (context, index) {
-          final product = vm.products[index];
+          final product = filteredProducts[index];
           return _ProductCard(
             product: product,
             onEdit: () => context.push('/admin/products/edit/${product.id}'),
@@ -122,7 +160,7 @@ class _AdminProductListScreenState extends State<AdminProductListScreen> {
   }
 }
 
-class _ProductCard extends StatefulWidget {
+class _ProductCard extends StatelessWidget {
   final ProductModel product;
   final VoidCallback onEdit;
   final VoidCallback onDelete;
@@ -132,20 +170,6 @@ class _ProductCard extends StatefulWidget {
     required this.onEdit,
     required this.onDelete,
   });
-
-  @override
-  State<_ProductCard> createState() => _ProductCardState();
-}
-
-class _ProductCardState extends State<_ProductCard> {
-  int _currentImageIndex = 0;
-  final PageController _pageController = PageController();
-
-  @override
-  void dispose() {
-    _pageController.dispose();
-    super.dispose();
-  }
 
   String _formatPrice(double price) {
     final intPrice = price.toInt();
@@ -160,178 +184,182 @@ class _ProductCardState extends State<_ProductCard> {
 
   @override
   Widget build(BuildContext context) {
-    final product = widget.product;
-    return Card(
+    return Container(
       margin: const EdgeInsets.only(bottom: 12),
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      clipBehavior: Clip.antiAlias,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Image gallery
-          if (product.imageUrls.isNotEmpty)
-            SizedBox(
-              height: 180,
-              child: Stack(
-                children: [
-                  PageView.builder(
-                    controller: _pageController,
-                    itemCount: product.imageUrls.length,
-                    onPageChanged: (index) {
-                      setState(() => _currentImageIndex = index);
-                    },
-                    itemBuilder: (context, index) {
-                      return Image.network(
-                        product.imageUrls[index],
-                        width: double.infinity,
-                        height: 180,
-                        fit: BoxFit.cover,
-                        errorBuilder: (_, __, ___) => Container(
-                          color: AppColors.surfaceDark,
-                          child: const Center(
-                            child: Icon(Icons.image_not_supported,
-                                color: AppColors.textHint, size: 40),
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-                  // Counter badge
-                  if (product.imageUrls.length > 1)
-                    Positioned(
-                      top: 8,
-                      right: 8,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 8, vertical: 4),
-                        decoration: BoxDecoration(
-                          color: Colors.black54,
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Text(
-                          '${_currentImageIndex + 1}/${product.imageUrls.length}',
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 11,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ),
-                    ),
-                ],
-              ),
-            )
-          else
-            Container(
-              height: 120,
-              width: double.infinity,
-              color: AppColors.surfaceDark,
-              child: const Icon(Icons.inventory_2,
-                  color: AppColors.textHint, size: 40),
-            ),
-          // Dot indicators
-          if (product.imageUrls.length > 1)
-            Padding(
-              padding: const EdgeInsets.only(top: 8),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: List.generate(
-                  product.imageUrls.length,
-                  (index) {
-                    final isActive = index == _currentImageIndex;
-                    return AnimatedContainer(
-                      duration: const Duration(milliseconds: 250),
-                      width: isActive ? 20 : 6,
-                      height: 6,
-                      margin: const EdgeInsets.symmetric(horizontal: 2),
-                      decoration: BoxDecoration(
-                        color: isActive ? AppColors.primary : AppColors.border,
-                        borderRadius: BorderRadius.circular(3),
-                      ),
-                    );
-                  },
-                ),
-              ),
-            ),
-          // Product info
-          Padding(
-            padding: const EdgeInsets.all(12),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Expanded(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(16),
+        child: IntrinsicHeight(
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              // Product Image
+              _buildImageSection(),
+              // Product Info
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.all(12),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          _buildStatusBadge(),
+                          Text(
+                            'ID: ${product.id}',
+                            style: AppTextStyles.labelSm.copyWith(color: AppColors.textHint),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
                       Text(
                         product.name,
-                        style: AppTextStyles.headingSm,
+                        style: AppTextStyles.bodyMd.copyWith(fontWeight: FontWeight.bold),
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                       ),
                       const SizedBox(height: 4),
                       Text(
                         '${product.brandName} • ${product.categoryName}',
-                        style: AppTextStyles.bodySm,
+                        style: AppTextStyles.bodySm.copyWith(color: AppColors.textSecondary),
                       ),
-                      const SizedBox(height: 4),
-                      Text(
-                        _formatPrice(product.price),
-                        style: AppTextStyles.priceMd,
-                      ),
-                      const SizedBox(height: 4),
+                      const Spacer(),
                       Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        crossAxisAlignment: CrossAxisAlignment.end,
                         children: [
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 8, vertical: 2),
-                            decoration: BoxDecoration(
-                              color: product.active
-                                  ? AppColors.success.withValues(alpha: 0.1)
-                                  : AppColors.error.withValues(alpha: 0.1),
-                              borderRadius: BorderRadius.circular(4),
-                            ),
-                            child: Text(
-                              product.active ? 'Đang bán' : 'Ngừng bán',
-                              style: AppTextStyles.labelSm.copyWith(
-                                color: product.active
-                                    ? AppColors.success
-                                    : AppColors.error,
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                _formatPrice(product.price),
+                                style: AppTextStyles.priceMd.copyWith(color: AppColors.primary),
                               ),
-                            ),
+                              Text(
+                                'Tồn kho: ${product.stockQuantity}',
+                                style: AppTextStyles.bodySm.copyWith(
+                                  color: product.stockQuantity < 10 ? AppColors.error : AppColors.textSecondary,
+                                  fontWeight: product.stockQuantity < 10 ? FontWeight.bold : FontWeight.normal,
+                                ),
+                              ),
+                            ],
                           ),
-                          const SizedBox(width: 8),
-                          Text(
-                            'SL: ${product.stockQuantity}',
-                            style: AppTextStyles.bodySm,
-                          ),
+                          _buildActionButtons(),
                         ],
                       ),
                     ],
                   ),
                 ),
-                // Actions
-                Column(
-                  children: [
-                    IconButton(
-                      icon: const Icon(Icons.edit, color: AppColors.primary),
-                      onPressed: widget.onEdit,
-                      tooltip: 'Sửa',
-                      iconSize: 22,
-                    ),
-                    IconButton(
-                      icon: const Icon(Icons.delete, color: AppColors.error),
-                      onPressed: widget.onDelete,
-                      tooltip: 'Xoá',
-                      iconSize: 22,
-                    ),
-                  ],
-                ),
-              ],
-            ),
+              ),
+            ],
           ),
-        ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildImageSection() {
+    return Container(
+      width: 110,
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+      ),
+      child: Center(
+        child: product.imageUrls.isNotEmpty
+            ? Image.network(
+                product.imageUrls.first,
+                width: 110,
+                fit: BoxFit.cover,
+                errorBuilder: (_, __, ___) => const Icon(
+                  Icons.image_not_supported,
+                  color: AppColors.textHint,
+                  size: 32,
+                ),
+              )
+            : const Icon(
+                Icons.inventory_2,
+                color: AppColors.textHint,
+                size: 32,
+              ),
+      ),
+    );
+  }
+
+  Widget _buildStatusBadge() {
+    final bool isActive = product.active;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+      decoration: BoxDecoration(
+        color: isActive 
+            ? AppColors.success.withValues(alpha: 0.1) 
+            : AppColors.error.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(6),
+      ),
+      child: Text(
+        isActive ? 'ĐANG BÁN' : 'NGỪNG BÁN',
+        style: AppTextStyles.labelSm.copyWith(
+          color: isActive ? AppColors.success : AppColors.error,
+          fontWeight: FontWeight.bold,
+          fontSize: 10,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildActionButtons() {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        _CircleIconButton(
+          icon: Icons.edit_rounded,
+          color: AppColors.primary,
+          onTap: onEdit,
+        ),
+        const SizedBox(width: 8),
+        _CircleIconButton(
+          icon: Icons.delete_outline_rounded,
+          color: AppColors.error,
+          onTap: onDelete,
+        ),
+      ],
+    );
+  }
+}
+
+class _CircleIconButton extends StatelessWidget {
+  final IconData icon;
+  final Color color;
+  final VoidCallback onTap;
+
+  const _CircleIconButton({
+    required this.icon,
+    required this.color,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: color.withValues(alpha: 0.1),
+      shape: const CircleBorder(),
+      child: InkWell(
+        onTap: onTap,
+        customBorder: const CircleBorder(),
+        child: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Icon(icon, color: color, size: 20),
+        ),
       ),
     );
   }
