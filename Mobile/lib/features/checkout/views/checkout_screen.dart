@@ -328,7 +328,6 @@ class _CheckoutScreenState
                           );
                         }
                       } catch (e) {
-                        debugPrint('Error launching URL: $e');
                         if (mounted) {
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(content: Text('Lỗi: ${e.toString()}')),
@@ -543,3 +542,4 @@ class _PromoSection extends StatelessWidget {
     );
   }
 }
+

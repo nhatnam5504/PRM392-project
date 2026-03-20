@@ -24,7 +24,6 @@ class AdminCategoryViewModel extends ChangeNotifier {
     try {
       _categories = await _categoryRepo.getCategories();
     } catch (e, st) {
-      debugPrint('loadCategories error: $e\n$st');
       _errorMessage = 'Lỗi tải danh mục: $e';
     } finally {
       _isLoading = false;
@@ -98,3 +97,4 @@ class AdminCategoryViewModel extends ChangeNotifier {
     }
   }
 }
+

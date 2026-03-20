@@ -36,10 +36,11 @@ class _AdminProductFormScreenState extends State<AdminProductFormScreen> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
       if (!mounted) return;
       final vm = context.read<AdminProductViewModel>();
-      vm.loadFormData();
+      await vm.loadFormData();
+      if (!mounted) return;
       if (isEditing) {
         _loadExistingProduct(vm);
       }
@@ -55,14 +56,35 @@ class _AdminProductFormScreenState extends State<AdminProductFormScreen> {
       _priceController.text = product.price.toInt().toString();
       _quantityController.text = product.stockQuantity.toString();
       _active = product.active;
-      // Category/brand/version will be set after loadFormData completes
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) {
-          setState(() {
-            _selectedCategoryId =
-                product.categoryId != 0 ? product.categoryId : null;
-          });
-        }
+
+      // Match category: try ID first, fallback to name
+      final catId = product.categoryId != 0 ? product.categoryId : null;
+      final matchedCat = catId != null
+          ? vm.categories.where((c) => c.id == catId).firstOrNull
+          : vm.categories
+              .where((c) =>
+                  c.name.toLowerCase().trim() ==
+                  product.categoryName.toLowerCase().trim())
+              .firstOrNull;
+
+      // Match brand by name
+      final matchedBrand = vm.brands
+          .where((b) =>
+              b.name.toLowerCase().trim() ==
+              product.brandName.toLowerCase().trim())
+          .firstOrNull;
+
+      // Match version by name
+      final matchedVersion = vm.versions
+          .where((v) =>
+              v.versionName.toLowerCase().trim() ==
+              product.versionName.toLowerCase().trim())
+          .firstOrNull;
+
+      setState(() {
+        _selectedCategoryId = matchedCat?.id ?? catId;
+        _selectedBrandId = matchedBrand?.id;
+        _selectedVersionId = matchedVersion?.id;
       });
     } catch (_) {
       // Product not found in local list

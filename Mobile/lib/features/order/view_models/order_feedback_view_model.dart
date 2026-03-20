@@ -89,10 +89,6 @@ class OrderFeedbackViewModel extends ChangeNotifier {
         ..clear()
         ..addAll(submittedIds);
     } catch (e) {
-      debugPrint(
-        '[OrderFeedbackVM] Failed to load '
-        'feedback state: $e',
-      );
       _errorMessage = 'Không thể kiểm tra trạng thái đánh giá. '
           'Bạn vẫn có thể thử gửi lại.';
     } finally {
@@ -120,9 +116,6 @@ class OrderFeedbackViewModel extends ChangeNotifier {
       _submittedDetailIds.add(item.orderDetailId);
       return true;
     } catch (e) {
-      debugPrint(
-        '[OrderFeedbackVM] Submit error: $e',
-      );
       final message = e.toString().replaceFirst('Exception: ', '');
       _errorMessage = message.isNotEmpty
           ? message
@@ -143,3 +136,4 @@ class OrderFeedbackViewModel extends ChangeNotifier {
     notifyListeners();
   }
 }
+

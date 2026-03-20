@@ -70,11 +70,8 @@ class ProductRatingViewModel extends ChangeNotifier {
         );
       }
     } catch (e) {
-      debugPrint(
-        '[ProductRatingVM] Error loading '
-        'rating for product $productId: $e',
-      );
     }
   }
 }
+
 

@@ -49,7 +49,6 @@ class AdminProductViewModel extends ChangeNotifier {
     try {
       _products = await _productRepo.getProducts();
     } catch (e, st) {
-      debugPrint('loadProducts error: $e\n$st');
       _errorMessage = 'Lỗi tải sản phẩm: ${_extractError(e)}';
     } finally {
       _isLoading = false;
@@ -188,3 +187,4 @@ class AdminProductViewModel extends ChangeNotifier {
     notifyListeners();
   }
 }
+

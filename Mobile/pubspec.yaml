@@ -41,6 +41,7 @@ dependencies:
   shimmer: ^3.0.0
   fluttertoast: ^8.2.8
   pinput: 6.0.2
+  fl_chart: ^0.70.2
 
   # Utils
   url_launcher: ^6.3.1

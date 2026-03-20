@@ -128,7 +128,6 @@ class _PaymentConfirmationScreenState extends State<PaymentConfirmationScreen> {
                                 );
                               }
                             } catch (e) {
-                              debugPrint('Error launching URL: $e');
                               if (mounted) {
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   SnackBar(content: Text('Lỗi: ${e.toString()}')),
@@ -391,4 +390,5 @@ class _PriceRow extends StatelessWidget {
     );
   }
 }
+
 

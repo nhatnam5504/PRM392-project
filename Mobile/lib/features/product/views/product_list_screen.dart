@@ -8,6 +8,7 @@ import '../../../core/utils/format_price.dart';
 import '../../../data/models/product_model.dart';
 import '../../../data/models/category_model.dart';
 import '../view_models/product_view_model.dart';
+import '../../shared/view_models/product_rating_view_model.dart';
 
 class ProductListScreen extends StatefulWidget {
   const ProductListScreen({super.key});
@@ -30,7 +31,12 @@ class _ProductListScreenState extends State<ProductListScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       final vm = context.read<ProductViewModel>();
-      vm.loadProducts(refresh: true);
+      final ratingVm = context.read<ProductRatingViewModel>();
+      vm.loadProducts(refresh: true).then((_) {
+        if (!mounted) return;
+        final ids = vm.products.map((p) => p.id).toList();
+        if (ids.isNotEmpty) ratingVm.loadRatingsForProducts(ids);
+      });
       vm.loadCategories();
       vm.loadBrands();
     });
@@ -304,6 +310,15 @@ class _ProductListScreenState extends State<ProductListScreen> {
                             : RefreshIndicator(
                                 onRefresh: () async {
                                   _applyFilters();
+                                  final ratingVm =
+                                      context.read<ProductRatingViewModel>();
+                                  final vm =
+                                      context.read<ProductViewModel>();
+                                  final ids =
+                                      vm.products.map((p) => p.id).toList();
+                                  if (ids.isNotEmpty) {
+                                    ratingVm.loadRatingsForProducts(ids);
+                                  }
                                 },
                                 child: GridView.builder(
                                   padding: const EdgeInsets.all(16),
@@ -514,19 +529,50 @@ class _ProductGridCard extends StatelessWidget {
                     overflow: TextOverflow.ellipsis,
                   ),
                   const Spacer(),
-                  Row(
-                    children: [
-                      const Icon(
-                        Icons.star,
-                        color: AppColors.accent,
-                        size: 14,
-                      ),
-                      const SizedBox(width: 4),
-                      Text(
-                        product.rating.toStringAsFixed(1),
-                        style: AppTextStyles.labelMd,
-                      ),
-                    ],
+                  Consumer<ProductRatingViewModel>(
+                    builder: (context, ratingVm, _) {
+                      final data = ratingVm.getRating(product.id);
+                      final rating = data?.averageRating ?? 0.0;
+                      final count = data?.totalCount ?? 0;
+                      return Row(
+                        children: [
+                          ...List.generate(5, (i) {
+                            if (i < rating.floor()) {
+                              return const Icon(
+                                Icons.star,
+                                color: AppColors.star,
+                                size: 14,
+                              );
+                            } else if (i < rating.ceil() &&
+                                rating % 1 >= 0.5) {
+                              return const Icon(
+                                Icons.star_half,
+                                color: AppColors.star,
+                                size: 14,
+                              );
+                            } else {
+                              return const Icon(
+                                Icons.star_border,
+                                color: AppColors.star,
+                                size: 14,
+                              );
+                            }
+                          }),
+                          const SizedBox(width: 4),
+                          Text(
+                            rating.toStringAsFixed(1),
+                            style: AppTextStyles.labelMd,
+                          ),
+                          if (count > 0) ...[
+                            const SizedBox(width: 2),
+                            Text(
+                              '($count)',
+                              style: AppTextStyles.bodySm,
+                            ),
+                          ],
+                        ],
+                      );
+                    },
                   ),
                   const SizedBox(height: 4),
                   Text(

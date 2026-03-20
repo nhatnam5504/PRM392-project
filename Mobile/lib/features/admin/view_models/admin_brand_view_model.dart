@@ -24,7 +24,6 @@ class AdminBrandViewModel extends ChangeNotifier {
     try {
       _brands = await _brandRepo.getBrands();
     } catch (e, st) {
-      debugPrint('loadBrands error: $e\n$st');
       _errorMessage = 'Lỗi tải thương hiệu: $e';
     } finally {
       _isLoading = false;
@@ -102,3 +101,4 @@ class AdminBrandViewModel extends ChangeNotifier {
     }
   }
 }
+

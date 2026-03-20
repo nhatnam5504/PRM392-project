@@ -88,7 +88,6 @@ class ProductModel {
             .toList();
       }
     } catch (e) {
-      debugPrint('Error parsing image URLs: $e for product ${json['id']}');
     }
 
     return ProductModel(
@@ -135,3 +134,4 @@ class ProductModel {
     };
   }
 }
+

@@ -58,10 +58,6 @@ class DealsViewModel extends ChangeNotifier {
     try {
       _promotions =
           await _promoRepo.getPromotions();
-      debugPrint(
-        '[DealsVM] Loaded ${_promotions.length} '
-        'promotions',
-      );
 
       // Load BOGO product details
       for (final promo in bogoPromotions) {
@@ -76,8 +72,6 @@ class DealsViewModel extends ChangeNotifier {
         }
       }
     } catch (e, st) {
-      debugPrint('[DealsVM] Error: $e');
-      debugPrint('[DealsVM] StackTrace: $st');
       _errorMessage =
           'Không thể tải khuyến mãi. '
           'Vui lòng thử lại.';
@@ -87,3 +81,4 @@ class DealsViewModel extends ChangeNotifier {
     }
   }
 }
+

@@ -42,12 +42,7 @@ class FeedbackViewModel extends ChangeNotifier {
           await _feedbackRepo.getFeedbacksByProduct(
         productId,
       );
-      debugPrint(
-        '[FeedbackVM] Loaded ${_feedbacks.length} '
-        'feedbacks for product $productId',
-      );
     } catch (e) {
-      debugPrint('[FeedbackVM] Error: $e');
       _errorMessage =
           'Không thể tải đánh giá. '
           'Vui lòng thử lại.';
@@ -57,4 +52,5 @@ class FeedbackViewModel extends ChangeNotifier {
     }
   }
 }
+
 
