@@ -105,14 +105,26 @@ class _AdminProductListScreenState extends State<AdminProductListScreen> {
       child: Column(
         children: [
           Container(
-            color: Colors.white,
-            child: const TabBar(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            decoration: BoxDecoration(
+              color: AppColors.surface,
+              border: Border(bottom: BorderSide(color: AppColors.divider.withValues(alpha: 0.5))),
+            ),
+            child: TabBar(
+              labelPadding: const EdgeInsets.symmetric(horizontal: 0),
+              indicatorSize: TabBarIndicatorSize.tab,
+              indicator: BoxDecoration(
+                borderRadius: BorderRadius.circular(20),
+                color: AppColors.primary.withValues(alpha: 0.12),
+              ),
               labelColor: AppColors.primary,
-              unselectedLabelColor: AppColors.textHint,
-              indicatorColor: AppColors.primary,
-              tabs: [
-                Tab(text: 'Sản phẩm'),
-                Tab(text: 'Dịch vụ'),
+              unselectedLabelColor: AppColors.textSecondary,
+              labelStyle: AppTextStyles.labelBold.copyWith(fontSize: 14),
+              unselectedLabelStyle: AppTextStyles.labelMd.copyWith(fontSize: 14),
+              dividerColor: Colors.transparent,
+              tabs: const [
+                Tab(child: Center(child: Text('📦 SẢN PHẨM'))),
+                Tab(child: Center(child: Text('🛠️ DỊCH VỤ'))),
               ],
             ),
           ),
@@ -185,20 +197,20 @@ class _ProductCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 12),
+      margin: const EdgeInsets.fromLTRB(16, 0, 16, 16),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
+            color: AppColors.primaryShadow.withValues(alpha: 0.1),
+            blurRadius: 15,
+            offset: const Offset(0, 6),
           ),
         ],
       ),
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(20),
         child: IntrinsicHeight(
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -208,7 +220,7 @@ class _ProductCard extends StatelessWidget {
               // Product Info
               Expanded(
                 child: Padding(
-                  padding: const EdgeInsets.all(12),
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -217,24 +229,36 @@ class _ProductCard extends StatelessWidget {
                         children: [
                           _buildStatusBadge(),
                           Text(
-                            'ID: ${product.id}',
-                            style: AppTextStyles.labelSm.copyWith(color: AppColors.textHint),
+                            '#${product.id}',
+                            style: AppTextStyles.labelSm.copyWith(
+                              color: AppColors.textHint,
+                              letterSpacing: 0.5,
+                            ),
                           ),
                         ],
                       ),
-                      const SizedBox(height: 8),
+                      const SizedBox(height: 10),
                       Text(
                         product.name,
-                        style: AppTextStyles.bodyMd.copyWith(fontWeight: FontWeight.bold),
+                        style: AppTextStyles.headingSm.copyWith(
+                          color: AppColors.textHeading,
+                        ),
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                       ),
                       const SizedBox(height: 4),
-                      Text(
-                        '${product.brandName} • ${product.categoryName}',
-                        style: AppTextStyles.bodySm.copyWith(color: AppColors.textSecondary),
+                      Row(
+                        children: [
+                          Icon(Icons.tag_rounded, size: 12, color: AppColors.textHint),
+                          const SizedBox(width: 4),
+                          Text(
+                            '${product.brandName} • ${product.categoryName}',
+                            style: AppTextStyles.bodySm.copyWith(color: AppColors.textSecondary),
+                          ),
+                        ],
                       ),
                       const Spacer(),
+                      const SizedBox(height: 12),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         crossAxisAlignment: CrossAxisAlignment.end,
@@ -244,14 +268,28 @@ class _ProductCard extends StatelessWidget {
                             children: [
                               Text(
                                 _formatPrice(product.price),
-                                style: AppTextStyles.priceMd.copyWith(color: AppColors.primary),
-                              ),
-                              Text(
-                                'Tồn kho: ${product.stockQuantity}',
-                                style: AppTextStyles.bodySm.copyWith(
-                                  color: product.stockQuantity < 10 ? AppColors.error : AppColors.textSecondary,
-                                  fontWeight: product.stockQuantity < 10 ? FontWeight.bold : FontWeight.normal,
+                                style: AppTextStyles.priceMd.copyWith(
+                                  color: AppColors.primary,
+                                  fontSize: 18,
                                 ),
+                              ),
+                              const SizedBox(height: 2),
+                              Row(
+                                children: [
+                                  Icon(
+                                    Icons.inventory_2_outlined,
+                                    size: 14,
+                                    color: product.stockQuantity < 10 ? AppColors.error : AppColors.textSecondary,
+                                  ),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    'Kho: ${product.stockQuantity}',
+                                    style: AppTextStyles.bodySm.copyWith(
+                                      color: product.stockQuantity < 10 ? AppColors.error : AppColors.textSecondary,
+                                      fontWeight: product.stockQuantity < 10 ? FontWeight.bold : FontWeight.w500,
+                                    ),
+                                  ),
+                                ],
                               ),
                             ],
                           ),
@@ -271,27 +309,44 @@ class _ProductCard extends StatelessWidget {
 
   Widget _buildImageSection() {
     return Container(
-      width: 110,
+      width: 130,
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: AppColors.surfaceDark,
       ),
-      child: Center(
-        child: product.imageUrls.isNotEmpty
-            ? Image.network(
-                product.imageUrls.first,
-                width: 110,
-                fit: BoxFit.cover,
-                errorBuilder: (_, __, ___) => const Icon(
-                  Icons.image_not_supported,
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          product.imageUrls.isNotEmpty
+              ? Image.network(
+                  product.imageUrls.first,
+                  fit: BoxFit.cover,
+                  errorBuilder: (_, __, ___) => const Icon(
+                    Icons.image_not_supported_outlined,
+                    color: AppColors.textHint,
+                    size: 32,
+                  ),
+                )
+              : const Icon(
+                  Icons.inventory_2_outlined,
                   color: AppColors.textHint,
                   size: 32,
                 ),
-              )
-            : const Icon(
-                Icons.inventory_2,
-                color: AppColors.textHint,
-                size: 32,
+          // Gradient overlay for better look
+          Positioned.fill(
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    Colors.black.withValues(alpha: 0.1),
+                    Colors.transparent,
+                  ],
+                  begin: Alignment.bottomCenter,
+                  end: Alignment.topCenter,
+                ),
               ),
+            ),
+          ),
+        ],
       ),
     );
   }

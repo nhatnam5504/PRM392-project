@@ -153,10 +153,11 @@ class _AdminBrandListScreenState extends State<AdminBrandListScreen> {
     final vm = context.watch<AdminBrandViewModel>();
 
     return Scaffold(
-      floatingActionButton: FloatingActionButton(
+      floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _showBrandDialog(),
         backgroundColor: AppColors.primary,
-        child: const Icon(Icons.add, color: Colors.white),
+        icon: const Icon(Icons.add_rounded, color: Colors.white),
+        label: Text('THÊM MỚI', style: AppTextStyles.labelBold.copyWith(color: Colors.white)),
       ),
       body: _buildBody(vm),
     );
@@ -189,70 +190,109 @@ class _AdminBrandListScreenState extends State<AdminBrandListScreen> {
     return RefreshIndicator(
       onRefresh: () => vm.loadBrands(),
       child: ListView.builder(
-        padding: const EdgeInsets.all(12),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         itemCount: vm.brands.length,
         itemBuilder: (context, index) {
           final brand = vm.brands[index];
-          return Card(
-            margin: const EdgeInsets.only(bottom: 10),
-            elevation: 2,
-            shape:
-                RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          return Container(
+            margin: const EdgeInsets.only(bottom: 16),
+            decoration: BoxDecoration(
+              color: AppColors.surface,
+              borderRadius: BorderRadius.circular(20),
+              boxShadow: [
+                BoxShadow(
+                  color: AppColors.primaryShadow.withValues(alpha: 0.08),
+                  blurRadius: 12,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
             child: ListTile(
-              leading: brand.logoUrl != null && brand.logoUrl!.isNotEmpty
-                  ? ClipRRect(
-                      borderRadius: BorderRadius.circular(8),
-                      child: Image.network(
-                        brand.logoUrl!,
-                        width: 48,
-                        height: 48,
-                        fit: BoxFit.cover,
-                        errorBuilder: (_, __, ___) => Container(
-                          width: 48,
-                          height: 48,
-                          color: AppColors.surfaceDark,
-                          child: const Icon(Icons.branding_watermark,
-                              color: AppColors.textHint),
+              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              leading: Container(
+                width: 56,
+                height: 56,
+                decoration: BoxDecoration(
+                  color: AppColors.surfaceDark,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(12),
+                  child: brand.logoUrl != null && brand.logoUrl!.isNotEmpty
+                      ? Image.network(
+                          brand.logoUrl!,
+                          fit: BoxFit.cover,
+                          errorBuilder: (_, __, ___) => const Icon(
+                            Icons.branding_watermark_outlined,
+                            color: AppColors.textHint,
+                          ),
+                        )
+                      : const Icon(
+                          Icons.branding_watermark_outlined,
+                          color: AppColors.textHint,
                         ),
-                      ),
-                    )
-                  : Container(
-                      width: 48,
-                      height: 48,
-                      decoration: BoxDecoration(
-                        color: AppColors.surfaceDark,
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: const Icon(Icons.branding_watermark,
-                          color: AppColors.textHint),
-                    ),
-              title: Text(brand.name, style: AppTextStyles.headingSm),
-              subtitle: Text(
-                brand.description.isNotEmpty
-                    ? brand.description
-                    : 'Không có mô tả',
-                style: AppTextStyles.bodySm,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              title: Text(
+                brand.name,
+                style: AppTextStyles.headingSm.copyWith(color: AppColors.textHeading),
+              ),
+              subtitle: Padding(
+                padding: const EdgeInsets.only(top: 4),
+                child: Text(
+                  brand.description.isNotEmpty ? brand.description : 'Không có mô tả',
+                  style: AppTextStyles.bodySm.copyWith(color: AppColors.textSecondary),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
               ),
               trailing: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  IconButton(
-                    icon: const Icon(Icons.edit, color: AppColors.primary),
-                    onPressed: () => _showBrandDialog(brand: brand),
-                    iconSize: 22,
+                  _CircleIconButton(
+                    icon: Icons.edit_rounded,
+                    color: AppColors.primary,
+                    onTap: () => _showBrandDialog(brand: brand),
                   ),
-                  IconButton(
-                    icon: const Icon(Icons.delete, color: AppColors.error),
-                    onPressed: () => _confirmDelete(brand),
-                    iconSize: 22,
+                  const SizedBox(width: 8),
+                  _CircleIconButton(
+                    icon: Icons.delete_outline_rounded,
+                    color: AppColors.error,
+                    onTap: () => _confirmDelete(brand),
                   ),
                 ],
               ),
             ),
           );
         },
+      ),
+    );
+  }
+}
+
+class _CircleIconButton extends StatelessWidget {
+  final IconData icon;
+  final Color color;
+  final VoidCallback onTap;
+
+  const _CircleIconButton({
+    required this.icon,
+    required this.color,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: color.withValues(alpha: 0.1),
+      shape: const CircleBorder(),
+      child: InkWell(
+        onTap: onTap,
+        customBorder: const CircleBorder(),
+        child: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Icon(icon, color: color, size: 20),
+        ),
       ),
     );
   }

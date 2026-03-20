@@ -83,7 +83,7 @@ class _AdminPromotionListScreenState extends State<AdminPromotionListScreen> {
     return RefreshIndicator(
       onRefresh: () => vm.loadPromotions(),
       child: ListView.builder(
-        padding: const EdgeInsets.all(12),
+        padding: const EdgeInsets.symmetric(vertical: 16),
         itemCount: vm.promotions.length,
         itemBuilder: (context, index) {
           final promotion = vm.promotions[index];
@@ -139,211 +139,296 @@ class _PromotionCard extends StatelessWidget {
       statusText = 'Đang chạy';
     }
 
-    return Card(
-      margin: const EdgeInsets.only(bottom: 12),
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
+    return Container(
+      margin: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.primaryShadow.withValues(alpha: 0.1),
+            blurRadius: 15,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: AppColors.primary.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Text(
-                    promotion.code,
-                    style: AppTextStyles.labelBold.copyWith(color: AppColors.primary),
-                  ),
-                ),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
-                  decoration: BoxDecoration(
-                    color: statusColor.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(6),
-                  ),
-                  child: Text(
-                    statusText,
-                    style: AppTextStyles.labelSm.copyWith(color: statusColor),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                IconButton(
-                  onPressed: () {
-                    showDialog(
-                      context: context,
-                      builder: (context) => AdminPromotionFormDialog(
-                        initialPromotion: promotion,
+            // Header with Code and Status
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: AppColors.primary.withValues(alpha: 0.12),
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(color: AppColors.primary.withValues(alpha: 0.2)),
+                    ),
+                    child: Text(
+                      promotion.code,
+                      style: AppTextStyles.labelBold.copyWith(
+                        color: AppColors.primary,
+                        letterSpacing: 1.1,
                       ),
-                    ).then((result) {
-                      if (result == true) {
-                        context.read<AdminPromotionViewModel>().loadPromotions();
-                      }
-                    });
-                  },
-                  icon: const Icon(Icons.edit_outlined, size: 20),
-                  color: AppColors.primary,
-                  padding: EdgeInsets.zero,
-                  constraints: const BoxConstraints(),
-                  visualDensity: VisualDensity.compact,
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            Text(
-              promotion.description,
-              style: AppTextStyles.bodyMd.copyWith(fontWeight: FontWeight.w500),
-            ),
-            const SizedBox(height: 12),
-            const Divider(),
-            const SizedBox(height: 8),
-            Row(
-              children: [
-                Expanded(
-                  child: _buildInfoItem(
-                    label: 'Loại',
-                    value: promotion.type.name.toUpperCase(),
-                    icon: Icons.category_outlined,
+                    ),
                   ),
+                  const Spacer(),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: statusColor.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Container(
+                          width: 6,
+                          height: 6,
+                          decoration: BoxDecoration(color: statusColor, shape: BoxShape.circle),
+                        ),
+                        const SizedBox(width: 6),
+                        Text(
+                          statusText,
+                          style: AppTextStyles.labelSm.copyWith(
+                            color: statusColor,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  _CircleIconButton(
+                    icon: Icons.edit_rounded,
+                    color: AppColors.primary,
+                    onTap: () {
+                      showDialog(
+                        context: context,
+                        builder: (context) => AdminPromotionFormDialog(
+                          initialPromotion: promotion,
+                        ),
+                      ).then((result) {
+                        if (result == true) {
+                          context.read<AdminPromotionViewModel>().loadPromotions();
+                        }
+                      });
+                    },
+                  ),
+                ],
+              ),
+            ),
+
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Text(
+                promotion.description,
+                style: AppTextStyles.bodyMd.copyWith(
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.textHeading,
                 ),
-                Expanded(
-                  child: _buildInfoItem(
-                    label: 'Giảm giá',
+              ),
+            ),
+
+            const SizedBox(height: 16),
+            const Divider(height: 1, indent: 16, endIndent: 16, color: AppColors.divider),
+            
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Wrap(
+                runSpacing: 12,
+                children: [
+                  _InfoBox(
+                    label: 'LOẠI',
+                    value: promotion.type.name.toUpperCase(),
+                    icon: Icons.category_rounded,
+                  ),
+                  _InfoBox(
+                    label: 'GIẢM GIÁ',
                     value: promotion.type == PromotionType.percentage
                         ? '${promotion.discountValue.toInt()}%'
                         : _formatCurrency(promotion.discountValue),
-                    icon: Icons.discount_outlined,
+                    icon: Icons.local_offer_rounded,
                   ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            Row(
-              children: [
-                Expanded(
-                  child: _buildInfoItem(
-                    label: 'Tối thiểu',
+                  _InfoBox(
+                    label: 'TỐI THIỂU',
                     value: _formatCurrency(promotion.minOrderAmount),
-                    icon: Icons.shopping_bag_outlined,
+                    icon: Icons.shopping_basket_rounded,
                   ),
-                ),
-                Expanded(
-                  child: _buildInfoItem(
-                    label: 'Còn lại',
+                  _InfoBox(
+                    label: 'CÒN LẠI',
                     value: '${promotion.quantity}',
-                    icon: Icons.confirmation_num_outlined,
+                    icon: Icons.confirmation_number_rounded,
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-            const SizedBox(height: 12),
-            const Divider(),
-            const SizedBox(height: 8),
-            Row(
-              children: [
-                const Icon(Icons.calendar_today_outlined, size: 16, color: AppColors.textHint),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text(
+
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              color: AppColors.surfaceDark.withValues(alpha: 0.5),
+              child: Row(
+                children: [
+                  const Icon(Icons.date_range_rounded, size: 16, color: AppColors.textSecondary),
+                  const SizedBox(width: 8),
+                  Text(
                     '${_formatDate(promotion.startDate)} - ${_formatDate(promotion.endDate)}',
-                    style: AppTextStyles.bodySm.copyWith(color: AppColors.textSecondary),
+                    style: AppTextStyles.caption.copyWith(
+                      color: AppColors.textSecondary,
+                      fontWeight: FontWeight.w500,
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-            if (promotion.type == PromotionType.bogo &&
-                applicableProducts.isNotEmpty) ...[
-              const SizedBox(height: 16),
-              Text(
-                'Sản phẩm áp dụng:',
-                style: AppTextStyles.labelSm.copyWith(color: AppColors.textHint),
-              ),
-              const SizedBox(height: 8),
-              SizedBox(
-                height: 100,
-                child: ListView.builder(
-                  scrollDirection: Axis.horizontal,
-                  itemCount: applicableProducts.length,
-                  itemBuilder: (context, idx) {
-                    final product = applicableProducts[idx];
-                    return Container(
-                      width: 250,
-                      margin: const EdgeInsets.only(right: 12),
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: AppColors.surfaceDark,
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: AppColors.border),
-                      ),
-                      child: Row(
-                        children: [
-                          ClipRRect(
-                            borderRadius: BorderRadius.circular(4),
-                            child: product.imageUrls.isNotEmpty
-                                ? Image.network(
-                                    product.imageUrls.first,
-                                    width: 40,
-                                    height: 40,
-                                    fit: BoxFit.cover,
-                                    errorBuilder: (_, __, ___) => const Icon(
-                                        Icons.image_not_supported,
-                                        size: 20),
-                                  )
-                                : const Icon(Icons.image, size: 20),
-                          ),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Text(
-                                  product.name,
-                                  style: AppTextStyles.bodySm
-                                      .copyWith(fontWeight: FontWeight.w600),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                                Text(
-                                  'ID: ${product.id}',
-                                  style: AppTextStyles.labelSm
-                                      .copyWith(color: AppColors.textHint),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    );
-                  },
-                ),
-              ),
-            ],
+
+            if (promotion.type == PromotionType.bogo && applicableProducts.isNotEmpty)
+              _buildApplicableProducts(),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildInfoItem({required String label, required String value, required IconData icon}) {
-    return Row(
-      children: [
-        Icon(icon, size: 20, color: AppColors.primary),
-        const SizedBox(width: 8),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(label, style: AppTextStyles.labelSm.copyWith(color: AppColors.textHint)),
-            Text(value, style: AppTextStyles.bodySm.copyWith(fontWeight: FontWeight.w600)),
-          ],
-        ),
-      ],
+  Widget _buildApplicableProducts() {
+    return Padding(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'SẢN PHẨM ÁP DỤNG',
+            style: AppTextStyles.labelBold.copyWith(
+              color: AppColors.textHint,
+              fontSize: 10,
+              letterSpacing: 1,
+            ),
+          ),
+          const SizedBox(height: 10),
+          SizedBox(
+            height: 60,
+            child: ListView.builder(
+              scrollDirection: Axis.horizontal,
+              itemCount: applicableProducts.length,
+              itemBuilder: (context, idx) {
+                final product = applicableProducts[idx];
+                return Container(
+                  width: 220,
+                  margin: const EdgeInsets.only(right: 12),
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: AppColors.background,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: AppColors.divider),
+                  ),
+                  child: Row(
+                    children: [
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(8),
+                        child: product.imageUrls.isNotEmpty
+                            ? Image.network(
+                                product.imageUrls.first,
+                                width: 44,
+                                height: 44,
+                                fit: BoxFit.cover,
+                              )
+                            : Container(width: 44, height: 44, color: AppColors.surfaceDark),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              product.name,
+                              style: AppTextStyles.bodySm.copyWith(fontWeight: FontWeight.bold),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            Text(
+                              'ID: ${product.id}',
+                              style: AppTextStyles.caption,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              },
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
+
+class _InfoBox extends StatelessWidget {
+  final String label;
+  final String value;
+  final IconData icon;
+
+  const _InfoBox({required this.label, required this.value, required this.icon});
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: (MediaQuery.of(context).size.width - 64) / 2,
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(6),
+            decoration: BoxDecoration(
+              color: AppColors.primary.withValues(alpha: 0.1),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(icon, size: 16, color: AppColors.primary),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(label, style: AppTextStyles.labelBold.copyWith(color: AppColors.textHint, fontSize: 9)),
+                Text(value, style: AppTextStyles.bodySm.copyWith(fontWeight: FontWeight.w700)),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _CircleIconButton extends StatelessWidget {
+  final IconData icon;
+  final Color color;
+  final VoidCallback onTap;
+
+  const _CircleIconButton({required this.icon, required this.color, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: color.withValues(alpha: 0.1),
+      shape: const CircleBorder(),
+      child: InkWell(
+        onTap: onTap,
+        customBorder: const CircleBorder(),
+        child: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Icon(icon, color: color, size: 18),
+        ),
+      ),
+    );
+  }
+}
+

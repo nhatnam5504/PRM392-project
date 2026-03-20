@@ -39,33 +39,136 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
     final authVm = context.watch<AuthViewModel>();
 
     return Scaffold(
+      backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text('Quản lý Admin'),
-        centerTitle: true,
+        elevation: 0,
+        backgroundColor: AppColors.surface,
+        title: Text(
+          'Quản lý TechGear',
+          style: AppTextStyles.headingMd.copyWith(
+            color: AppColors.primary,
+            letterSpacing: -0.5,
+          ),
+        ),
+        centerTitle: false,
         actions: [
-          IconButton(
-            icon: const Icon(Icons.logout),
-            tooltip: 'Đăng xuất',
-            onPressed: () async {
-              await authVm.logout();
-              if (context.mounted) context.go('/login');
-            },
+          Container(
+            margin: const EdgeInsets.only(right: 8),
+            decoration: BoxDecoration(
+              color: AppColors.error.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: IconButton(
+              icon: const Icon(Icons.logout_rounded, color: AppColors.error, size: 22),
+              tooltip: 'Đăng xuất',
+              onPressed: () async {
+                final confirm = await showDialog<bool>(
+                  context: context,
+                  builder: (context) => AlertDialog(
+                    title: const Text('Đăng xuất'),
+                    content: const Text('Bạn có chắc chắn muốn thoát?'),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.pop(context, false),
+                        child: const Text('Hủy'),
+                      ),
+                      TextButton(
+                        onPressed: () => Navigator.pop(context, true),
+                        style: TextButton.styleFrom(foregroundColor: AppColors.error),
+                        child: const Text('Đăng xuất'),
+                      ),
+                    ],
+                  ),
+                );
+                if (confirm == true) {
+                  await authVm.logout();
+                  if (context.mounted) context.go('/login');
+                }
+              },
+            ),
           ),
         ],
-        bottom: TabBar(
-          controller: _tabController,
-          labelColor: AppColors.primary,
-          unselectedLabelColor: AppColors.textHint,
-          indicatorColor: AppColors.primary,
-          labelStyle: AppTextStyles.labelBold,
-          tabs: const [
-            Tab(icon: Icon(Icons.inventory_2), text: 'Sản phẩm'),
-            Tab(icon: Icon(Icons.branding_watermark), text: 'Thương hiệu'),
-            Tab(icon: Icon(Icons.category), text: 'Danh mục'),
-            Tab(icon: Icon(Icons.receipt_long_rounded), text: 'Đơn hàng'),
-            Tab(icon: Icon(Icons.bar_chart_rounded), text: 'Doanh thu'),
-            Tab(icon: Icon(Icons.discount_rounded), text: 'Khuyến mãi'),
-          ],
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(60),
+          child: Container(
+            margin: const EdgeInsets.only(bottom: 8),
+            child: TabBar(
+              controller: _tabController,
+              isScrollable: true,
+              labelPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
+              indicatorSize: TabBarIndicatorSize.tab,
+              indicator: BoxDecoration(
+                borderRadius: BorderRadius.circular(25),
+                color: AppColors.primary.withValues(alpha: 0.12),
+              ),
+              labelColor: AppColors.primary,
+              unselectedLabelColor: AppColors.textSecondary,
+              labelStyle: AppTextStyles.labelBold.copyWith(fontSize: 13),
+              unselectedLabelStyle: AppTextStyles.labelMd.copyWith(fontSize: 13),
+              tabs: const [
+                Tab(
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.inventory_2_outlined, size: 18),
+                      SizedBox(width: 8),
+                      Text('Sản phẩm'),
+                    ],
+                  ),
+                ),
+                Tab(
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.branding_watermark_outlined, size: 18),
+                      SizedBox(width: 8),
+                      Text('Nhãn hiệu'),
+                    ],
+                  ),
+                ),
+                Tab(
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.category_outlined, size: 18),
+                      SizedBox(width: 8),
+                      Text('Danh mục'),
+                    ],
+                  ),
+                ),
+                Tab(
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.receipt_long_outlined, size: 18),
+                      SizedBox(width: 8),
+                      Text('Đơn hàng'),
+                    ],
+                  ),
+                ),
+                Tab(
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.analytics_outlined, size: 18),
+                      SizedBox(width: 8),
+                      Text('Doanh thu'),
+                    ],
+                  ),
+                ),
+                Tab(
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.discount_outlined, size: 18),
+                      SizedBox(width: 8),
+                      Text('Khuyến mãi'),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
         ),
       ),
       body: TabBarView(

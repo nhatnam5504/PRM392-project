@@ -30,87 +30,93 @@ class _AdminOrderListScreenState extends State<AdminOrderListScreen> {
     ('CANCELED', 'Đã hủy'),
   ];
 
+  Widget _buildStatsRow(AdminOrderViewModel vm) {
+    return Container(
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 20),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.03),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          _StatCard(
+            label: 'Tổng đơn',
+            value: '${vm.totalOrders}',
+            icon: Icons.receipt_long_rounded,
+            color: AppColors.primary,
+          ),
+          _StatCard(
+            label: 'Chờ xử lý',
+            value: '${vm.pendingCount}',
+            icon: Icons.pending_actions_rounded,
+            color: const Color(0xFFF59E0B),
+          ),
+          _StatCard(
+            label: 'Đã thanh toán',
+            value: '${vm.paidCount}',
+            icon: Icons.check_circle_rounded,
+            color: AppColors.success,
+          ),
+          _StatCard(
+            label: 'Đã hủy',
+            value: '${vm.canceledCount}',
+            icon: Icons.cancel_rounded,
+            color: AppColors.error,
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Consumer<AdminOrderViewModel>(
       builder: (context, vm, _) {
         return Column(
           children: [
-            // ── Stats Row ──
-            if (!vm.isLoading && vm.errorMessage == null)
-              _buildStatsRow(vm),
-
-            // ── Filter Chips ──
+            if (!vm.isLoading && vm.errorMessage == null) _buildStatsRow(vm),
+            
+            // Filter Chips
             if (!vm.isLoading && vm.errorMessage == null)
               Container(
-                height: 48,
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                decoration: const BoxDecoration(
-                  color: AppColors.surface,
-                  border: Border(
-                    bottom: BorderSide(color: AppColors.divider),
-                  ),
+                height: 56,
+                padding: const EdgeInsets.symmetric(vertical: 10),
+                decoration: BoxDecoration(
+                  color: AppColors.background,
                 ),
                 child: ListView.separated(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
                   scrollDirection: Axis.horizontal,
                   itemCount: _statuses.length,
-                  separatorBuilder: (_, __) => const SizedBox(width: 8),
+                  separatorBuilder: (_, __) => const SizedBox(width: 10),
                   itemBuilder: (context, i) {
                     final (val, label) = _statuses[i];
                     final isActive = vm.statusFilter == val;
-                    final count = val == 'ALL'
-                        ? vm.totalOrders
-                        : vm.orders
-                            .where((o) => o.status.toUpperCase() == val)
-                            .length;
                     return GestureDetector(
                       onTap: () => vm.setStatusFilter(val),
                       child: AnimatedContainer(
                         duration: const Duration(milliseconds: 200),
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 14, vertical: 4),
+                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
                         decoration: BoxDecoration(
-                          color: isActive
-                              ? _statusColor(val)
-                              : AppColors.surfaceDark,
+                          color: isActive ? AppColors.primary.withValues(alpha: 0.15) : AppColors.surface,
                           borderRadius: BorderRadius.circular(20),
+                          border: Border.all(
+                            color: isActive ? AppColors.primary.withValues(alpha: 0.3) : AppColors.border.withValues(alpha: 0.5),
+                            width: 1,
+                          ),
                         ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text(
-                              label,
-                              style: AppTextStyles.labelMd.copyWith(
-                                color:
-                                    isActive ? Colors.white : AppColors.textSecondary,
-                                fontWeight: isActive
-                                    ? FontWeight.w700
-                                    : FontWeight.w500,
-                              ),
-                            ),
-                            const SizedBox(width: 4),
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 5, vertical: 1),
-                              decoration: BoxDecoration(
-                                color: isActive
-                                    ? Colors.white.withValues(alpha: 0.3)
-                                    : AppColors.border,
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                              child: Text(
-                                '$count',
-                                style: TextStyle(
-                                  fontSize: 10,
-                                  fontWeight: FontWeight.w700,
-                                  color: isActive
-                                      ? Colors.white
-                                      : AppColors.textSecondary,
-                                ),
-                              ),
-                            ),
-                          ],
+                        child: Text(
+                          label,
+                          style: AppTextStyles.labelMd.copyWith(
+                            color: isActive ? AppColors.primary : AppColors.textSecondary,
+                            fontWeight: isActive ? FontWeight.bold : FontWeight.w500,
+                          ),
                         ),
                       ),
                     );
@@ -145,46 +151,6 @@ class _AdminOrderListScreenState extends State<AdminOrderListScreen> {
     );
   }
 
-  Widget _buildStatsRow(AdminOrderViewModel vm) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          colors: [Color(0xFF1A1F38), Color(0xFF2D3561)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-      ),
-      child: Row(
-        children: [
-          _StatCard(
-            label: 'Tổng đơn',
-            value: '${vm.totalOrders}',
-            icon: Icons.receipt_long_rounded,
-            color: Colors.white,
-          ),
-          _StatCard(
-            label: 'Chờ xử lý',
-            value: '${vm.pendingCount}',
-            icon: Icons.pending_actions_rounded,
-            color: const Color(0xFFFCD34D),
-          ),
-          _StatCard(
-            label: 'Đã thanh toán',
-            value: '${vm.paidCount}',
-            icon: Icons.check_circle_rounded,
-            color: const Color(0xFF34D399),
-          ),
-          _StatCard(
-            label: 'Doanh thu',
-            value: _shortMoney(vm.totalRevenue),
-            icon: Icons.attach_money_rounded,
-            color: const Color(0xFF60A5FA),
-          ),
-        ],
-      ),
-    );
-  }
 
   Widget _buildError(AdminOrderViewModel vm) {
     return Center(
@@ -278,31 +244,37 @@ class _StatCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Expanded(
       child: Container(
-        margin: const EdgeInsets.symmetric(horizontal: 3),
-        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 6),
+        margin: const EdgeInsets.symmetric(horizontal: 4),
+        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
         decoration: BoxDecoration(
-          color: Colors.white.withValues(alpha: 0.07),
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: color.withValues(alpha: 0.3)),
+          color: color.withValues(alpha: 0.05),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: color.withValues(alpha: 0.15), width: 1),
         ),
         child: Column(
           children: [
-            Icon(icon, color: color, size: 20),
-            const SizedBox(height: 4),
+            Container(
+              padding: const EdgeInsets.all(6),
+              decoration: BoxDecoration(
+                color: color.withValues(alpha: 0.1),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(icon, color: color, size: 20),
+            ),
+            const SizedBox(height: 8),
             Text(
               value,
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 13,
-                fontWeight: FontWeight.w800,
+              style: AppTextStyles.labelBold.copyWith(
+                color: AppColors.textHeading,
+                fontSize: 16,
               ),
             ),
+            const SizedBox(height: 2),
             Text(
               label,
-              style: TextStyle(
-                color: Colors.white.withValues(alpha: 0.6),
-                fontSize: 9,
-                fontWeight: FontWeight.w500,
+              style: AppTextStyles.caption.copyWith(
+                color: AppColors.textSecondary,
+                fontSize: 10,
               ),
               textAlign: TextAlign.center,
               maxLines: 1,
@@ -326,36 +298,24 @@ class _AdminOrderCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 10),
+      margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
         color: AppColors.surface,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
+            color: Colors.black.withValues(alpha: 0.04),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
           ),
         ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // ── Header ──
-          Container(
-            padding: const EdgeInsets.fromLTRB(14, 12, 14, 10),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  _statusColor(order.status).withValues(alpha: 0.08),
-                  Colors.transparent,
-                ],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-              borderRadius:
-                  const BorderRadius.vertical(top: Radius.circular(16)),
-            ),
+          // Header
+          Padding(
+            padding: const EdgeInsets.all(16),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -363,112 +323,113 @@ class _AdminOrderCard extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        order.shortCode,
-                        style: AppTextStyles.labelBold.copyWith(
-                          color: AppColors.textPrimary,
-                          fontSize: 13,
-                        ),
-                      ),
-                      const SizedBox(height: 2),
                       Row(
                         children: [
-                          const Icon(Icons.person_outline,
-                              size: 12, color: AppColors.textHint),
-                          const SizedBox(width: 3),
+                          Text(
+                            order.shortCode,
+                            style: AppTextStyles.labelBold.copyWith(
+                              color: AppColors.textHeading,
+                              fontSize: 15,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          _StatusBadge(status: order.status),
+                        ],
+                      ),
+                      const SizedBox(height: 6),
+                      Row(
+                        children: [
+                          const Icon(Icons.person_outline_rounded, size: 14, color: AppColors.textSecondary),
+                          const SizedBox(width: 6),
                           Text(
                             order.userName,
-                            style: AppTextStyles.bodySm.copyWith(
-                                color: AppColors.textSecondary),
+                            style: AppTextStyles.bodySm.copyWith(color: AppColors.textSecondary, fontWeight: FontWeight.w500),
                           ),
                         ],
                       ),
-                      const SizedBox(height: 2),
+                      const SizedBox(height: 4),
                       Row(
                         children: [
-                          const Icon(Icons.schedule,
-                              size: 12, color: AppColors.textHint),
-                          const SizedBox(width: 3),
+                          const Icon(Icons.access_time_rounded, size: 14, color: AppColors.textHint),
+                          const SizedBox(width: 6),
                           Text(
                             order.formattedDate,
-                            style: const TextStyle(
-                                fontSize: 10,
-                                color: AppColors.textHint),
+                            style: AppTextStyles.caption.copyWith(color: AppColors.textHint),
                           ),
                         ],
                       ),
                     ],
                   ),
                 ),
-                _StatusBadge(status: order.status),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Text('Tổng thanh toán', style: AppTextStyles.caption),
+                    Text(
+                      formatVND(order.totalPrice),
+                      style: AppTextStyles.priceMd.copyWith(fontSize: 18),
+                    ),
+                  ],
+                ),
               ],
             ),
           ),
-
-          const Padding(
-            padding: EdgeInsets.symmetric(horizontal: 14),
-            child: Divider(height: 1),
-          ),
-
-          // ── Product list (max 2) ──
+          
+          const Divider(height: 1, indent: 16, endIndent: 16, color: AppColors.divider),
+          
+          // Products
           if (order.orderDetails.isNotEmpty)
-            ...order.orderDetails.take(2).map(
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              child: Column(
+                children: order.orderDetails.take(2).map(
                   (item) => Padding(
-                    padding: const EdgeInsets.fromLTRB(14, 8, 14, 0),
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
                     child: Row(
                       children: [
                         ClipRRect(
-                          borderRadius: BorderRadius.circular(8),
+                          borderRadius: BorderRadius.circular(10),
                           child: Container(
-                            width: 44,
-                            height: 44,
+                            width: 48,
+                            height: 48,
                             color: AppColors.surfaceDark,
-                            child: item.imgUrl != null &&
-                                    item.imgUrl!.isNotEmpty
+                            child: item.imgUrl != null && item.imgUrl!.isNotEmpty
                                 ? Image.network(
                                     item.imgUrl!,
                                     fit: BoxFit.cover,
-                                    errorBuilder: (_, __, ___) =>
-                                        const Icon(Icons.image_outlined,
-                                            size: 20,
-                                            color: AppColors.border),
+                                    errorBuilder: (_, __, ___) => const Icon(Icons.image_outlined, color: AppColors.textHint),
                                   )
-                                : const Icon(Icons.image_outlined,
-                                    size: 20, color: AppColors.border),
+                                : const Icon(Icons.image_outlined, color: AppColors.textHint),
                           ),
                         ),
-                        const SizedBox(width: 10),
+                        const SizedBox(width: 12),
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
                                 item.productName,
-                                style: AppTextStyles.bodySm.copyWith(
-                                    fontWeight: FontWeight.w600),
+                                style: AppTextStyles.bodySm.copyWith(fontWeight: FontWeight.w600),
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                               ),
+                              const SizedBox(height: 2),
                               Row(
                                 children: [
-                                  Text('x${item.quantity}',
-                                      style: AppTextStyles.caption),
+                                  Text('x${item.quantity}', style: AppTextStyles.caption.copyWith(fontWeight: FontWeight.bold)),
                                   if (item.isGift) ...[
-                                    const SizedBox(width: 6),
+                                    const SizedBox(width: 8),
                                     Container(
-                                      padding: const EdgeInsets.symmetric(
-                                          horizontal: 5, vertical: 1),
+                                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
                                       decoration: BoxDecoration(
-                                        color: AppColors.success,
-                                        borderRadius:
-                                            BorderRadius.circular(4),
+                                        color: AppColors.success.withValues(alpha: 0.1),
+                                        borderRadius: BorderRadius.circular(4),
+                                        border: Border.all(color: AppColors.success.withValues(alpha: 0.3)),
                                       ),
-                                      child: const Text('Quà',
-                                          style: TextStyle(
-                                              fontSize: 9,
-                                              color: Colors.white,
-                                              fontWeight:
-                                                  FontWeight.w700)),
+                                      child: Text(
+                                        'QUÀ TẶNG',
+                                        style: AppTextStyles.labelSm.copyWith(color: AppColors.success, fontSize: 8),
+                                      ),
                                     ),
                                   ],
                                 ],
@@ -477,49 +438,42 @@ class _AdminOrderCard extends StatelessWidget {
                           ),
                         ),
                         if (!item.isGift)
-                          Text(
-                            formatVND(item.subtotal),
-                            style: AppTextStyles.priceSm,
-                          ),
+                          Text(formatVND(item.subtotal), style: AppTextStyles.labelBold),
                       ],
                     ),
                   ),
-                ),
-
-          if (order.orderDetails.length > 2)
-            Padding(
-              padding: const EdgeInsets.fromLTRB(14, 4, 14, 0),
-              child: Text(
-                'và ${order.orderDetails.length - 2} sản phẩm khác...',
-                style: AppTextStyles.caption
-                    .copyWith(color: AppColors.textHint),
+                ).toList(),
               ),
             ),
 
-          // ── Recipient Info ──
-          if (order.orderInfo.isNotEmpty &&
-              !order.orderInfo.first.isEmpty)
+          if (order.orderDetails.length > 2)
             Padding(
-              padding: const EdgeInsets.fromLTRB(14, 8, 14, 0),
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+              child: Text(
+                'và ${order.orderDetails.length - 2} sản phẩm khác...',
+                style: AppTextStyles.caption.copyWith(fontStyle: FontStyle.italic),
+              ),
+            ),
+
+          // Customer Info (Address)
+          if (order.orderInfo.isNotEmpty && !order.orderInfo.first.isEmpty)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 4, 16, 16),
               child: Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: AppColors.surfaceDark,
-                  borderRadius: BorderRadius.circular(8),
+                  color: AppColors.surfaceDark.withValues(alpha: 0.5),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: AppColors.divider),
                 ),
                 child: Row(
                   children: [
-                    const Icon(Icons.location_on_outlined,
-                        size: 13, color: AppColors.textHint),
-                    const SizedBox(width: 6),
+                    const Icon(Icons.local_shipping_outlined, size: 16, color: AppColors.primary),
+                    const SizedBox(width: 10),
                     Expanded(
                       child: Text(
-                        '${order.orderInfo.first.recipientName}'
-                        '${order.orderInfo.first.phoneNumber.isNotEmpty ? ' · ${order.orderInfo.first.phoneNumber}' : ''}'
-                        '${order.orderInfo.first.address.isNotEmpty ? '\n${order.orderInfo.first.address}' : ''}',
-                        style: AppTextStyles.caption
-                            .copyWith(color: AppColors.textSecondary),
+                        '${order.orderInfo.first.recipientName} • ${order.orderInfo.first.phoneNumber}\n${order.orderInfo.first.address}',
+                        style: AppTextStyles.caption.copyWith(color: AppColors.textSecondary, height: 1.4),
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                       ),
@@ -528,49 +482,6 @@ class _AdminOrderCard extends StatelessWidget {
                 ),
               ),
             ),
-
-          if (order.note != null && order.note!.isNotEmpty)
-            Padding(
-              padding: const EdgeInsets.fromLTRB(14, 6, 14, 0),
-              child: Row(
-                children: [
-                  const Icon(Icons.note_outlined,
-                      size: 12, color: AppColors.textHint),
-                  const SizedBox(width: 4),
-                  Expanded(
-                    child: Text(
-                      order.note!,
-                      style: AppTextStyles.caption
-                          .copyWith(color: AppColors.textHint),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-
-          // ── Footer ──
-          Padding(
-            padding: const EdgeInsets.fromLTRB(14, 10, 14, 12),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text('Tổng thanh toán',
-                        style: AppTextStyles.caption
-                            .copyWith(color: AppColors.textHint)),
-                    Text(
-                      formatVND(order.totalPrice),
-                      style: AppTextStyles.priceMd,
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
         ],
       ),
     );

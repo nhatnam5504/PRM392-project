@@ -95,61 +95,87 @@ class _AdminRevenueScreenState extends State<AdminRevenueScreen> {
   Widget _buildHeader(AdminRevenueViewModel vm) {
     return Container(
       width: double.infinity,
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          colors: [Color(0xFF0D1B5E), Color(0xFF1565C0), Color(0xFF0891B2)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.03),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
-      padding: const EdgeInsets.fromLTRB(20, 20, 20, 28),
+      padding: const EdgeInsets.fromLTRB(20, 24, 20, 24),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            children: [
-              const Icon(Icons.bar_chart_rounded,
-                  color: Colors.white70, size: 18),
-              const SizedBox(width: 6),
-              Text('Tổng quan doanh thu',
-                  style: AppTextStyles.bodySm
-                      .copyWith(color: Colors.white70)),
-            ],
-          ),
-          const SizedBox(height: 6),
-          Text(
-            formatVND(vm.totalRevenue),
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 28,
-              fontWeight: FontWeight.w800,
-              letterSpacing: -0.5,
+          Container(
+            padding: const EdgeInsets.fromLTRB(20, 24, 20, 24),
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [Color(0xFF0891B2), Color(0xFF06B6D4), Color(0xFF22D3EE)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.circular(24),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFF0891B2).withValues(alpha: 0.3),
+                  blurRadius: 20,
+                  offset: const Offset(0, 8),
+                ),
+              ],
             ),
-          ),
-          const SizedBox(height: 16),
-          Row(
-            children: [
-              _HeaderStatChip(
-                label: 'Hoàn tất',
-                value: '${vm.totalCompleted}',
-                icon: Icons.check_circle_outline,
-                color: const Color(0xFF34D399),
-              ),
-              const SizedBox(width: 10),
-              _HeaderStatChip(
-                label: 'Đang xử lý',
-                value: '${vm.totalPending}',
-                icon: Icons.pending_outlined,
-                color: const Color(0xFFFCD34D),
-              ),
-              const SizedBox(width: 10),
-              _HeaderStatChip(
-                label: 'TB/đơn',
-                value: _shortMoney(vm.avgOrderValue),
-                icon: Icons.trending_up,
-                color: const Color(0xFF93C5FD),
-              ),
-            ],
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    const Icon(Icons.auto_graph_rounded, color: Colors.white, size: 20),
+                    const SizedBox(width: 8),
+                    Text(
+                      'TỔNG DOANH THU',
+                      style: AppTextStyles.labelBold.copyWith(
+                        color: Colors.white.withValues(alpha: 0.9),
+                        letterSpacing: 1.2,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  formatVND(vm.totalRevenue),
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 32,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: -1,
+                  ),
+                ),
+                const SizedBox(height: 20),
+                Row(
+                  children: [
+                    _HeaderStatItem(
+                      label: 'Đơn hàng',
+                      value: '${vm.totalCompleted}',
+                      icon: Icons.shopping_bag_outlined,
+                    ),
+                    Container(width: 1, height: 24, color: Colors.white24, margin: const EdgeInsets.symmetric(horizontal: 16)),
+                    _HeaderStatItem(
+                      label: 'Trung bình',
+                      value: _shortMoney(vm.avgOrderValue),
+                      icon: Icons.analytics_outlined,
+                    ),
+                    Container(width: 1, height: 24, color: Colors.white24, margin: const EdgeInsets.symmetric(horizontal: 16)),
+                    _HeaderStatItem(
+                      label: 'Đang xử lý',
+                      value: '${vm.totalPending}',
+                      icon: Icons.timer_outlined,
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ),
         ],
       ),
@@ -191,9 +217,9 @@ class _AdminRevenueScreenState extends State<AdminRevenueScreen> {
                         horizontal: 12, vertical: 6),
                     decoration: BoxDecoration(
                       color: isActive
-                          ? AppColors.primary
+                          ? AppColors.primary.withValues(alpha: 0.12)
                           : Colors.transparent,
-                      borderRadius: BorderRadius.circular(8),
+                      borderRadius: BorderRadius.circular(20),
                     ),
                     child: Text(
                       g.$2,
@@ -201,7 +227,7 @@ class _AdminRevenueScreenState extends State<AdminRevenueScreen> {
                         fontSize: 11,
                         fontWeight: FontWeight.w600,
                         color: isActive
-                            ? Colors.white
+                            ? AppColors.primary
                             : AppColors.textSecondary,
                       ),
                     ),
@@ -430,52 +456,6 @@ class _AdminRevenueScreenState extends State<AdminRevenueScreen> {
 }
 
 // ─── Header Stat Chip ───────────────────────────
-class _HeaderStatChip extends StatelessWidget {
-  final String label;
-  final String value;
-  final IconData icon;
-  final Color color;
-
-  const _HeaderStatChip({
-    required this.label,
-    required this.value,
-    required this.icon,
-    required this.color,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: color.withValues(alpha: 0.3)),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, size: 14, color: color),
-          const SizedBox(width: 4),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(value,
-                  style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 12,
-                      fontWeight: FontWeight.w800)),
-              Text(label,
-                  style: TextStyle(
-                      color: Colors.white.withValues(alpha: 0.6),
-                      fontSize: 9)),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-}
 
 // ─── Transaction Row ────────────────────────────
 class _TransactionRow extends StatelessWidget {
@@ -487,72 +467,106 @@ class _TransactionRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final isCompleted = payment.isCompleted;
     final color = isCompleted ? AppColors.success : AppColors.warning;
-    final label = isCompleted ? 'Hoàn tất' : 'Đang xử lý';
+    final label = isCompleted ? 'Thành công' : 'Chờ xử lý';
 
     String formattedDate = '';
     try {
       final dt = payment.dateTime.toLocal();
-      formattedDate = '${dt.day}/${dt.month}/${dt.year}';
+      formattedDate = '${dt.day}/${dt.month}/${dt.year} • ${dt.hour}:${dt.minute.toString().padLeft(2, '0')}';
     } catch (_) {}
 
     return Container(
-      margin: const EdgeInsets.only(bottom: 8),
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
         color: AppColors.surface,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.border),
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 36,
-            height: 36,
-            decoration: BoxDecoration(
-              color: color.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: Icon(
-              isCompleted
-                  ? Icons.check_circle_rounded
-                  : Icons.pending_rounded,
-              color: color,
-              size: 18,
-            ),
-          ),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(payment.paymentMethod, style: AppTextStyles.labelMd),
-                Text(formattedDate, style: AppTextStyles.caption),
-              ],
-            ),
-          ),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Text(formatVND(payment.amount), style: AppTextStyles.priceSm),
-              Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                decoration: BoxDecoration(
-                  color: color.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(6),
-                ),
-                child: Text(
-                  label,
-                  style: TextStyle(
-                      fontSize: 9,
-                      fontWeight: FontWeight.w700,
-                      color: color),
-                ),
-              ),
-            ],
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.02),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
           ),
         ],
       ),
+      child: ListTile(
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+        leading: Container(
+          width: 44,
+          height: 44,
+          decoration: BoxDecoration(
+            color: color.withValues(alpha: 0.1),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Icon(
+            isCompleted ? Icons.add_rounded : Icons.history_rounded,
+            color: color,
+            size: 24,
+          ),
+        ),
+        title: Text(
+          payment.paymentMethod,
+          style: AppTextStyles.labelBold.copyWith(color: AppColors.textHeading),
+        ),
+        subtitle: Text(
+          formattedDate,
+          style: AppTextStyles.caption.copyWith(color: AppColors.textHint),
+        ),
+        trailing: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: [
+            Text(
+              '+${formatVND(payment.amount)}',
+              style: AppTextStyles.labelBold.copyWith(color: AppColors.textHeading, fontSize: 14),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              label,
+              style: AppTextStyles.caption.copyWith(
+                color: color,
+                fontWeight: FontWeight.bold,
+                fontSize: 10,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _HeaderStatItem extends StatelessWidget {
+  final String label;
+  final String value;
+  final IconData icon;
+
+  const _HeaderStatItem({
+    required this.label,
+    required this.value,
+    required this.icon,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Icon(icon, size: 12, color: Colors.white70),
+            const SizedBox(width: 4),
+            Text(
+              label,
+              style: TextStyle(color: Colors.white.withValues(alpha: 0.7), fontSize: 10),
+            ),
+          ],
+        ),
+        const SizedBox(height: 2),
+        Text(
+          value,
+          style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.bold),
+        ),
+      ],
     );
   }
 }

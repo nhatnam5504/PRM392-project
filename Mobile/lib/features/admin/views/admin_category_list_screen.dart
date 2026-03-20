@@ -153,10 +153,11 @@ class _AdminCategoryListScreenState extends State<AdminCategoryListScreen> {
     final vm = context.watch<AdminCategoryViewModel>();
 
     return Scaffold(
-      floatingActionButton: FloatingActionButton(
+      floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _showCategoryDialog(),
         backgroundColor: AppColors.primary,
-        child: const Icon(Icons.add, color: Colors.white),
+        icon: const Icon(Icons.add_rounded, color: Colors.white),
+        label: Text('THÊM MỚI', style: AppTextStyles.labelBold.copyWith(color: Colors.white)),
       ),
       body: _buildBody(vm),
     );
@@ -189,52 +190,94 @@ class _AdminCategoryListScreenState extends State<AdminCategoryListScreen> {
     return RefreshIndicator(
       onRefresh: () => vm.loadCategories(),
       child: ListView.builder(
-        padding: const EdgeInsets.all(12),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         itemCount: vm.categories.length,
         itemBuilder: (context, index) {
           final category = vm.categories[index];
-          return Card(
-            margin: const EdgeInsets.only(bottom: 10),
-            elevation: 2,
-            shape:
-                RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-            child: ListTile(
-              leading: Container(
-                width: 48,
-                height: 48,
-                decoration: BoxDecoration(
-                  color: AppColors.primaryLight,
-                  borderRadius: BorderRadius.circular(8),
+          return Container(
+            margin: const EdgeInsets.only(bottom: 16),
+            decoration: BoxDecoration(
+              color: AppColors.surface,
+              borderRadius: BorderRadius.circular(20),
+              boxShadow: [
+                BoxShadow(
+                  color: AppColors.primaryShadow.withValues(alpha: 0.08),
+                  blurRadius: 12,
+                  offset: const Offset(0, 4),
                 ),
-                child: const Icon(Icons.category, color: AppColors.primary),
+              ],
+            ),
+            child: ListTile(
+              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              leading: Container(
+                width: 52,
+                height: 52,
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Icon(Icons.category_outlined, color: AppColors.primary, size: 24),
               ),
-              title: Text(category.name, style: AppTextStyles.headingSm),
-              subtitle: Text(
-                category.description.isNotEmpty
-                    ? category.description
-                    : 'Không có mô tả',
-                style: AppTextStyles.bodySm,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
+              title: Text(
+                category.name,
+                style: AppTextStyles.headingSm.copyWith(color: AppColors.textHeading),
+              ),
+              subtitle: Padding(
+                padding: const EdgeInsets.only(top: 4),
+                child: Text(
+                  category.description.isNotEmpty ? category.description : 'Không có mô tả',
+                  style: AppTextStyles.bodySm.copyWith(color: AppColors.textSecondary),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
               ),
               trailing: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  IconButton(
-                    icon: const Icon(Icons.edit, color: AppColors.primary),
-                    onPressed: () => _showCategoryDialog(category: category),
-                    iconSize: 22,
+                  _CircleIconButton(
+                    icon: Icons.edit_rounded,
+                    color: AppColors.primary,
+                    onTap: () => _showCategoryDialog(category: category),
                   ),
-                  IconButton(
-                    icon: const Icon(Icons.delete, color: AppColors.error),
-                    onPressed: () => _confirmDelete(category),
-                    iconSize: 22,
+                  const SizedBox(width: 8),
+                  _CircleIconButton(
+                    icon: Icons.delete_outline_rounded,
+                    color: AppColors.error,
+                    onTap: () => _confirmDelete(category),
                   ),
                 ],
               ),
             ),
           );
         },
+      ),
+    );
+  }
+}
+
+class _CircleIconButton extends StatelessWidget {
+  final IconData icon;
+  final Color color;
+  final VoidCallback onTap;
+
+  const _CircleIconButton({
+    required this.icon,
+    required this.color,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: color.withValues(alpha: 0.1),
+      shape: const CircleBorder(),
+      child: InkWell(
+        onTap: onTap,
+        customBorder: const CircleBorder(),
+        child: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Icon(icon, color: color, size: 20),
+        ),
       ),
     );
   }
