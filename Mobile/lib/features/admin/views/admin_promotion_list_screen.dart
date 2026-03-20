@@ -6,6 +6,7 @@ import '../../../core/theme/app_text_styles.dart';
 import '../../../data/models/promotion_model.dart';
 import '../../../data/models/product_model.dart';
 import '../view_models/admin_promotion_view_model.dart';
+import 'admin_promotion_form_dialog.dart';
 
 class AdminPromotionListScreen extends StatefulWidget {
   const AdminPromotionListScreen({super.key});
@@ -29,6 +30,24 @@ class _AdminPromotionListScreenState extends State<AdminPromotionListScreen> {
     final vm = context.watch<AdminPromotionViewModel>();
 
     return Scaffold(
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () {
+          showDialog(
+            context: context,
+            builder: (context) => const AdminPromotionFormDialog(),
+          ).then((result) {
+            if (result == true) {
+              vm.loadPromotions();
+            }
+          });
+        },
+        backgroundColor: AppColors.primary,
+        icon: const Icon(Icons.add, color: Colors.white),
+        label: Text(
+          'Thêm mới',
+          style: AppTextStyles.labelBold.copyWith(color: Colors.white),
+        ),
+      ),
       body: _buildBody(vm),
     );
   }

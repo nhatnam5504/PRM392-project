@@ -3,12 +3,17 @@ import 'package:flutter/foundation.dart';
 import '../../../data/models/promotion_model.dart';
 import '../../../data/models/product_model.dart';
 import '../../../data/repositories/promotion_repository.dart';
+import '../../../data/repositories/product_repository.dart';
 
 class AdminPromotionViewModel extends ChangeNotifier {
   final PromotionRepository _promotionRepo;
+  final ProductRepository _productRepo;
 
-  AdminPromotionViewModel({PromotionRepository? promotionRepo})
-      : _promotionRepo = promotionRepo ?? PromotionRepository();
+  AdminPromotionViewModel({
+    PromotionRepository? promotionRepo,
+    ProductRepository? productRepo,
+  })  : _promotionRepo = promotionRepo ?? PromotionRepository(),
+        _productRepo = productRepo ?? ProductRepository();
 
   List<PromotionModel> _promotions = [];
   Map<int, List<ProductModel>> _applicableProducts = {};
@@ -55,12 +60,15 @@ class AdminPromotionViewModel extends ChangeNotifier {
   }
 
   Future<void> loadAllProducts() async {
+    _isLoading = true;
+    notifyListeners();
     try {
-      // Sử dụng repository để lấy tất cả sản phẩm
-      // Giả sử có sẵn trong repo hoặc dùng trực tiếp từ ApiService
-      final response = await _promotionRepo.getPromotions(); // Chờ đã, tôi nên dùng ProductRepository
+      _allProducts = await _productRepo.getProducts();
     } catch (e) {
       print('Lỗi tải sản phẩm: $e');
+    } finally {
+      _isLoading = false;
+      notifyListeners();
     }
   }
 
