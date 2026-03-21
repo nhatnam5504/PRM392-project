@@ -48,16 +48,20 @@ class _PaymentConfirmationScreenState extends State<PaymentConfirmationScreen> {
       builder: (context, _) => Consumer<PaymentConfirmationViewModel>(
         builder: (context, vm, child) {
           return Scaffold(
+            backgroundColor: AppColors.background,
             appBar: AppBar(
+              backgroundColor: Colors.white,
+              elevation: 0,
+              centerTitle: true,
               leading: IconButton(
-                icon: const Icon(Icons.arrow_back),
+                icon: const Icon(Icons.arrow_back_ios_new_rounded, color: AppColors.textPrimary, size: 20),
                 onPressed: () => context.pop(),
               ),
-              title: const Text('Xác nhận thanh toán'),
+              title: const Text('Xác nhận thanh toán', style: AppTextStyles.headingMd),
             ),
             body: SafeArea(
               child: SingleChildScrollView(
-                padding: const EdgeInsets.fromLTRB(16, 16, 16, 100),
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -66,7 +70,7 @@ class _PaymentConfirmationScreenState extends State<PaymentConfirmationScreen> {
                       payable: vm.payableTotal,
                       discount: vm.discountPreview,
                     ),
-                    const SizedBox(height: 12),
+                    const SizedBox(height: 24),
                     _PromoCard(
                       controller: _promoController,
                       isLoading: vm.isLoading,
@@ -80,71 +84,72 @@ class _PaymentConfirmationScreenState extends State<PaymentConfirmationScreen> {
                     ),
                     if (vm.isLoading)
                       const Padding(
-                        padding: EdgeInsets.only(top: 16),
+                        padding: EdgeInsets.only(top: 24),
                         child: Center(
-                          child: CircularProgressIndicator(
-                            color: AppColors.primary,
-                          ),
+                          child: CircularProgressIndicator(color: AppColors.primary),
                         ),
                       ),
+                    const SizedBox(height: 120), // Khoảng trống cho bottom button
                   ],
                 ),
               ),
             ),
             bottomNavigationBar: Container(
-              padding: const EdgeInsets.all(16),
-              decoration: const BoxDecoration(
-                color: AppColors.surface,
-                border: Border(
-                  top: BorderSide(color: AppColors.borderLight),
-                ),
+              padding: const EdgeInsets.fromLTRB(20, 16, 20, 40),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.05),
+                    blurRadius: 10,
+                    offset: const Offset(0, -5),
+                  ),
+                ],
               ),
               child: SizedBox(
+                width: double.infinity,
                 height: 56,
                 child: ElevatedButton(
                   onPressed: vm.isLoading
                       ? null
-                        : () async {
+                      : () async {
                           final url = await vm.makePayment();
                           if (!mounted) return;
                           if (url != null) {
                             final uri = Uri.parse(url);
                             try {
-                              final launched = await launchUrl(
-                                uri,
-                                mode: LaunchMode.externalApplication,
-                              );
+                              final launched = await launchUrl(uri, mode: LaunchMode.externalApplication);
                               if (launched && mounted) {
-                                // Sau khi mở URL thanh toán, xóa giỏ hàng và đưa người dùng về trang chủ
                                 await Provider.of<CartViewModel>(context, listen: false).clearCart();
-                                if (mounted) {
-                                  context.go('/');
-                                }
+                                if (mounted) context.go('/');
                               } else if (!launched && mounted) {
                                 ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                    content: Text('Không thể chuyển đến trang thanh toán.'),
-                                  ),
+                                  const SnackBar(content: Text('Không thể chuyển đến trang thanh toán.'), behavior: SnackBarBehavior.floating),
                                 );
                               }
                             } catch (e) {
                               if (mounted) {
                                 ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(content: Text('Lỗi: ${e.toString()}')),
+                                  SnackBar(content: Text('Lỗi: ${e.toString()}'), behavior: SnackBarBehavior.floating),
                                 );
                               }
                             }
                           } else {
                             ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text(
-                                  vm.errorMessage ?? 'Không thể chuyển đến trang thanh toán.',
-                                ),
-                              ),
+                              SnackBar(content: Text(vm.errorMessage ?? 'Lỗi tạo link thanh toán.'), behavior: SnackBarBehavior.floating),
                             );
                           }
                         },
-                  child: Text('Thanh toán — ${formatVND(vm.payableTotal)}'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primary,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                    elevation: 0,
+                  ),
+                  child: Text(
+                    'THANH TOÁN — ${formatVND(vm.payableTotal)}',
+                    style: AppTextStyles.labelBold.copyWith(color: Colors.white),
+                  ),
                 ),
               ),
             ),
@@ -169,44 +174,60 @@ class _SummaryCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: const [
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: AppColors.surfaceDark, width: 1.5),
+        boxShadow: [
           BoxShadow(
-            color: Color(0x0D000000),
-            blurRadius: 2,
+            color: Colors.black.withOpacity(0.03),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
           ),
         ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'Tổng đơn hàng',
-            style: AppTextStyles.bodySm.copyWith(
-              color: AppColors.textSecondary,
-            ),
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: const Icon(Icons.receipt_long_rounded, color: AppColors.primary, size: 20),
+              ),
+              const SizedBox(width: 12),
+              const Text('Tóm tắt đơn hàng', style: AppTextStyles.labelBold),
+            ],
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 20),
           _PriceRow(label: 'Tạm tính', value: formatVND(total)),
           if (discount > 0)
             Padding(
-              padding: const EdgeInsets.only(top: 8),
+              padding: const EdgeInsets.only(top: 12),
               child: _PriceRow(
                 label: 'Giảm giá dự kiến',
                 value: '-${formatVND(discount)}',
                 color: AppColors.success,
               ),
             ),
-          const SizedBox(height: 8),
-          const Divider(color: AppColors.divider),
-          const SizedBox(height: 8),
-          _PriceRow(
-            label: 'Số tiền phải thanh toán',
-            value: formatVND(payable),
-            isBold: true,
+          const Padding(
+            padding: EdgeInsets.symmetric(vertical: 20),
+            child: Divider(height: 1, color: AppColors.surfaceDark),
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text('Số tiền thanh toán', style: AppTextStyles.headingSm),
+              Text(
+                formatVND(payable),
+                style: AppTextStyles.priceLg.copyWith(color: AppColors.primary, fontSize: 24),
+              ),
+            ],
           ),
         ],
       ),
@@ -236,118 +257,100 @@ class _PromoCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: const [
-          BoxShadow(
-            color: Color(0x0D000000),
-            blurRadius: 2,
-          ),
-        ],
+        color: AppColors.primary.withOpacity(0.05),
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: AppColors.primary.withOpacity(0.1)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Mã giảm giá',
-            style: AppTextStyles.labelSm.copyWith(
-              color: AppColors.textSecondary,
-              letterSpacing: 0.6,
-            ),
+            'MÃ GIẢM GIÁ',
+            style: AppTextStyles.labelBold.copyWith(color: AppColors.primary, fontSize: 11, letterSpacing: 0.8),
           ),
-          const SizedBox(height: 12),
-          Row(
-            children: [
-              Expanded(
-                child: TextField(
-                  controller: controller,
-                  decoration: const InputDecoration(
-                    hintText: 'Nhập mã giảm giá',
-                    filled: true,
-                    fillColor: AppColors.inputBackground,
-                    border: OutlineInputBorder(
-                      borderSide: BorderSide(color: AppColors.border),
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderSide: BorderSide(color: AppColors.border),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderSide: BorderSide(
-                        color: AppColors.primary,
-                        width: 1.2,
+          const SizedBox(height: 16),
+          if (appliedCode == null)
+            Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: controller,
+                    style: AppTextStyles.bodyMd,
+                    decoration: InputDecoration(
+                      hintText: 'Nhập mã giảm giá',
+                      hintStyle: AppTextStyles.bodyMd.copyWith(color: AppColors.textHint, fontSize: 13),
+                      filled: true,
+                      fillColor: Colors.white,
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+                      enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: const BorderSide(color: AppColors.primary, width: 1),
                       ),
                     ),
                   ),
                 ),
+                const SizedBox(width: 8),
+                SizedBox(
+                  width: 100,
+                  height: 48,
+                  child: ElevatedButton(
+                    onPressed: isLoading ? null : onApply,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.primary,
+                      foregroundColor: Colors.white,
+                      padding: EdgeInsets.zero,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      elevation: 0,
+                    ),
+                    child: const Text('ÁP DỤNG'),
+                  ),
+                ),
+              ],
+            )
+          else
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: AppColors.success.withOpacity(0.3)),
               ),
-              const SizedBox(width: 8),
-              SizedBox(
-                height: 44,
-                child: ElevatedButton(
-                  onPressed: isLoading ? null : onApply,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.accent,
-                    foregroundColor: Colors.white,
-                    minimumSize: const Size(100, 44),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
+              child: Row(
+                children: [
+                  const Icon(Icons.check_circle_rounded, color: AppColors.success, size: 24),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('Mã: $appliedCode', style: AppTextStyles.labelBold.copyWith(color: AppColors.success)),
+                        if (appliedPromotion?.description != null)
+                          Text(
+                            appliedPromotion!.description,
+                            style: AppTextStyles.caption.copyWith(color: AppColors.textSecondary),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                      ],
                     ),
                   ),
-                  child: const Text('Áp dụng'),
-                ),
+                  TextButton(
+                    onPressed: isLoading ? null : onClear,
+                    child: const Text('BỎ MÃ', style: TextStyle(color: AppColors.error, fontWeight: FontWeight.bold)),
+                  ),
+                ],
               ),
-            ],
-          ),
-          if (errorText != null)
+            ),
+          if (errorText != null && appliedCode == null)
             Padding(
-              padding: const EdgeInsets.only(top: 8),
+              padding: const EdgeInsets.only(top: 12, left: 4),
               child: Text(
                 errorText!,
-                style: AppTextStyles.bodySm.copyWith(
-                  color: AppColors.error,
-                ),
-              ),
-            ),
-          if (appliedCode != null)
-            Padding(
-              padding: const EdgeInsets.only(top: 8),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        'Áp dụng: $appliedCode',
-                        style: AppTextStyles.bodyMd.copyWith(
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.primary,
-                        ),
-                      ),
-                      TextButton(
-                        onPressed: isLoading ? null : onClear,
-                        style: TextButton.styleFrom(
-                          visualDensity: VisualDensity.compact,
-                          padding: EdgeInsets.zero,
-                        ),
-                        child: const Text('Bỏ mã'),
-                      ),
-                    ],
-                  ),
-                  if (appliedPromotion?.description != null)
-                    Padding(
-                      padding: const EdgeInsets.only(top: 4),
-                      child: Text(
-                        appliedPromotion!.description,
-                        style: AppTextStyles.bodySm.copyWith(
-                          color: AppColors.textSecondary,
-                          fontStyle: FontStyle.italic,
-                        ),
-                      ),
-                    ),
-                ],
+                style: AppTextStyles.bodySm.copyWith(color: AppColors.error, fontWeight: FontWeight.bold),
               ),
             ),
         ],
@@ -361,31 +364,19 @@ class _PriceRow extends StatelessWidget {
     required this.label,
     required this.value,
     this.color,
-    this.isBold = false,
   });
 
   final String label;
   final String value;
   final Color? color;
-  final bool isBold;
 
   @override
   Widget build(BuildContext context) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(
-          label,
-          style: (isBold ? AppTextStyles.headingSm : AppTextStyles.bodyMd).copyWith(
-            color: color ?? AppColors.textSecondary,
-          ),
-        ),
-        Text(
-          value,
-          style: (isBold ? AppTextStyles.priceLg : AppTextStyles.labelBold).copyWith(
-            color: color,
-          ),
-        ),
+        Text(label, style: AppTextStyles.bodyMd.copyWith(color: AppColors.textSecondary, fontWeight: FontWeight.w500)),
+        Text(value, style: AppTextStyles.labelBold.copyWith(color: color ?? AppColors.textPrimary)),
       ],
     );
   }

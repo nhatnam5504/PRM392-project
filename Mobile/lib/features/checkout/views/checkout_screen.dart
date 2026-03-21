@@ -25,11 +25,9 @@ class CheckoutScreen extends StatefulWidget {
 
 class _CheckoutScreenState
     extends State<CheckoutScreen> {
-  final TextEditingController _promoController = TextEditingController();
 
   @override
   void dispose() {
-    _promoController.dispose();
     super.dispose();
   }
 
@@ -62,7 +60,7 @@ class _CheckoutScreenState
                     if (!hasItems)
                       Container(
                         padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(color: AppColors.error.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(12)),
+                        decoration: BoxDecoration(color: AppColors.error.withOpacity(0.1), borderRadius: BorderRadius.circular(12)),
                         child: Text('Giỏ hàng trống, vui lòng quay lại thêm sản phẩm.', style: AppTextStyles.bodyMd.copyWith(color: AppColors.error)),
                       ),
                     if (hasItems) ...[
@@ -91,26 +89,11 @@ class _CheckoutScreenState
                         ),
                       ),
                       const SizedBox(height: 20),
-                      _PromoSection(
-                        controller: _promoController,
-                        isLoading: checkoutVm.isLoading,
-                        appliedPromotion: checkoutVm.appliedPromotion,
-                        onApply: () async {
-                          await checkoutVm.applyPromotion(_promoController.text);
-                        },
-                        onClear: checkoutVm.clearPromotion,
-                      ),
-                      const SizedBox(height: 20),
                       _SectionCard(
                         title: 'CHI TIẾT THANH TOÁN',
                         child: Column(
                           children: [
-                            _PriceRow('Tạm tính', formatVND(checkoutVm.checkResult?.basePrice ?? checkoutVm.checkResult?.totalPrice ?? 0)),
-                            if (checkoutVm.discountPreview > 0)
-                              Padding(
-                                padding: const EdgeInsets.only(top: 12),
-                                child: _PriceRow('Giảm giá', '-${formatVND(checkoutVm.discountPreview)}', color: AppColors.success),
-                              ),
+                            _PriceRow('Tạm tính', formatVND(checkoutVm.checkResult?.totalPrice ?? 0)),
                             const Padding(
                               padding: EdgeInsets.symmetric(vertical: 16),
                               child: Divider(height: 1, color: AppColors.surfaceDark),
@@ -119,7 +102,7 @@ class _CheckoutScreenState
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 Text('Tổng cộng', style: AppTextStyles.headingSm),
-                                Text(formatVND(checkoutVm.payableTotal), style: AppTextStyles.priceLg.copyWith(color: AppColors.primary, fontSize: 22)),
+                                Text(formatVND(checkoutVm.checkResult?.totalPrice ?? 0), style: AppTextStyles.priceLg.copyWith(color: AppColors.primary, fontSize: 22)),
                               ],
                             ),
                           ],
@@ -186,7 +169,7 @@ class _CheckoutScreenState
         color: Colors.white,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
+            color: Colors.black.withOpacity(0.05),
             blurRadius: 10,
             offset: const Offset(0, -5),
           ),
@@ -199,27 +182,16 @@ class _CheckoutScreenState
             width: double.infinity,
             height: 56,
             child: ElevatedButton(
-              onPressed: checkoutVm.isLoading
+              onPressed: checkoutVm.isLoading || checkoutVm.checkResult == null
                   ? null
-                  : () async {
-                      final url = await checkoutVm.makePayment();
-                      if (!mounted) return;
-                      if (url != null) {
-                        final uri = Uri.parse(url);
-                        try {
-                          final launched = await launchUrl(uri, mode: LaunchMode.externalApplication);
-                          if (launched && mounted) {
-                            await cartVm.clearCart();
-                            if (mounted) context.go('/');
-                          } else if (!launched && mounted) {
-                            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Không thể mở trang thanh toán.')));
-                          }
-                        } catch (e) {
-                          if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Lỗi: ${e.toString()}')));
-                        }
-                      } else {
-                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(checkoutVm.errorMessage ?? 'Không thể tạo liên kết thanh toán.')));
-                      }
+                  : () {
+                      context.push(
+                        AppRoutes.paymentConfirmation,
+                        extra: PaymentConfirmationArgs(
+                          orderCode: checkoutVm.checkResult!.orderCode,
+                          totalAmount: checkoutVm.payableTotal,
+                        ),
+                      );
                     },
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.primary,
@@ -229,7 +201,7 @@ class _CheckoutScreenState
               ),
               child: checkoutVm.isLoading
                   ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                  : Text('THÀNH TOÁN — ${formatVND(checkoutVm.payableTotal)}', style: AppTextStyles.labelBold.copyWith(color: Colors.white)),
+                  : Text('TIẾP TỤC — ${formatVND(checkoutVm.payableTotal)}', style: AppTextStyles.labelBold.copyWith(color: Colors.white)),
             ),
           ),
         ],
@@ -254,7 +226,7 @@ class _SectionCard extends StatelessWidget {
         border: Border.all(color: AppColors.surfaceDark, width: 1.5),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.02),
+            color: Colors.black.withOpacity(0.02),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -321,93 +293,4 @@ class _PriceRow extends StatelessWidget {
   }
 }
 
-class _PromoSection extends StatelessWidget {
-  const _PromoSection({
-    required this.controller,
-    required this.isLoading,
-    required this.appliedPromotion,
-    required this.onApply,
-    required this.onClear,
-  });
-
-  final TextEditingController controller;
-  final bool isLoading;
-  final PromotionModel? appliedPromotion;
-  final VoidCallback onApply;
-  final VoidCallback onClear;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: AppColors.primary.withValues(alpha: 0.05),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: AppColors.primary.withValues(alpha: 0.1)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text('MÃ GIẢM GIÁ', style: AppTextStyles.labelBold.copyWith(color: AppColors.primary, fontSize: 11, letterSpacing: 0.8)),
-          const SizedBox(height: 16),
-          if (appliedPromotion == null)
-            Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    controller: controller,
-                    style: AppTextStyles.bodyMd,
-                    decoration: InputDecoration(
-                      hintText: 'Nhập mã của bạn',
-                      hintStyle: AppTextStyles.bodyMd.copyWith(color: AppColors.textHint, fontSize: 13),
-                      filled: true,
-                      fillColor: Colors.white,
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 10),
-                SizedBox(
-                  height: 48,
-                  child: ElevatedButton(
-                    onPressed: isLoading ? null : onApply,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.primary,
-                      foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                      elevation: 0,
-                    ),
-                    child: const Text('ÁP DỤNG'),
-                  ),
-                ),
-              ],
-            )
-          else
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12), border: Border.all(color: AppColors.success.withValues(alpha: 0.3))),
-              child: Row(
-                children: [
-                  const Icon(Icons.check_circle_rounded, color: AppColors.success, size: 24),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text('Mã: ${appliedPromotion!.code}', style: AppTextStyles.labelBold.copyWith(color: AppColors.success)),
-                        if (appliedPromotion!.description.isNotEmpty)
-                          Text(appliedPromotion!.description, style: AppTextStyles.caption.copyWith(color: AppColors.textSecondary), maxLines: 1, overflow: TextOverflow.ellipsis),
-                      ],
-                    ),
-                  ),
-                  TextButton(onPressed: isLoading ? null : onClear, child: const Text('BỎ MÃ', style: TextStyle(color: AppColors.error, fontWeight: FontWeight.bold))),
-                ],
-              ),
-            ),
-        ],
-      ),
-    );
-  }
-}
 
